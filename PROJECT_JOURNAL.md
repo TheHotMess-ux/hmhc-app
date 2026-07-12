@@ -51,3 +51,22 @@ Instead of building separate apps, HMHC will contain modular tools including:
 - Should users choose Perimenopause or Cycle Tracking first?
 
 ---
+## Sprint 1
+
+Goal:
+
+Transform the default Expo project into the first recognizable version of the HMHC app.
+
+Objectives
+
+- Build design system
+
+- Create reusable components
+
+- Build bottom navigation
+
+- Create first dashboard
+
+Status
+
+🟡 In Progress
