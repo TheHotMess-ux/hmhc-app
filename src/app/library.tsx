@@ -2,13 +2,19 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/theme/colors';
 
-export default function TrackScreen() {
+export default function LibraryScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.eyebrow}>MOOD RING</Text>
-      <Text style={styles.title}>Track</Text>
+     <Text style={styles.eyebrow}>
+HMHC RESOURCE VAULT
+</Text>
+      <Text style={styles.title}>
+Library
+</Text>
       <Text style={styles.description}>
-        Your cycle, moods, symptoms, sleep, and supplements will live here.
+  Guides, recipes, nervous-system tools, sleep support,
+  and The Hot Flash will live here.
+</Text>
       </Text>
     </View>
   );

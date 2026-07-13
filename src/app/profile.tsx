@@ -2,14 +2,15 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/theme/colors';
 
-export default function TrackScreen() {
+export default function ProfileScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.eyebrow}>MOOD RING</Text>
-      <Text style={styles.title}>Track</Text>
+      <Text style={styles.eyebrow}>YOUR HMHC</Text>
+      <Text style={styles.title}>Profile</Text>
       <Text style={styles.description}>
-        Your cycle, moods, symptoms, sleep, and supplements will live here.
-      </Text>
+  Your preferences, notifications, subscription,
+  privacy controls, and account settings will live here.
+</Text>
     </View>
   );
 }

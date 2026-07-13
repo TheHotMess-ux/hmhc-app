@@ -2,13 +2,14 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { Colors } from '@/theme/colors';
 
-export default function TrackScreen() {
+export default function InsightsScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.eyebrow}>MOOD RING</Text>
-      <Text style={styles.title}>Track</Text>
+      <Text style={styles.eyebrow}>YOUR PATTERNS</Text>
+      <Text style={styles.title}>Insights</Text>
       <Text style={styles.description}>
-        Your cycle, moods, symptoms, sleep, and supplements will live here.
+        Trends, phase history, symptom patterns, and doctor-ready reports
+        will live here.
       </Text>
     </View>
   );

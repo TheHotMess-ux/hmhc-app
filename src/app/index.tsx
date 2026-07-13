@@ -1,98 +1,91 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import SectionCard from '@/components/SectionCard';
+import { Colors } from '@/theme/colors';
+import { Spacing } from '@/theme/spacing';
 
 export default function HomeScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+    >
+      <View style={styles.header}>
+        <Text style={styles.eyebrow}>
+          THE HOT MESS HORMONE CLUB
+        </Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        <Text style={styles.greeting}>
+          Good morning, Sheena
+        </Text>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        <Text style={styles.subtitle}>
+          Your body has notes today.
+        </Text>
+      </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <SectionCard title="Today's Hormone Briefing">
+        <Text style={styles.bodyText}>
+          Your daily hormone update will appear here based on your cycle,
+          symptoms, and personal tracking history.
+        </Text>
+      </SectionCard>
+
+      <SectionCard title="Today's Pep Talk">
+        <Text style={styles.pepTalk}>
+          You do not need to conquer the entire week today. One useful thing
+          is plenty.
+        </Text>
+      </SectionCard>
+
+      <SectionCard title="Quick Log">
+        <Text style={styles.bodyText}>
+          Mood · Symptoms · Supplements · Sleep
+        </Text>
+      </SectionCard>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: Colors.background,
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  content: {
+    padding: Spacing.lg,
+    gap: Spacing.lg,
+    paddingBottom: 48,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  header: {
+    gap: Spacing.sm,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
   },
-  title: {
-    textAlign: 'center',
+  eyebrow: {
+    color: Colors.gold,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 2,
   },
-  code: {
-    textTransform: 'uppercase',
+  greeting: {
+    color: Colors.text,
+    fontSize: 32,
+    fontWeight: '700',
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  subtitle: {
+    color: Colors.textSecondary,
+    fontSize: 16,
+  },
+  bodyText: {
+    color: Colors.textSecondary,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  pepTalk: {
+    color: Colors.cream,
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 27,
   },
 });

@@ -37,6 +37,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "20d08086-9658-4542-9d34-d05e29d5244f"
+      }
+    },
+    "owner": "thehotflash"
   }
 }
