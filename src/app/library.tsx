@@ -15,7 +15,6 @@ Library
   Guides, recipes, nervous-system tools, sleep support,
   and The Hot Flash will live here.
 </Text>
-      </Text>
     </View>
   );
 }
