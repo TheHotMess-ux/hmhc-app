@@ -130,3 +130,15 @@ Big realization:
 The app is no longer just displaying information.
 
 It is starting to remember the user.
+
+## Planned Feature: Interactive Cycle Calendar
+
+Create an interactive monthly calendar in the Track tab that:
+
+- Displays menstrual, follicular, ovulation, and luteal phases in different colours
+- Highlights the predicted fertile window
+- Marks estimated ovulation
+- Highlights today
+- Allows users to tap a date to view mood, symptoms, cycle day, and journal data
+- Uses editable cycle settings, including last period start date, average cycle length, and average period length
+- Clearly labels fertile-window and ovulation dates as predictions, especially for perimenopausal users

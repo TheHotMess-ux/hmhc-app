@@ -9,15 +9,26 @@ import {
   View,
 } from 'react-native';
 
-import SectionCard from '@/components/SectionCard';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
+import FeralForecastCard from '../components/home/FeralForecastCard';
+import HormoneBriefingCard from '../components/home/HormoneBriefingCard';
+import MissionCard from '../components/home/MissionCard';
+import PersonalizedInsightCard from '../components/home/PersonalizedInsightCard';
+import QuickLogCard from '../components/home/QuickLogCard';
+import TimelineCard from '../components/home/TimelineCard';
 import {
   getCyclePhase,
   getDailyPepTalk,
   getGreeting,
   getSymptomInsight,
 } from '../lib/dashboard';
+import {
+  loadJournalEntries,
+  saveJournalEntry,
+} from '../lib/journal';
+
+import type { DailyEntry } from '../lib/dashboard';
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
   { emoji: '✨', label: 'Thriving' },
@@ -39,11 +50,23 @@ const symptomOptions = [
   { emoji: '🫧', label: 'Bloating' },
   { emoji: '😵‍💫', label: 'Dizziness' },
 ];
+
+function formatTimelineDate(dateString: string): string {
+  const date = new Date(`${dateString}T12:00:00`);
+
+  return date.toLocaleDateString('en-CA', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+}
 export default function HomeScreen() {
 const [isMoodModalVisible, setIsMoodModalVisible] = useState(false);
 const [selectedMood, setSelectedMood] = useState<string | null>(null);
 const [isSymptomsModalVisible, setIsSymptomsModalVisible] = useState(false);
 const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+const [journalEntries, setJournalEntries] =
+  useState<DailyEntry[]>([]);
 useEffect(() => {
   const loadMood = async () => {
     try {
@@ -75,6 +98,17 @@ useEffect(() => {
 
   loadSymptoms();
 }, []);
+useEffect(() => {
+  const loadJournal = async () => {
+    const savedEntries = await loadJournalEntries();
+
+    setJournalEntries(savedEntries);
+
+    console.log('Journal loaded:', savedEntries);
+  };
+
+  loadJournal();
+}, []);
 const toggleSymptom = (label: string) => {
   setSelectedSymptoms((currentSymptoms) => {
     if (currentSymptoms.includes(label)) {
@@ -97,7 +131,21 @@ const dailyEntry = {
   mood: selectedMood,
   symptoms: selectedSymptoms,
 };
+const saveTodayToJournal = async (
+  updates?: Partial<DailyEntry>,
+) => {
+  const entryToSave: DailyEntry = {
+    ...dailyEntry,
+    ...updates,
+  };
 
+  const updatedEntries =
+    await saveJournalEntry(entryToSave);
+
+  setJournalEntries(updatedEntries);
+
+  console.log('Journal entry saved:', entryToSave);
+};
 console.log(
   "Today's Journal Entry:",
   dailyEntry,
@@ -126,109 +174,38 @@ return (
         </Text>
       </View>
 
-      <SectionCard title="Today's Hormone Briefing">
-  <Text style={styles.phaseLabel}>
-    Cycle Day {cycleDay} · {phaseInsight.phase} Phase
-  </Text>
-
-  <Text style={styles.bodyText}>
-    {phaseInsight.summary}
-  </Text>
-</SectionCard>
+      <HormoneBriefingCard
+  title="Hormone Briefing"
+  phase={phaseInsight.phase}
+  description={phaseInsight.description}
+  encouragement={phaseInsight.encouragement}
+/>
 {symptomInsight && (
-  <SectionCard title="Personalized Insight">
-    <Text style={styles.bodyText}>
-      <Text style={{ fontWeight: '700' }}>
-        {symptomInsight.title}
-      </Text>
-    </Text>
-
-    <Text style={styles.bodyText}>
-      {symptomInsight.message}
-    </Text>
-
-    {symptomInsight.supportTips.map((tip) => (
-      <Text
-        key={tip}
-        style={styles.bodyText}>
-        • {tip}
-      </Text>
-    ))}
-  </SectionCard>
+  <PersonalizedInsightCard
+    title={symptomInsight.title}
+    message={symptomInsight.message}
+    supportTips={symptomInsight.supportTips}
+  />
 )}
-     <SectionCard title="Feral Forecast">
-  <Text style={styles.pepTalk}>{pepTalk}</Text>
-</SectionCard>
+    <FeralForecastCard
+  pepTalk={pepTalk}
+/>
 
-<SectionCard title="Today's Mission">
-  {phaseInsight.mission.map((item) => (
-    <Text key={item} style={styles.bodyText}>
-      ✓ {item}
-    </Text>
-  ))}
-</SectionCard>
+<MissionCard mission={phaseInsight.mission} />
 
-      <SectionCard title="Quick Log">
-  <View style={styles.quickLogGrid}>
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel="Log today's mood"
-      onPress={() => setIsMoodModalVisible(true)}
-      style={({ pressed }) => [
-  styles.quickLogButton,
-  selectedMood && styles.quickLogButtonSelected,
-pressed && styles.buttonPressed,
-]}>
-  <Text style={styles.quickLogEmoji}>
-  {selectedMood ? selectedMood.split(' ')[0] : '🙂'}
-</Text>
+ <QuickLogCard
+  selectedMood={selectedMood}
+  selectedSymptoms={selectedSymptoms}
+  onMoodPress={() => setIsMoodModalVisible(true)}
+  onSymptomsPress={() => setIsSymptomsModalVisible(true)}
+/>
 
-      <Text style={styles.quickLogLabel}>Mood</Text>
-
-      {selectedMood && (
-        <Text style={styles.quickLogValue}>{selectedMood}</Text>
-      )}
-    </Pressable>
-
-    <Pressable
-  accessibilityRole="button"
-  accessibilityLabel="Log today's symptoms"
-  onPress={() => setIsSymptomsModalVisible(true)}
-  style={({ pressed }) => [
-    styles.quickLogButton,
-    selectedSymptoms.length > 0 &&
-      styles.quickLogButtonSelected,
-    pressed && styles.buttonPressed,
-  ]}>
-  <Text style={styles.quickLogEmoji}>
-    {selectedSymptoms.length > 0 ? '✓' : '🔥'}
-  </Text>
-
-  <Text style={styles.quickLogLabel}>Symptoms</Text>
-
-  {selectedSymptoms.length > 0 ? (
-    <Text style={styles.quickLogValue}>
-      {selectedSymptoms.length}{' '}
-      {selectedSymptoms.length === 1 ? 'symptom' : 'symptoms'}
-    </Text>
-  ) : (
-    <Text style={styles.comingSoon}>Tap to log</Text>
-  )}
-</Pressable>
-
-    <View style={styles.quickLogButton}>
-      <Text style={styles.quickLogEmoji}>💊</Text>
-      <Text style={styles.quickLogLabel}>Supplements</Text>
-      <Text style={styles.comingSoon}>Coming soon</Text>
-    </View>
-
-    <View style={styles.quickLogButton}>
-      <Text style={styles.quickLogEmoji}>😴</Text>
-      <Text style={styles.quickLogLabel}>Sleep</Text>
-      <Text style={styles.comingSoon}>Coming soon</Text>
-    </View>
-  </View>
-</SectionCard>
+{journalEntries.length > 0 && (
+  <TimelineCard
+  journalEntries={journalEntries}
+  formatTimelineDate={formatTimelineDate}
+/>
+)}
 <Modal
   animationType="fade"
   transparent
@@ -273,6 +250,11 @@ pressed && styles.buttonPressed,
     'todaysMood',
     value
   );
+
+  await saveTodayToJournal({
+  mood: value,
+});
+
 console.log('Mood saved:', value);
   setIsMoodModalVisible(false);
 }}
@@ -383,6 +365,10 @@ console.log('Mood saved:', value);
               'todaysSymptoms',
               JSON.stringify(selectedSymptoms),
             );
+
+            await saveTodayToJournal({
+  symptoms: selectedSymptoms,
+});
 
             setIsSymptomsModalVisible(false);
           } catch (error) {
@@ -669,5 +655,20 @@ saveButtonText: {
   color: Colors.background,
   fontSize: 16,
   fontWeight: '800',
+},
+
+timelineButton: {
+  marginTop: Spacing.md,
+  borderWidth: 1,
+  borderColor: Colors.gold,
+  borderRadius: 14,
+  padding: Spacing.md,
+  alignItems: 'center',
+},
+
+timelineButtonText: {
+  color: Colors.gold,
+  fontSize: 15,
+  fontWeight: '700',
 },
 });
