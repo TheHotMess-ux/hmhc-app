@@ -10,13 +10,14 @@ import {
 } from 'react-native';
 
 import SectionCard from '@/components/SectionCard';
+import { Colors } from '@/theme/colors';
+import { Spacing } from '@/theme/spacing';
 import {
   getCyclePhase,
   getDailyPepTalk,
   getGreeting,
-} from '@/lib/dashboard';
-import { Colors } from '@/theme/colors';
-import { Spacing } from '@/theme/spacing';
+  getSymptomInsight,
+} from '../lib/dashboard';
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
   { emoji: '✨', label: 'Thriving' },
@@ -86,7 +87,26 @@ const toggleSymptom = (label: string) => {
   });
 };
   const cycleDay = 18;
+  const today = new Date()
+  .toISOString()
+  .split('T')[0];
+
+const dailyEntry = {
+  date: today,
+  cycleDay,
+  mood: selectedMood,
+  symptoms: selectedSymptoms,
+};
+
+console.log(
+  "Today's Journal Entry:",
+  dailyEntry,
+);
 const phaseInsight = getCyclePhase(cycleDay);
+const symptomInsight = getSymptomInsight(
+  phaseInsight.phase,
+  selectedSymptoms,
+);
 const greeting = getGreeting('Sheena');
 const pepTalk = getDailyPepTalk();
 return (
@@ -115,7 +135,27 @@ return (
     {phaseInsight.summary}
   </Text>
 </SectionCard>
+{symptomInsight && (
+  <SectionCard title="Personalized Insight">
+    <Text style={styles.bodyText}>
+      <Text style={{ fontWeight: '700' }}>
+        {symptomInsight.title}
+      </Text>
+    </Text>
 
+    <Text style={styles.bodyText}>
+      {symptomInsight.message}
+    </Text>
+
+    {symptomInsight.supportTips.map((tip) => (
+      <Text
+        key={tip}
+        style={styles.bodyText}>
+        • {tip}
+      </Text>
+    ))}
+  </SectionCard>
+)}
      <SectionCard title="Feral Forecast">
   <Text style={styles.pepTalk}>{pepTalk}</Text>
 </SectionCard>

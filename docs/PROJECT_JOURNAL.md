@@ -106,3 +106,27 @@ Built:
 - Black, gold, and cream visual foundation
 
 This was the first moment the project looked and felt like a real product.
+
+## Sprint 5: The App Has a Memory
+
+Today I built my first persistent features.
+
+Completed:
+- Mood Logger
+- Mood persistence
+- Symptoms Logger
+- Symptoms persistence
+
+Today I learned:
+- AsyncStorage
+- useEffect
+- Arrays
+- Multi-select state
+- Two-terminal workflow
+- Why Ctrl+C doesn't mean Copy 😄
+
+Big realization:
+
+The app is no longer just displaying information.
+
+It is starting to remember the user.
