@@ -1,3 +1,5 @@
+import type { FlowLevel } from './flow';
+
 type CyclePhase =
   | 'Menstrual'
   | 'Follicular'
@@ -21,6 +23,8 @@ export type DailyEntry = {
   cycleDay: number;
   mood: string | null;
   symptoms: string[];
+  flow?: FlowLevel;
+startsNewPeriod?: boolean;
 };
 
 const pepTalks = [

@@ -5,19 +5,26 @@ import { Spacing } from '@/theme/spacing';
 
 import SectionCard from '../SectionCard';
 
+import type { FlowLevel } from '@/lib/flow';
+
 type Props = {
   selectedMood: string | null;
   selectedSymptoms: string[];
+  selectedFlow: FlowLevel | null;
   onMoodPress: () => void;
   onSymptomsPress: () => void;
+  onFlowPress: () => void;
 };
 
 export default function QuickLogCard({
   selectedMood,
   selectedSymptoms,
+  selectedFlow,
   onMoodPress,
   onSymptomsPress,
+  onFlowPress,
 }: Props) {
+
   return (
     <SectionCard title="Quick Log">
       <View style={styles.quickLogGrid}>
@@ -73,13 +80,31 @@ export default function QuickLogCard({
           )}
         </Pressable>
 
-        <View style={styles.quickLogButton}>
-          <Text style={styles.quickLogEmoji}>💊</Text>
-          <Text style={styles.quickLogLabel}>Supplements</Text>
-          <Text style={styles.comingSoon}>
-            Coming soon
-          </Text>
-        </View>
+<Pressable
+  accessibilityRole="button"
+  accessibilityLabel="Log today's flow"
+  onPress={onFlowPress}
+  style={({ pressed }) => [
+    styles.quickLogButton,
+    selectedFlow && styles.quickLogButtonSelected,
+    pressed && styles.buttonPressed,
+  ]}>
+  <Text style={styles.quickLogEmoji}>
+    {selectedFlow ? '🩸' : '🌸'}
+  </Text>
+
+  <Text style={styles.quickLogLabel}>Flow</Text>
+
+  {selectedFlow ? (
+    <Text style={styles.quickLogValue}>
+      {selectedFlow}
+    </Text>
+  ) : (
+    <Text style={styles.comingSoon}>
+      Tap to log
+    </Text>
+  )}
+</Pressable>
 
         <View style={styles.quickLogButton}>
           <Text style={styles.quickLogEmoji}>😴</Text>
@@ -103,7 +128,7 @@ const styles = StyleSheet.create({
   quickLogButton: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: Spacing.md,
     alignItems: 'center',
@@ -120,7 +145,7 @@ const styles = StyleSheet.create({
   },
 
   quickLogLabel: {
-    color: Colors.textPrimary,
+    color: Colors.text,
     fontWeight: '700',
   },
 

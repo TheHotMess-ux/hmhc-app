@@ -4,6 +4,7 @@ import SectionCard from '../SectionCard';
 
 import { Colors } from '@/theme/colors';
 
+
 type Props = {
   title: string;
   phase: string;

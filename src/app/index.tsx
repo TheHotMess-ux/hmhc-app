@@ -9,24 +9,31 @@ import {
   View,
 } from 'react-native';
 
+import QuickLogHub from '@/components/quickLog/QuickLogHub';
+import type { FlowLevel } from '@/lib/flow';
+import { flowOptions } from '@/lib/flow';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 import FeralForecastCard from '../components/home/FeralForecastCard';
 import HormoneBriefingCard from '../components/home/HormoneBriefingCard';
 import MissionCard from '../components/home/MissionCard';
 import PersonalizedInsightCard from '../components/home/PersonalizedInsightCard';
-import QuickLogCard from '../components/home/QuickLogCard';
-import TimelineCard from '../components/home/TimelineCard';
+
 import {
-  getCyclePhase,
-  getDailyPepTalk,
+  getCyclePhase as getDashboardCyclePhase,
   getGreeting,
-  getSymptomInsight,
+  getSymptomInsight
 } from '../lib/dashboard';
 import {
   loadJournalEntries,
   saveJournalEntry,
 } from '../lib/journal';
+
+import { getCyclePhase as getCyclePhaseData } from '@/lib/cycle';
+import { getFeralForecast } from '../lib/forecast';
+
+import MorningBriefingCard from "@/components/home/MorningBriefingCard";
+
 
 import type { DailyEntry } from '../lib/dashboard';
 const moodOptions = [
@@ -51,20 +58,19 @@ const symptomOptions = [
   { emoji: '😵‍💫', label: 'Dizziness' },
 ];
 
-function formatTimelineDate(dateString: string): string {
-  const date = new Date(`${dateString}T12:00:00`);
-
-  return date.toLocaleDateString('en-CA', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-}
 export default function HomeScreen() {
 const [isMoodModalVisible, setIsMoodModalVisible] = useState(false);
 const [selectedMood, setSelectedMood] = useState<string | null>(null);
 const [isSymptomsModalVisible, setIsSymptomsModalVisible] = useState(false);
 const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+const [isFlowModalVisible, setIsFlowModalVisible] =
+  useState(false);
+
+const [selectedFlow, setSelectedFlow] =
+  useState<FlowLevel | null>(null);
+
+const [startsNewPeriod, setStartsNewPeriod] =
+  useState(false);
 const [journalEntries, setJournalEntries] =
   useState<DailyEntry[]>([]);
 useEffect(() => {
@@ -121,6 +127,8 @@ const toggleSymptom = (label: string) => {
   });
 };
   const cycleDay = 18;
+  const forecast = getFeralForecast(cycleDay);
+
   const today = new Date()
   .toISOString()
   .split('T')[0];
@@ -150,13 +158,14 @@ console.log(
   "Today's Journal Entry:",
   dailyEntry,
 );
-const phaseInsight = getCyclePhase(cycleDay);
+const phaseInsight = getDashboardCyclePhase(cycleDay);
+const cyclePhase = getCyclePhaseData(cycleDay);
+
 const symptomInsight = getSymptomInsight(
   phaseInsight.phase,
   selectedSymptoms,
 );
 const greeting = getGreeting('Sheena');
-const pepTalk = getDailyPepTalk();
 return (
     <ScrollView
       style={styles.screen}
@@ -174,12 +183,26 @@ return (
         </Text>
       </View>
 
-      <HormoneBriefingCard
-  title="Hormone Briefing"
-  phase={phaseInsight.phase}
-  description={phaseInsight.description}
-  encouragement={phaseInsight.encouragement}
+<MorningBriefingCard
+  name="Sheena"
+  phase="Luteal"
+  cycleDay={cycleDay}
 />
+
+<FeralForecastCard
+  coffeeForecast={forecast.coffeeForecast}
+  brainFogForecast={forecast.brainFogForecast}
+  patienceForecast={forecast.patienceForecast}
+  survivalStrategy={forecast.survivalStrategy}
+/>
+
+<HormoneBriefingCard
+  title="Hormone Briefing"
+  phase={`${cyclePhase.emoji} ${cyclePhase.title}`}
+  description={cyclePhase.description}
+  encouragement={cyclePhase.encouragement}
+/>
+
 {symptomInsight && (
   <PersonalizedInsightCard
     title={symptomInsight.title}
@@ -187,25 +210,78 @@ return (
     supportTips={symptomInsight.supportTips}
   />
 )}
-    <FeralForecastCard
-  pepTalk={pepTalk}
-/>
 
 <MissionCard mission={phaseInsight.mission} />
 
- <QuickLogCard
+{/*
+<QuickLogCard
   selectedMood={selectedMood}
   selectedSymptoms={selectedSymptoms}
+  selectedFlow={selectedFlow}
   onMoodPress={() => setIsMoodModalVisible(true)}
   onSymptomsPress={() => setIsSymptomsModalVisible(true)}
+  onFlowPress={() => {
+    setIsMoodModalVisible(false);
+    setIsSymptomsModalVisible(false);
+    setIsFlowModalVisible(true);
+  }}
+/>
+*/}
+
+<QuickLogHub
+  selectedMood={selectedMood}
+  selectedSymptoms={selectedSymptoms}
+  selectedFlow={selectedFlow}
+  startsNewPeriod={startsNewPeriod}
+  onMoodSelect={async (value) => {
+    setSelectedMood(value);
+
+    await AsyncStorage.setItem(
+      'todaysMood',
+      value,
+    );
+
+    await saveTodayToJournal({
+      mood: value,
+    });
+  }}
+  onSymptomsSave={async (symptoms) => {
+    setSelectedSymptoms(symptoms);
+
+    await AsyncStorage.setItem(
+      'todaysSymptoms',
+      JSON.stringify(symptoms),
+    );
+
+    await saveTodayToJournal({
+      symptoms,
+    });
+  }}
+  
+onFlowSave={async (
+  flow,
+  startsNewPeriodValue,
+) => {
+  setSelectedFlow(flow);
+  setStartsNewPeriod(startsNewPeriodValue);
+
+  await AsyncStorage.setItem(
+    'todaysFlow',
+    flow,
+  );
+
+  await AsyncStorage.setItem(
+    'startsNewPeriod',
+    JSON.stringify(startsNewPeriodValue),
+  );
+
+  await saveTodayToJournal({
+    flow,
+    startsNewPeriod: startsNewPeriodValue,
+  });
+}}
 />
 
-{journalEntries.length > 0 && (
-  <TimelineCard
-  journalEntries={journalEntries}
-  formatTimelineDate={formatTimelineDate}
-/>
-)}
 <Modal
   animationType="fade"
   transparent
@@ -316,6 +392,171 @@ console.log('Mood saved:', value);
         Select everything that applies. Your hormones may have
         submitted several grievances.
       </Text>
+
+{false && (
+    <Modal
+    animationType="fade"
+    transparent
+    visible
+    onRequestClose={() => setIsFlowModalVisible(false)}
+  >
+  <View style={styles.modalBackdrop}>
+    <View style={styles.modalCard}>
+      <View style={styles.modalHeader}>
+        <View>
+          <Text style={styles.modalEyebrow}>QUICK LOG</Text>
+
+          <Text style={styles.modalTitle}>
+            What is today’s flow doing?
+          </Text>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Close flow log"
+          onPress={() => setIsFlowModalVisible(false)}
+          style={({ pressed }) => [
+            styles.closeButton,
+            pressed && styles.buttonPressed,
+          ]}
+        >
+          <Text style={styles.closeButtonText}>×</Text>
+        </Pressable>
+      </View>
+
+      <Text style={styles.modalDescription}>
+        Choose the option that best matches today. Perimenopause may reserve the
+        right to change the plot without notice.
+      </Text>
+
+      <View style={styles.flowList}>
+        {flowOptions.map((option) => {
+          const isSelected = selectedFlow === option.level;
+
+          return (
+            <Pressable
+              key={option.level}
+              accessibilityRole="button"
+              accessibilityLabel={`Log flow as ${option.label}`}
+              onPress={() => {
+                setSelectedFlow(option.level);
+
+                if (
+                  option.level === 'None' ||
+                  option.level === 'Spotting'
+                ) {
+                  setStartsNewPeriod(false);
+                }
+              }}
+              style={({ pressed }) => [
+                styles.flowOption,
+                isSelected && styles.flowOptionSelected,
+                pressed && styles.buttonPressed,
+              ]}
+            >
+              <Text style={styles.flowEmoji}>
+                {option.emoji}
+              </Text>
+
+              <Text
+                style={[
+                  styles.flowLabel,
+                  isSelected && styles.flowLabelSelected,
+                ]}
+              >
+                {option.label}
+              </Text>
+
+              {isSelected && (
+                <Text style={styles.flowCheck}>✓</Text>
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {selectedFlow &&
+        selectedFlow !== 'None' &&
+        selectedFlow !== 'Spotting' && (
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{
+              checked: startsNewPeriod,
+            }}
+            accessibilityLabel="This is the first day of a new period"
+            onPress={() =>
+              setStartsNewPeriod((currentValue) => !currentValue)
+            }
+            style={styles.periodStartRow}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                startsNewPeriod && styles.checkboxSelected,
+              ]}
+            >
+              {startsNewPeriod && (
+                <Text style={styles.checkboxCheck}>✓</Text>
+              )}
+            </View>
+
+            <View style={styles.periodStartTextGroup}>
+              <Text style={styles.periodStartTitle}>
+                This is the first day of a new period
+              </Text>
+
+              <Text style={styles.periodStartDescription}>
+                This helps us track your cycle and menopause journey more
+                accurately.
+              </Text>
+            </View>
+          </Pressable>
+        )}
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Save flow"
+        disabled={!selectedFlow}
+        onPress={async () => {
+          if (!selectedFlow) {
+            return;
+          }
+
+          try {
+            await AsyncStorage.setItem(
+              'todaysFlow',
+              selectedFlow,
+            );
+
+            await AsyncStorage.setItem(
+              'startsNewPeriod',
+              JSON.stringify(startsNewPeriod),
+            );
+
+            await saveTodayToJournal({
+              flow: selectedFlow,
+              startsNewPeriod,
+            });
+
+            setIsFlowModalVisible(false);
+          } catch (error) {
+            console.error('Unable to save flow:', error);
+          }
+        }}
+        style={({ pressed }) => [
+          styles.saveButton,
+          !selectedFlow && styles.saveButtonDisabled,
+          pressed && styles.buttonPressed,
+        ]}
+      >
+        <Text style={styles.saveButtonText}>
+          Save Flow
+        </Text>
+      </Pressable>
+    </View>
+  </View>
+  </Modal>
+)}
 
       <ScrollView
         style={styles.symptomScroll}
@@ -671,4 +912,97 @@ timelineButtonText: {
   fontSize: 15,
   fontWeight: '700',
 },
+
+flowList: {
+  gap: Spacing.sm,
+},
+
+flowOption: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: Colors.surfaceLight,
+  borderColor: Colors.border,
+  borderWidth: 1,
+  borderRadius: 14,
+  padding: Spacing.md,
+  gap: Spacing.md,
+},
+
+flowOptionSelected: {
+  borderColor: Colors.gold,
+  borderWidth: 2,
+},
+
+flowEmoji: {
+  fontSize: 24,
+},
+
+flowLabel: {
+  flex: 1,
+  color: Colors.cream,
+  fontSize: 16,
+  fontWeight: '600',
+},
+
+flowLabelSelected: {
+  color: Colors.gold,
+},
+
+flowCheck: {
+  color: Colors.gold,
+  fontSize: 18,
+  fontWeight: '700',
+},
+
+periodStartRow: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  backgroundColor: Colors.surfaceLight,
+  borderRadius: 14,
+  padding: Spacing.md,
+  gap: Spacing.md,
+},
+
+checkbox: {
+  width: 24,
+  height: 24,
+  borderRadius: 6,
+  borderWidth: 1,
+  borderColor: Colors.border,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+checkboxSelected: {
+  backgroundColor: Colors.gold,
+  borderColor: Colors.gold,
+},
+
+checkboxCheck: {
+  color: Colors.background,
+  fontSize: 15,
+  fontWeight: '900',
+},
+
+periodStartTextGroup: {
+  flex: 1,
+  gap: 4,
+},
+
+periodStartTitle: {
+  color: Colors.cream,
+  fontSize: 15,
+  fontWeight: '700',
+},
+
+periodStartDescription: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
+},
+
+saveButtonDisabled: {
+  opacity: 0.45,
+},
+
 });
