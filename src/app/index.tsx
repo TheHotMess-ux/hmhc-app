@@ -41,6 +41,9 @@ import type { DailyEntry } from '../lib/dashboard';
 
 import MoreForYouCard from '@/components/home/MoreForYouCard';
 
+import DailyWinsCard from '@/components/home/DailyWinsCard';
+import { getDailyWins } from '@/lib/wins';
+
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
   { emoji: '✨', label: 'Thriving' },
@@ -150,23 +153,60 @@ const symptomInsight = getSymptomInsight(
 );
 const greeting = getSmartGreeting();
 
-const moreForYouItems = symptomInsight
-  ? [
-      {
-        id: 'insight',
-        emoji: '🧠',
-        title: 'Personalized Insight',
-        summary: "We've noticed something interesting...",
-        content: (
-          <PersonalizedInsightCard
-            title={symptomInsight.title}
-            message={symptomInsight.message}
-            supportTips={symptomInsight.supportTips}
-          />
-        ),
-      },
-    ]
-  : [];
+const dailyWins = getDailyWins().map((win) => {
+  let completed = false;
+
+  if (win.id === 'mood') {
+    completed = selectedMood !== null;
+  }
+
+  if (win.id === 'symptoms') {
+    completed = selectedSymptoms.length > 0;
+  }
+
+  if (win.id === 'flow') {
+    completed = selectedFlow !== null;
+  }
+
+  return {
+    ...win,
+    completed,
+  };
+});
+
+const moreForYouItems = [
+  ...(symptomInsight
+    ? [
+        {
+          id: 'insight',
+          emoji: '🧠',
+          title: 'Personalized Insight',
+          summary:
+            "We've noticed something interesting...",
+          content: (
+            <PersonalizedInsightCard
+              title={symptomInsight.title}
+              message={symptomInsight.message}
+              supportTips={
+                symptomInsight.supportTips
+              }
+            />
+          ),
+        },
+      ]
+    : []),
+
+{
+  id: 'wins',
+  emoji: '🌼',
+  title: 'Little Victories',
+  summary:
+    'A little proof that you showed up today.',
+  content: (
+    <DailyWinsCard wins={dailyWins} />
+  ),
+},
+];
 
 return (
     <ScrollView

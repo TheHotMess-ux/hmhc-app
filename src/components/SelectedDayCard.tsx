@@ -2,12 +2,15 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import HormoneBattery from '@/components/HormoneBattery';
 import { getCyclePhase } from '@/lib/cycle';
+import type { FlowLevel } from '@/lib/flow';
 import { Colors } from '@/theme/colors';
 
 type Entry = {
   mood: string | null;
   symptoms: string[];
   cycleDay: number;
+  flow?: FlowLevel | null;
+  startsNewPeriod?: boolean;
 };
 
 type Props = {
@@ -38,6 +41,22 @@ export default function SelectedDayCard({
               {entry.mood ?? 'Not logged'}
             </Text>
           </View>
+
+          <View style={styles.row}>
+  <Text style={styles.label}>Flow</Text>
+
+  <Text style={styles.value}>
+    {entry.flow && entry.flow !== 'None'
+      ? `🩸 ${entry.flow}`
+      : 'Not logged'}
+  </Text>
+
+  {entry.startsNewPeriod && (
+    <Text style={styles.periodStartNote}>
+      First day of a new period
+    </Text>
+  )}
+</View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Symptoms</Text>
@@ -163,7 +182,7 @@ export default function SelectedDayCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.surface,
     borderColor: Colors.border,
     borderRadius: 22,
     borderWidth: 1,
@@ -294,4 +313,9 @@ hormoneList: {
   gap: 10,
 },
 
+periodStartNote: {
+  color: Colors.gold,
+  fontSize: 13,
+  fontWeight: '700',
+},
 });

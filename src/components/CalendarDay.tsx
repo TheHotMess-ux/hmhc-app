@@ -1,5 +1,11 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
+import type { FlowLevel } from '@/lib/flow';
 import { Colors } from '@/theme/colors';
 
 type Props = {
@@ -10,6 +16,8 @@ type Props = {
   phaseColor?: string;
   moodEmoji?: string;
   bodyLoadColor?: string;
+  flow?: FlowLevel | null;
+  startsNewPeriod?: boolean;
   onPress: () => void;
 };
 
@@ -20,50 +28,107 @@ export default function CalendarDay({
   hasEntry,
   phaseColor,
   moodEmoji,
-  onPress,
   bodyLoadColor,
+  flow,
+  startsNewPeriod = false,
+  onPress,
 }: Props) {
+  const hasBleeding =
+    flow &&
+    flow !== 'None';
+
+  function getFlowMarkerWidth(): number {
+    switch (flow) {
+      case 'Heavy':
+        return 22;
+
+      case 'Moderate':
+        return 16;
+
+      case 'Light':
+        return 10;
+
+      case 'Spotting':
+        return 5;
+
+      default:
+        return 0;
+    }
+  }
 
   return (
     <View style={styles.dayCell}>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={`Select day ${day}`}
+        accessibilityState={{
+          selected: isSelected,
+        }}
         onPress={onPress}
-    style={({ pressed }) => [
-  styles.dayButton,
-  phaseColor && {
-    backgroundColor: phaseColor,
-  },
-  isToday && styles.todayButton,
-  isSelected && styles.selectedButton,
-  pressed && styles.pressed,
-]}>
+        style={({ pressed }) => [
+          styles.dayButton,
+
+          phaseColor && {
+            backgroundColor: phaseColor,
+          },
+
+          startsNewPeriod &&
+            styles.periodStartButton,
+
+          isToday &&
+            styles.todayButton,
+
+          isSelected &&
+            styles.selectedButton,
+
+          pressed &&
+            styles.pressed,
+        ]}>
         <Text
           style={[
             styles.dayNumber,
-            isSelected && styles.selectedDayNumber,
+            isSelected &&
+              styles.selectedDayNumber,
           ]}>
           {day}
         </Text>
 
-<View style={styles.statusRow}>
-  {moodEmoji && (
-    <Text style={styles.moodEmoji}>
-      {moodEmoji}
-    </Text>
-  )}
+        <View style={styles.statusRow}>
+          {moodEmoji && (
+            <Text style={styles.moodEmoji}>
+              {moodEmoji}
+            </Text>
+          )}
 
-  {bodyLoadColor && (
-    <View
-      style={[
-        styles.bodyLoadDot,
-        { backgroundColor: bodyLoadColor },
-      ]}
-    />
-  )}
+          {bodyLoadColor && (
+            <View
+              style={[
+                styles.bodyLoadDot,
+                {
+                  backgroundColor:
+                    bodyLoadColor,
+                },
+              ]}
+            />
+          )}
 
-  {hasEntry && <View style={styles.dot} />}
-</View>
+          {hasEntry && !moodEmoji && (
+            <View style={styles.entryDot} />
+          )}
+        </View>
+
+        {hasBleeding && (
+          <View
+            style={[
+              styles.flowMarker,
+              {
+                width: getFlowMarkerWidth(),
+              },
+              flow === 'Spotting' &&
+                styles.spottingMarker,
+            ]}
+          />
+        )}
       </Pressable>
     </View>
   );
@@ -81,32 +146,35 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
 
- todayButton: {
-  borderWidth: 2,
-  borderColor: Colors.gold,
-
-  shadowColor: Colors.gold,
-  shadowOpacity: 0.25,
-  shadowRadius: 8,
-  shadowOffset: {
-    width: 0,
-    height: 0,
+  todayButton: {
+    borderWidth: 2,
+    borderColor: Colors.gold,
+    shadowColor: Colors.gold,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    elevation: 5,
   },
 
-  elevation: 5,
-},
+  periodStartButton: {
+    borderWidth: 1,
+    borderColor: Colors.gold,
+  },
 
- selectedButton: {
-  backgroundColor: Colors.gold,
-  borderRadius: 18,
-  transform: [{ scale: 1.04 }],
-},
+  selectedButton: {
+    backgroundColor: Colors.gold,
+    borderRadius: 18,
+    transform: [{ scale: 1.04 }],
+  },
 
   dayNumber: {
-    color: Colors.textPrimary,
+    color: Colors.text,
     fontWeight: '600',
   },
 
@@ -115,27 +183,44 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  dot: {
+  statusRow: {
+    minHeight: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+  },
+
+  entryDot: {
     width: 5,
     height: 5,
     borderRadius: 3,
-    backgroundColor: Colors.textPrimary,
+    backgroundColor: Colors.textSecondary,
+  },
+
+  moodEmoji: {
+    fontSize: 13,
+    lineHeight: 15,
+  },
+
+  bodyLoadDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+
+  flowMarker: {
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: Colors.danger,
+  },
+
+  spottingMarker: {
+    height: 5,
+    borderRadius: 3,
   },
 
   pressed: {
     opacity: 0.7,
   },
-
-  moodEmoji: {
-  fontSize: 13,
-  lineHeight: 15,
-},
-
-bodyLoadDot: {
-  width: 6,
-  height: 6,
-  borderRadius: 3,
-  marginTop: 2,
-},
-
 });

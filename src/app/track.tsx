@@ -383,17 +383,19 @@ const todayStatus =
                 getBodyLoadColor(bodyLoad);
 
               return (
-                <CalendarDay
-                  key={dateKey}
-                  day={date.getDate()}
-                  isToday={isToday}
-                  isSelected={isSelected}
-                  hasEntry={Boolean(entry)}
-                  phaseColor={phase.color}
-                  moodEmoji={moodEmoji}
-                  bodyLoadColor={bodyLoadColor}
-                  onPress={() => selectDay(date)}
-                />
+              <CalendarDay
+  key={dateKey}
+  day={date.getDate()}
+  isToday={isToday}
+  isSelected={isSelected}
+  hasEntry={Boolean(entry)}
+  phaseColor={phase.color}
+  moodEmoji={moodEmoji}
+  bodyLoadColor={bodyLoadColor}
+  flow={entry?.flow}
+  startsNewPeriod={entry?.startsNewPeriod}
+  onPress={() => selectDay(date)}
+/>
               );
             })}
           </View>
