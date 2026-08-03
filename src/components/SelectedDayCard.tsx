@@ -5,6 +5,8 @@ import { getCyclePhase } from '@/lib/cycle';
 import type { FlowLevel } from '@/lib/flow';
 import { Colors } from '@/theme/colors';
 
+import InfoRow from '@/components/InfoRow';
+
 type Entry = {
   mood: string | null;
   symptoms: string[];
@@ -29,34 +31,31 @@ export default function SelectedDayCard({
   return (
     
     <View style={styles.card}>
-      <Text style={styles.eyebrow}>SELECTED DAY</Text>
-
-      <Text style={styles.date}>{formattedDate}</Text>
+    <Text style={styles.eyebrow}>DAILY SNAPSHOT</Text>
+    <Text style={styles.date}>{formattedDate}</Text>
 
       {entry ? (
         <View style={styles.content}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Mood</Text>
-            <Text style={styles.value}>
-              {entry.mood ?? 'Not logged'}
-            </Text>
-          </View>
+          <InfoRow
+  emoji="😊"
+  label="Mood"
+  value={entry.mood ?? 'Not logged'}
+/>
 
-          <View style={styles.row}>
-  <Text style={styles.label}>Flow</Text>
-
-  <Text style={styles.value}>
-    {entry.flow && entry.flow !== 'None'
-      ? `🩸 ${entry.flow}`
-      : 'Not logged'}
-  </Text>
-
-  {entry.startsNewPeriod && (
-    <Text style={styles.periodStartNote}>
-      First day of a new period
-    </Text>
-  )}
-</View>
+<InfoRow
+  emoji="🩸"
+  label="Flow"
+  value={
+    entry.flow && entry.flow !== 'None'
+      ? entry.flow
+      : 'Not logged'
+  }
+  secondaryValue={
+    entry.startsNewPeriod
+      ? 'First day of a new period'
+      : undefined
+  }
+/>
 
           <View style={styles.row}>
             <Text style={styles.label}>Symptoms</Text>
@@ -77,19 +76,13 @@ export default function SelectedDayCard({
 </View>
           </View>
 
-<View style={styles.row}>
-  <Text style={styles.label}>
-    TODAY'S CYCLE
-  </Text>
-
-  <Text style={styles.value}>
-    {phase?.emoji} {phase?.title}
-  </Text>
-
-  <Text style={styles.secondaryValue}>
-    Day {entry.cycleDay}
-  </Text>
-</View>
+<InfoRow
+  emoji={phase?.emoji}
+  label="Cycle"
+  value={phase?.title ?? 'Unknown'}
+  secondaryValue={`Day ${entry.cycleDay}`}
+  accentColor={phase?.color}
+/>
 
 {phase && (
   <View style={styles.hormoneSection}>

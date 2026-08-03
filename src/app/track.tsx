@@ -74,12 +74,11 @@ function createCalendarDays(month: Date): Array<Date | null> {
   return days;
 }
 
-function formatSelectedDate(date: Date): string {
+function formatSelectedDate(date: Date) {
   return date.toLocaleDateString('en-CA', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-    year: 'numeric',
   });
 }
 
