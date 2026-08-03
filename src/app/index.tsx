@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Modal,
   Pressable,
@@ -21,21 +21,26 @@ import PersonalizedInsightCard from '../components/home/PersonalizedInsightCard'
 
 import {
   getCyclePhase as getDashboardCyclePhase,
-  getGreeting,
   getSymptomInsight
 } from '../lib/dashboard';
-import {
-  loadJournalEntries,
-  saveJournalEntry,
-} from '../lib/journal';
+
+import { saveJournalEntry } from '../lib/journal';
+
+import { getFeralForecast as getFeralLevel } from '@/lib/chaosLevel';
 
 import { getCyclePhase as getCyclePhaseData } from '@/lib/cycle';
 import { getFeralForecast } from '../lib/forecast';
 
+import { getGreeting as getSmartGreeting } from '@/lib/greetings';
+
 import MorningBriefingCard from "@/components/home/MorningBriefingCard";
 
+import { useHomeDashboard } from '@/hooks/useHomeDashboard';
 
 import type { DailyEntry } from '../lib/dashboard';
+
+import MoreForYouCard from '@/components/home/MoreForYouCard';
+
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
   { emoji: '✨', label: 'Thriving' },
@@ -59,10 +64,22 @@ const symptomOptions = [
 ];
 
 export default function HomeScreen() {
+const dashboard = useHomeDashboard();
+
+const {
+  selectedMood,
+  setSelectedMood,
+} = dashboard;
+
 const [isMoodModalVisible, setIsMoodModalVisible] = useState(false);
-const [selectedMood, setSelectedMood] = useState<string | null>(null);
+
 const [isSymptomsModalVisible, setIsSymptomsModalVisible] = useState(false);
-const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+
+const {
+  selectedSymptoms,
+  setSelectedSymptoms,
+} = dashboard;
+
 const [isFlowModalVisible, setIsFlowModalVisible] =
   useState(false);
 
@@ -71,50 +88,12 @@ const [selectedFlow, setSelectedFlow] =
 
 const [startsNewPeriod, setStartsNewPeriod] =
   useState(false);
-const [journalEntries, setJournalEntries] =
-  useState<DailyEntry[]>([]);
-useEffect(() => {
-  const loadMood = async () => {
-    try {
-      const savedMood = await AsyncStorage.getItem('todaysMood'); console.log('Mood loaded:', savedMood);
 
-      if (savedMood !== null) {
-        setSelectedMood(savedMood);
-      }
-    } catch (error) {
-      console.error('Unable to load saved mood:', error);
-    }
-  };
+const {
+  journalEntries,
+  setJournalEntries,
+} = dashboard;
 
-  loadMood();
-}, []);
-useEffect(() => {
-  const loadSymptoms = async () => {
-    try {
-      const savedSymptoms =
-        await AsyncStorage.getItem('todaysSymptoms');
-
-      if (savedSymptoms !== null) {
-        setSelectedSymptoms(JSON.parse(savedSymptoms));
-      }
-    } catch (error) {
-      console.error('Unable to load saved symptoms:', error);
-    }
-  };
-
-  loadSymptoms();
-}, []);
-useEffect(() => {
-  const loadJournal = async () => {
-    const savedEntries = await loadJournalEntries();
-
-    setJournalEntries(savedEntries);
-
-    console.log('Journal loaded:', savedEntries);
-  };
-
-  loadJournal();
-}, []);
 const toggleSymptom = (label: string) => {
   setSelectedSymptoms((currentSymptoms) => {
     if (currentSymptoms.includes(label)) {
@@ -154,18 +133,41 @@ const saveTodayToJournal = async (
 
   console.log('Journal entry saved:', entryToSave);
 };
-console.log(
-  "Today's Journal Entry:",
-  dailyEntry,
-);
+
 const phaseInsight = getDashboardCyclePhase(cycleDay);
 const cyclePhase = getCyclePhaseData(cycleDay);
+
+const feralLevel = getFeralLevel({
+  mood: selectedMood,
+  symptoms: selectedSymptoms,
+  flow: selectedFlow,
+  cyclePhase: phaseInsight.phase,
+});
 
 const symptomInsight = getSymptomInsight(
   phaseInsight.phase,
   selectedSymptoms,
 );
-const greeting = getGreeting('Sheena');
+const greeting = getSmartGreeting();
+
+const moreForYouItems = symptomInsight
+  ? [
+      {
+        id: 'insight',
+        emoji: '🧠',
+        title: 'Personalized Insight',
+        summary: "We've noticed something interesting...",
+        content: (
+          <PersonalizedInsightCard
+            title={symptomInsight.title}
+            message={symptomInsight.message}
+            supportTips={symptomInsight.supportTips}
+          />
+        ),
+      },
+    ]
+  : [];
+
 return (
     <ScrollView
       style={styles.screen}
@@ -176,11 +178,13 @@ return (
           THE HOT MESS HORMONE CLUB
         </Text>
 
-        <Text style={styles.greeting}>{greeting}</Text>
+      <Text style={styles.greeting}>
+  {greeting.emoji} {greeting.title}
+</Text>
 
-        <Text style={styles.subtitle}>
-          Your body has notes today.
-        </Text>
+<Text style={styles.subtitle}>
+  {greeting.subtitle}
+</Text>
       </View>
 
 <MorningBriefingCard
@@ -227,6 +231,28 @@ return (
   }}
 />
 */}
+
+<View style={styles.feralLevelCard}>
+  <Text style={styles.feralLevelEyebrow}>
+    TODAY&apos;S FERAL FORECAST
+  </Text>
+
+  <Text style={styles.feralLevelTitle}>
+    {feralLevel.emoji} {feralLevel.title}
+  </Text>
+
+  <Text style={styles.feralLevelMeter}>
+    {feralLevel.meter}
+  </Text>
+
+  <Text style={styles.feralLevelDescription}>
+    {feralLevel.description}
+  </Text>
+
+  <Text style={styles.feralLevelRecommendation}>
+    {feralLevel.recommendation}
+  </Text>
+</View>
 
 <QuickLogHub
   selectedMood={selectedMood}
@@ -280,6 +306,10 @@ onFlowSave={async (
     startsNewPeriod: startsNewPeriodValue,
   });
 }}
+/>
+
+<MoreForYouCard
+  items={moreForYouItems}
 />
 
 <Modal
@@ -1003,6 +1033,51 @@ periodStartDescription: {
 
 saveButtonDisabled: {
   opacity: 0.45,
+},
+
+feralLevelCard: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.border,
+  borderWidth: 1,
+  borderRadius: 20,
+  padding: Spacing.lg,
+  gap: Spacing.sm,
+},
+
+feralLevelEyebrow: {
+  color: Colors.gold,
+  fontSize: 12,
+  fontWeight: '800',
+  letterSpacing: 1.5,
+},
+
+feralLevelTitle: {
+  color: Colors.text,
+  fontSize: 24,
+  fontWeight: '800',
+},
+
+feralLevelMeter: {
+  color: Colors.gold,
+  fontSize: 22,
+  letterSpacing: 3,
+},
+
+feralLevelDescription: {
+  color: Colors.text,
+  fontSize: 16,
+  lineHeight: 23,
+},
+
+feralLevelRecommendation: {
+  color: Colors.textSecondary,
+  fontSize: 15,
+  lineHeight: 22,
+},
+
+moreForYouText: {
+  color: Colors.textSecondary,
+  lineHeight: 22,
 },
 
 });

@@ -257,3 +257,74 @@ It feels like the beginning of something genuinely meaningful.
 Today was one of those milestone days where progress wasn't measured by how many lines of code were written, but by how the app made us feel. Seeing the first version of the hormone battery component and the redesigned Daily Briefing on screen made the vision tangible for the first time. It finally feels like HMHC has its own identity.
 
 The foundation is now solid. From here, every new feature builds on something that's already beautiful instead of patching together disconnected pieces.
+
+🗓️ August 2, 2026
+🧱 Milestone: Daily Check-In Foundation Complete
+
+Today felt like a real developer day.
+
+We successfully completed the foundation for the new Daily Check-In feature.
+
+✅ Completed
+Refactored the old Quick Log into a shared architecture.
+Built reusable screens for Mood, Symptoms, and Flow.
+Implemented a shared QuickLogModal.
+Mood logging now saves correctly.
+Symptoms logging now saves correctly.
+Flow logging now saves correctly.
+All three persist after refresh.
+🐛 Bug of the Day
+
+Flow kept crashing with the dreaded:
+
+Cannot read properties of null (reading 'inst')
+
+After chasing modals, callbacks, React Native Web, AsyncStorage, and component architecture, we finally found the real culprit.
+
+The Flow state hooks had accidentally been declared outside the HomeScreen component.
+
+Moving them inside immediately resolved the crash.
+
+A tiny mistake...
+
+...that taught a huge lesson.
+
+🧠 Things I Learned
+
+Today was the first day I genuinely felt like I started understanding how React works instead of just copying code.
+
+Things that clicked:
+
+Hooks belong inside components.
+Props pass information between components.
+State has an owner.
+Components should each have one responsibility.
+When debugging, stop guessing and inspect the whole file.
+One bug can have a very misleading error message.
+💡 Architecture Decisions
+
+Instead of continuing to add more features, we decided to spend time making the project healthier.
+
+Next step:
+
+Create useHomeDashboard.ts
+Begin moving dashboard logic out of HomeScreen
+Make the codebase easier to grow as the app expands
+
+Future Sheena will appreciate today's decisions.
+
+❤️ Personal Win
+
+There were several moments today where I wanted to quit.
+
+I didn't.
+
+I kept asking questions.
+
+I kept learning.
+
+I kept laying one brick at a time.
+
+Today didn't just make the app better.
+
+It made me a better developer.
