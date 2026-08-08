@@ -44,6 +44,15 @@ import MoreForYouCard from '@/components/home/MoreForYouCard';
 import DailyWinsCard from '@/components/home/DailyWinsCard';
 import { getDailyWins } from '@/lib/wins';
 
+import {
+  getCycleDayFromPeriodStart,
+  getMostRecentPeriodStart,
+} from '@/lib/cycleTracking';
+
+import {
+  getCheckInStreak,
+} from '@/lib/companion/memory';
+
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
   { emoji: '✨', label: 'Thriving' },
@@ -92,10 +101,38 @@ const [selectedFlow, setSelectedFlow] =
 const [startsNewPeriod, setStartsNewPeriod] =
   useState(false);
 
+const [endsPeriod, setEndsPeriod] =
+  useState(false);
+
 const {
   journalEntries,
   setJournalEntries,
 } = dashboard;
+
+const checkInStreak =
+  getCheckInStreak(journalEntries);
+
+  const yesterday = new Date();
+
+yesterday.setDate(
+  yesterday.getDate() - 1,
+);
+
+const yesterdayKey = [
+  yesterday.getFullYear(),
+  String(
+    yesterday.getMonth() + 1,
+  ).padStart(2, '0'),
+  String(
+    yesterday.getDate(),
+  ).padStart(2, '0'),
+].join('-');
+
+const yesterdayEntry =
+  journalEntries.find(
+    (entry) =>
+      entry.date === yesterdayKey,
+  );
 
 const toggleSymptom = (label: string) => {
   setSelectedSymptoms((currentSymptoms) => {
@@ -108,8 +145,18 @@ const toggleSymptom = (label: string) => {
     return [...currentSymptoms, label];
   });
 };
-  const cycleDay = 18;
-  const forecast = getFeralForecast(cycleDay);
+  const lastPeriodStart =
+  getMostRecentPeriodStart(journalEntries);
+
+const cycleDay =
+  lastPeriodStart
+    ? getCycleDayFromPeriodStart(
+        lastPeriodStart,
+      )
+    : 18;
+
+const forecast =
+  getFeralForecast(cycleDay);
 
   const today = new Date()
   .toISOString()
@@ -229,8 +276,20 @@ return (
 
 <MorningBriefingCard
   name="Sheena"
-  phase="Luteal"
+  phase={cyclePhase.phase}
   cycleDay={cycleDay}
+  mood={selectedMood}
+  symptoms={selectedSymptoms}
+  checkInStreak={checkInStreak}
+  yesterdayMood={
+    yesterdayEntry?.mood ?? null
+  }
+  yesterdaySymptoms={
+    yesterdayEntry?.symptoms ?? []
+  }
+  yesterdayFlow={
+    yesterdayEntry?.flow ?? null
+  }
 />
 
 <FeralForecastCard
@@ -238,6 +297,7 @@ return (
   brainFogForecast={forecast.brainFogForecast}
   patienceForecast={forecast.patienceForecast}
   survivalStrategy={forecast.survivalStrategy}
+  feralLevel={feralLevel}
 />
 
 <HormoneBriefingCard
@@ -246,14 +306,6 @@ return (
   description={cyclePhase.description}
   encouragement={cyclePhase.encouragement}
 />
-
-{symptomInsight && (
-  <PersonalizedInsightCard
-    title={symptomInsight.title}
-    message={symptomInsight.message}
-    supportTips={symptomInsight.supportTips}
-  />
-)}
 
 <MissionCard mission={phaseInsight.mission} />
 
@@ -272,33 +324,12 @@ return (
 />
 */}
 
-<View style={styles.feralLevelCard}>
-  <Text style={styles.feralLevelEyebrow}>
-    TODAY&apos;S FERAL FORECAST
-  </Text>
-
-  <Text style={styles.feralLevelTitle}>
-    {feralLevel.emoji} {feralLevel.title}
-  </Text>
-
-  <Text style={styles.feralLevelMeter}>
-    {feralLevel.meter}
-  </Text>
-
-  <Text style={styles.feralLevelDescription}>
-    {feralLevel.description}
-  </Text>
-
-  <Text style={styles.feralLevelRecommendation}>
-    {feralLevel.recommendation}
-  </Text>
-</View>
-
 <QuickLogHub
   selectedMood={selectedMood}
   selectedSymptoms={selectedSymptoms}
   selectedFlow={selectedFlow}
   startsNewPeriod={startsNewPeriod}
+  endsPeriod={endsPeriod}
   onMoodSelect={async (value) => {
     setSelectedMood(value);
 
@@ -327,9 +358,11 @@ return (
 onFlowSave={async (
   flow,
   startsNewPeriodValue,
+  endsPeriodValue,
 ) => {
   setSelectedFlow(flow);
   setStartsNewPeriod(startsNewPeriodValue);
+  setEndsPeriod(endsPeriodValue);
 
   await AsyncStorage.setItem(
     'todaysFlow',
@@ -338,12 +371,24 @@ onFlowSave={async (
 
   await AsyncStorage.setItem(
     'startsNewPeriod',
-    JSON.stringify(startsNewPeriodValue),
+    JSON.stringify(
+      startsNewPeriodValue,
+    ),
+  );
+
+  await AsyncStorage.setItem(
+    'endsPeriod',
+    JSON.stringify(
+      endsPeriodValue,
+    ),
   );
 
   await saveTodayToJournal({
     flow,
-    startsNewPeriod: startsNewPeriodValue,
+    startsNewPeriod:
+      startsNewPeriodValue,
+    endsPeriod:
+      endsPeriodValue,
   });
 }}
 />
@@ -1073,46 +1118,6 @@ periodStartDescription: {
 
 saveButtonDisabled: {
   opacity: 0.45,
-},
-
-feralLevelCard: {
-  backgroundColor: Colors.surface,
-  borderColor: Colors.border,
-  borderWidth: 1,
-  borderRadius: 20,
-  padding: Spacing.lg,
-  gap: Spacing.sm,
-},
-
-feralLevelEyebrow: {
-  color: Colors.gold,
-  fontSize: 12,
-  fontWeight: '800',
-  letterSpacing: 1.5,
-},
-
-feralLevelTitle: {
-  color: Colors.text,
-  fontSize: 24,
-  fontWeight: '800',
-},
-
-feralLevelMeter: {
-  color: Colors.gold,
-  fontSize: 22,
-  letterSpacing: 3,
-},
-
-feralLevelDescription: {
-  color: Colors.text,
-  fontSize: 16,
-  lineHeight: 23,
-},
-
-feralLevelRecommendation: {
-  color: Colors.textSecondary,
-  fontSize: 15,
-  lineHeight: 22,
 },
 
 moreForYouText: {

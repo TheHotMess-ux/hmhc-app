@@ -7,12 +7,17 @@ import { Colors } from '@/theme/colors';
 
 import InfoRow from '@/components/InfoRow';
 
+import SectionHeading from '@/components/SectionHeading';
+
+import { getDailyReflection } from '@/lib/dailyReflection';
+
 type Entry = {
   mood: string | null;
   symptoms: string[];
   cycleDay: number;
   flow?: FlowLevel | null;
   startsNewPeriod?: boolean;
+  endsPeriod?: boolean;
 };
 
 type Props = {
@@ -28,14 +33,35 @@ export default function SelectedDayCard({
     ? getCyclePhase(entry.cycleDay)
     : null;
 
+    const reflection =
+  entry && phase
+    ? getDailyReflection({
+        mood: entry.mood,
+        symptoms: entry.symptoms,
+        flow: entry.flow,
+        phaseTitle: phase.title,
+      })
+    : null;
+
   return (
     
     <View style={styles.card}>
     <Text style={styles.eyebrow}>DAILY SNAPSHOT</Text>
     <Text style={styles.date}>{formattedDate}</Text>
 
+{reflection && (
+  <Text style={styles.dailyReflection}>
+    {reflection}
+  </Text>
+)}
+
       {entry ? (
         <View style={styles.content}>
+
+        <SectionHeading
+          emoji="🌿"
+          title="Your Body Today"
+/>
           <InfoRow
   emoji="😊"
   label="Mood"
@@ -48,12 +74,14 @@ export default function SelectedDayCard({
   value={
     entry.flow && entry.flow !== 'None'
       ? entry.flow
-      : 'Not logged'
+      : 'No bleeding logged'
   }
   secondaryValue={
     entry.startsNewPeriod
-      ? 'First day of a new period'
-      : undefined
+      ? 'First day of period'
+      : entry.endsPeriod
+        ? 'Last day of period'
+        : undefined
   }
 />
 
@@ -78,7 +106,7 @@ export default function SelectedDayCard({
 
 <InfoRow
   emoji={phase?.emoji}
-  label="Cycle"
+  label="Cycle phase"
   value={phase?.title ?? 'Unknown'}
   secondaryValue={`Day ${entry.cycleDay}`}
   accentColor={phase?.color}
@@ -86,9 +114,10 @@ export default function SelectedDayCard({
 
 {phase && (
   <View style={styles.hormoneSection}>
-    <Text style={styles.label}>
-      HORMONE SNAPSHOT
-    </Text>
+    <SectionHeading
+      emoji="🧬"
+      title="Hormone Snapshot"
+/>
 
     <View style={styles.hormoneList}>
       <HormoneBattery
@@ -118,19 +147,23 @@ export default function SelectedDayCard({
 {phase && (
   <>
     <View style={styles.insightSection}>
-      <Text style={styles.sectionTitle}>
-        💡 WHAT THIS MEANS
-      </Text>
+     <SectionHeading
+      emoji="💡"
+      title="Understanding Today"
+/>
 
+<Text style={styles.subsectionTitle}>
+  What This Means
+</Text>
       <Text style={styles.bodyText}>
         {phase.description}
       </Text>
     </View>
 
     <View style={styles.insightSection}>
-      <Text style={styles.sectionTitle}>
-        🎯 TODAY&apos;S FOCUS
-      </Text>
+      <Text style={styles.subsectionTitle}>
+  Today&apos;s Focus
+</Text>
 
       <View style={styles.recommendationList}>
         {phase.recommendations.map((recommendation) => (
@@ -145,9 +178,10 @@ export default function SelectedDayCard({
     </View>
 
     <View style={styles.reminderCard}>
-      <Text style={styles.sectionTitle}>
-        💛 GENTLE REMINDER
-      </Text>
+   <SectionHeading
+      emoji="💛"
+      title="Gentle Reminder"
+/>
 
       <Text style={styles.reminderText}>
         {phase.encouragement}
@@ -311,4 +345,19 @@ periodStartNote: {
   fontSize: 13,
   fontWeight: '700',
 },
+dailyReflection: {
+  color: Colors.textSecondary,
+  fontSize: 15,
+  fontStyle: 'italic',
+  lineHeight: 22,
+  marginBottom: 8,
+},
+
+subsectionTitle: {
+  color: Colors.text,
+  fontSize: 16,
+  fontWeight: '700',
+  marginBottom: 4,
+},
+
 });

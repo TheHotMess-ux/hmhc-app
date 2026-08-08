@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import type { FlowLevel } from '@/lib/flow';
@@ -14,40 +14,63 @@ import { Spacing } from '@/theme/spacing';
 type Props = {
   selectedFlow: FlowLevel | null;
   startsNewPeriod: boolean;
+  endsPeriod: boolean;
+
   onSave: (
     flow: FlowLevel,
     startsNewPeriod: boolean,
+    endsPeriod: boolean,
   ) => void | Promise<void>;
 };
 
 export default function FlowScreen({
   selectedFlow,
   startsNewPeriod,
+  endsPeriod,
   onSave,
 }: Props) {
+
   const [draftFlow, setDraftFlow] =
     useState<FlowLevel | null>(selectedFlow);
 
   const [draftStartsNewPeriod, setDraftStartsNewPeriod] =
     useState(startsNewPeriod);
 
+    const [draftEndsPeriod, setDraftEndsPeriod] =
+  useState(endsPeriod);
+
   useEffect(() => {
-    setDraftFlow(selectedFlow);
-    setDraftStartsNewPeriod(startsNewPeriod);
-  }, [selectedFlow, startsNewPeriod]);
+  setDraftFlow(selectedFlow);
+  setDraftStartsNewPeriod(startsNewPeriod);
+  setDraftEndsPeriod(endsPeriod);
+}, [
+  selectedFlow,
+  startsNewPeriod,
+  endsPeriod,
+]);
 
   const canStartNewPeriod =
     draftFlow === 'Light' ||
     draftFlow === 'Moderate' ||
     draftFlow === 'Heavy';
 
-  function selectFlow(flow: FlowLevel) {
-    setDraftFlow(flow);
+    const canEndPeriod =
+  draftFlow !== 'None';
 
-    if (flow === 'None' || flow === 'Spotting') {
-      setDraftStartsNewPeriod(false);
-    }
+  function selectFlow(flow: FlowLevel) {
+  setDraftFlow(flow);
+
+  if (
+    flow === 'None' ||
+    flow === 'Spotting'
+  ) {
+    setDraftStartsNewPeriod(false);
   }
+
+  if (flow === 'None') {
+    setDraftEndsPeriod(false);
+  }
+}
 
   return (
     <View style={styles.container}>
@@ -102,11 +125,15 @@ export default function FlowScreen({
             checked: draftStartsNewPeriod,
           }}
           accessibilityLabel="This starts a new period"
-          onPress={() =>
-            setDraftStartsNewPeriod(
-              (currentValue) => !currentValue,
-            )
-          }
+          onPress={() => {
+  setDraftStartsNewPeriod(
+    (currentValue) => !currentValue,
+  );
+
+  if (!draftStartsNewPeriod) {
+    setDraftEndsPeriod(false);
+  }
+}}
           style={({ pressed }) => [
             styles.periodStartCard,
             draftStartsNewPeriod &&
@@ -139,6 +166,53 @@ export default function FlowScreen({
         </Pressable>
       )}
 
+      {canEndPeriod && (
+  <Pressable
+    accessibilityRole="checkbox"
+    accessibilityState={{
+      checked: draftEndsPeriod,
+    }}
+    accessibilityLabel="This is the last day of my period"
+    onPress={() => {
+      setDraftEndsPeriod(
+        (currentValue) => !currentValue,
+      );
+
+      if (!draftEndsPeriod) {
+        setDraftStartsNewPeriod(false);
+      }
+    }}
+    style={({ pressed }) => [
+      styles.periodStartCard,
+      draftEndsPeriod &&
+        styles.periodStartCardSelected,
+      pressed && styles.optionPressed,
+    ]}>
+    <View
+      style={[
+        styles.checkbox,
+        draftEndsPeriod &&
+          styles.checkboxSelected,
+      ]}>
+      {draftEndsPeriod && (
+        <Text style={styles.checkboxCheck}>
+          ✓
+        </Text>
+      )}
+    </View>
+
+    <View style={styles.periodStartText}>
+      <Text style={styles.periodStartTitle}>
+        This is the last day of my period
+      </Text>
+
+      <Text style={styles.periodStartDescription}>
+        This helps us track how long your bleeding lasts over time.
+      </Text>
+    </View>
+  </Pressable>
+)}
+
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Save bleeding"
@@ -149,11 +223,14 @@ export default function FlowScreen({
           }
 
           onSave(
-            draftFlow,
-            canStartNewPeriod
-              ? draftStartsNewPeriod
-              : false,
-          );
+  draftFlow,
+  canStartNewPeriod
+    ? draftStartsNewPeriod
+    : false,
+  canEndPeriod
+    ? draftEndsPeriod
+    : false,
+);
         }}
         style={({ pressed }) => [
           styles.saveButton,

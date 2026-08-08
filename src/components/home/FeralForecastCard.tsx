@@ -8,6 +8,14 @@ type Props = {
   brainFogForecast: string;
   patienceForecast: string;
   survivalStrategy: string[];
+
+  feralLevel: {
+    emoji: string;
+    title: string;
+    meter: string;
+    description: string;
+    recommendation: string;
+  };
 };
 
 export default function FeralForecastCard({
@@ -15,13 +23,37 @@ export default function FeralForecastCard({
   brainFogForecast,
   patienceForecast,
   survivalStrategy,
+  feralLevel,
 }: Props) {
   return (
+
     <View style={styles.card}>
-      <Text style={styles.title}>🌤️ FERAL FORECAST</Text>
+      <Text style={styles.title}>🔥 YOUR FERAL FORECAST</Text>
+
+    <View style={styles.feralLevelCard}>
+  <Text style={styles.feralLevelEyebrow}>
+    Powered by today's check-in 
+  </Text>
+
+  <Text style={styles.feralLevelTitle}>
+    {feralLevel.emoji} {feralLevel.title}
+  </Text>
+
+  <Text style={styles.feralLevelMeter}>
+    {feralLevel.meter}
+  </Text>
+
+  <Text style={styles.feralLevelDescription}>
+    {feralLevel.description}
+  </Text>
+
+  <Text style={styles.feralLevelRecommendation}>
+    {feralLevel.recommendation}
+  </Text>
+</View>
 
       <Text style={styles.subtitle}>
-        Today's conditions
+        Here's what we're working with today
       </Text>
 
       <View style={styles.row}>
@@ -102,4 +134,42 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
   },
+
+  feralLevelCard: {
+  backgroundColor: "#26242B",
+  borderRadius: 18,
+  padding: 16,
+  gap: 8,
+},
+
+feralLevelEyebrow: {
+  color: "#D4AF37",
+  fontSize: 11,
+  fontWeight: "800",
+  letterSpacing: 1,
+},
+
+feralLevelTitle: {
+  color: "#ECE8EF",
+  fontSize: 22,
+  fontWeight: "800",
+},
+
+feralLevelMeter: {
+  color: "#D4AF37",
+  fontSize: 20,
+  letterSpacing: 3,
+},
+
+feralLevelDescription: {
+  color: "#ECE8EF",
+  fontSize: 15,
+  lineHeight: 22,
+},
+
+feralLevelRecommendation: {
+  color: "#AFA9B6",
+  fontSize: 14,
+  lineHeight: 20,
+},
 });

@@ -18,6 +18,7 @@ type Props = {
   bodyLoadColor?: string;
   flow?: FlowLevel | null;
   startsNewPeriod?: boolean;
+  endsPeriod?: boolean;
   onPress: () => void;
 };
 
@@ -31,8 +32,10 @@ export default function CalendarDay({
   bodyLoadColor,
   flow,
   startsNewPeriod = false,
+  endsPeriod = false,
   onPress,
 }: Props) {
+
   const hasBleeding =
     flow &&
     flow !== 'None';
@@ -117,18 +120,26 @@ export default function CalendarDay({
           )}
         </View>
 
-        {hasBleeding && (
-          <View
-            style={[
-              styles.flowMarker,
-              {
-                width: getFlowMarkerWidth(),
-              },
-              flow === 'Spotting' &&
-                styles.spottingMarker,
-            ]}
-          />
-        )}
+{hasBleeding && (
+  <View
+    style={[
+      styles.flowMarker,
+      {
+        width: getFlowMarkerWidth(),
+      },
+      flow === 'Spotting' &&
+        styles.spottingMarker,
+    ]}
+  />
+)}
+
+{endsPeriod && (
+  <View style={styles.periodEndMarker}>
+    <Text style={styles.periodEndText}>
+      END
+    </Text>
+  </View>
+)}
       </Pressable>
     </View>
   );
@@ -223,4 +234,21 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
+
+  periodEndMarker: {
+  marginTop: 2,
+  paddingHorizontal: 5,
+  paddingVertical: 1,
+  borderRadius: 999,
+  borderWidth: 1,
+  borderColor: Colors.gold,
+},
+
+periodEndText: {
+  color: Colors.gold,
+  fontSize: 7,
+  fontWeight: '800',
+  letterSpacing: 0.5,
+},
+
 });

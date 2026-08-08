@@ -12,6 +12,7 @@ type Props = {
   selectedSymptoms: string[];
   selectedFlow: FlowLevel | null;
   startsNewPeriod: boolean;
+  endsPeriod: boolean;
 
   onMoodSelect: (
     mood: string,
@@ -22,9 +23,10 @@ type Props = {
   ) => void | Promise<void>;
 
   onFlowSave: (
-    flow: FlowLevel,
-    startsNewPeriod: boolean,
-  ) => void | Promise<void>;
+  flow: FlowLevel,
+  startsNewPeriod: boolean,
+  endsPeriod: boolean,
+) => void | Promise<void>;
 };
 
 export default function QuickLogHub({
@@ -32,6 +34,7 @@ export default function QuickLogHub({
   selectedSymptoms,
   selectedFlow,
   startsNewPeriod,
+  endsPeriod,
   onMoodSelect,
   onSymptomsSave,
   onFlowSave,
@@ -44,7 +47,7 @@ export default function QuickLogHub({
       <QuickLogCard
         selectedMood={selectedMood}
         selectedSymptoms={selectedSymptoms}
-        selectedFlow={null}        
+        selectedFlow={selectedFlow}       
         onMoodPress={() => setActiveQuickLog('mood')}
         onSymptomsPress={() =>
           setActiveQuickLog('symptoms')
@@ -55,16 +58,17 @@ export default function QuickLogHub({
       {activeQuickLog !== null && (
         <QuickLogModal
           visible
-          activeLog={activeQuickLog}
-          selectedMood={selectedMood}
-          selectedSymptoms={selectedSymptoms}
-          selectedFlow={selectedFlow}
-          startsNewPeriod={startsNewPeriod}
-          onMoodSelect={onMoodSelect}
-          onSymptomsSave={onSymptomsSave}
-          onFlowSave={onFlowSave}
-          onClose={() => setActiveQuickLog(null)}
-        />
+  activeLog={activeQuickLog}
+  selectedMood={selectedMood}
+  selectedSymptoms={selectedSymptoms}
+  selectedFlow={selectedFlow}
+  startsNewPeriod={startsNewPeriod}
+  endsPeriod={endsPeriod}
+  onMoodSelect={onMoodSelect}
+  onSymptomsSave={onSymptomsSave}
+  onFlowSave={onFlowSave}
+  onClose={() => setActiveQuickLog(null)}
+/>
       )}
     </View>
   );

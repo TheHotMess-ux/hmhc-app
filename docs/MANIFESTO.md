@@ -1,3 +1,13 @@
+HMHC exists because every woman deserves someone in her corner.
+
+We believe information is powerful, but kindness is unforgettable.
+
+Every feature we build should reduce mental load, validate lived experience, and leave a woman feeling just a little lighter than she did five minutes ago.
+
+If we ever have to choose between adding another feature or making one woman feel seen, we choose the woman.
+
+"I want women to have a companion in their pocket that helps get them through their day."
+
 We are not building another wellness app.
 
 We are building a place where women feel understood.

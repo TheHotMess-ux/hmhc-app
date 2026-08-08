@@ -25,6 +25,7 @@ export type DailyEntry = {
   symptoms: string[];
   flow?: FlowLevel;
 startsNewPeriod?: boolean;
+endsPeriod?: boolean;
 };
 
 const pepTalks = [

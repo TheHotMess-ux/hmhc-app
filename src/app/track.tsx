@@ -1,18 +1,43 @@
-import { useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
+
 import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useFocusEffect } from '@react-navigation/native';
 
 import CalendarDay from '@/components/CalendarDay';
 import CalendarHeader from '@/components/CalendarHeader';
 import SelectedDayCard from '@/components/SelectedDayCard';
 
 import { getCyclePhase } from '@/lib/cycle';
-import { loadJournalEntries } from '@/lib/journal';
+import {
+  getCycleDayFromPeriodStart,
+  getCycleLengthHistory,
+  getLatestCycleLength,
+  getLatestPeriodDuration,
+  getMostRecentPeriodStart,
+} from '@/lib/cycleTracking';
+
+import {
+  loadJournalEntries
+} from '@/lib/journal';
+
+
+import {
+  getCyclePatternInsight,
+  getCycleTrendMessage,
+} from '@/lib/cycleInsights';
+
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
@@ -142,40 +167,102 @@ function getBodyLoadColor(
 export default function TrackScreen() {
   const today = useMemo(() => new Date(), []);
 
-  const referenceDate = useMemo(() => new Date(), []);
-
-  const [visibleMonth, setVisibleMonth] = useState(
-    new Date(today.getFullYear(), today.getMonth(), 1),
+  const referenceDate = useMemo(
+    () => new Date(),
+    [],
   );
 
-  const [selectedDate, setSelectedDate] = useState(today);
+  const [visibleMonth, setVisibleMonth] =
+    useState(
+      new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1,
+      ),
+    );
 
-  const [journalEntries, setJournalEntries] =
-    useState<JournalEntry[]>([]);
+  const [selectedDate, setSelectedDate] =
+    useState(today);
 
-  useEffect(() => {
-    async function loadEntries() {
-      try {
-        const savedEntries = await loadJournalEntries();
+  const [
+    journalEntries,
+    setJournalEntries,
+  ] = useState<JournalEntry[]>([]);
 
-        setJournalEntries(savedEntries);
-      } catch (error) {
-        console.error(
-          'Unable to load journal entries:',
-          error,
-        );
-      }
-    }
+  const lastPeriodStart =
+    getMostRecentPeriodStart(
+      journalEntries,
+    );
 
-    loadEntries();
-  }, []);
+  const trackedCycleDay =
+    lastPeriodStart
+      ? getCycleDayFromPeriodStart(
+          lastPeriodStart,
+          today,
+        )
+      : null;
+
+  const latestPeriodDuration =
+    getLatestPeriodDuration(
+      journalEntries,
+    );
+
+  const latestCycleLength =
+    getLatestCycleLength(
+      journalEntries,
+    );
+
+  const cycleLengthHistory =
+    getCycleLengthHistory(
+      journalEntries,
+    );
+
+  const {
+    recentCycleLengths,
+    averageCycleLength,
+    shortestCycle,
+    longestCycle,
+    cycleVariation,
+    trend,
+  } = getCyclePatternInsight(
+    cycleLengthHistory,
+  );
+
+  const cycleTrendMessage =
+    getCycleTrendMessage(trend);
 
   const calendarDays = useMemo(
-    () => createCalendarDays(visibleMonth),
+    () =>
+      createCalendarDays(
+        visibleMonth,
+      ),
     [visibleMonth],
   );
 
-  const monthLabel = visibleMonth.toLocaleDateString(
+  useFocusEffect(
+    useCallback(() => {
+      async function loadEntries() {
+        try {
+          const savedEntries =
+            await loadJournalEntries();
+
+          setJournalEntries(
+            savedEntries,
+          );
+        } catch (error) {
+          console.error(
+            'Unable to load journal entries:',
+            error,
+          );
+        }
+      }
+
+      void loadEntries();
+    }, []),
+  );
+
+const monthLabel =
+  visibleMonth.toLocaleDateString(
     'en-CA',
     {
       month: 'long',
@@ -191,15 +278,14 @@ const todayEntry = journalEntries.find(
 );
 
 const todayCycleDay =
+  trackedCycleDay ??
   todayEntry?.cycleDay ??
-  getEstimatedCycleDay(
-    today,
-    referenceDate,
-    REFERENCE_CYCLE_DAY,
-    ESTIMATED_CYCLE_LENGTH,
-  );
+  null;
 
-const todayPhase = getCyclePhase(todayCycleDay);
+const todayPhase =
+  todayCycleDay !== null
+    ? getCyclePhase(todayCycleDay)
+    : null;
 
 const todayMood =
   todayEntry?.mood ?? 'Not logged';
@@ -262,18 +348,39 @@ const todayStatus =
           </Text>
         </View>
 
+
         <View style={styles.todayCard}>
   <View style={styles.todayHeader}>
     <View>
       <Text style={styles.todayEyebrow}>TODAY</Text>
 
       <Text style={styles.todayPhase}>
-        {todayPhase.emoji} {todayPhase.title}
+        {todayPhase
+  ? `${todayPhase.emoji} ${todayPhase.title}`
+  : 'Cycle tracking not started'}
       </Text>
 
       <Text style={styles.todayCycleDay}>
-        Cycle day {todayCycleDay}
+        {todayCycleDay !== null
+  ? `Cycle day ${todayCycleDay}`
+  : 'Log the first day of your period to begin cycle tracking'}
       </Text>
+
+      {latestPeriodDuration !== null && (
+  <Text style={styles.periodDuration}>
+    Last period: {latestPeriodDuration}{' '}
+    {latestPeriodDuration === 1
+      ? 'day'
+      : 'days'}
+  </Text>
+)}
+
+{latestCycleLength !== null && (
+  <Text style={styles.periodDuration}>
+    Last cycle: {latestCycleLength} days
+  </Text>
+)}
+
     </View>
 
     <View
@@ -321,6 +428,98 @@ const todayStatus =
   </Text>
 </View>
 
+{cycleLengthHistory.length >= 2 && (
+  <View style={styles.cycleHistoryCard}>
+    <Text style={styles.cycleHistoryEyebrow}>
+      CYCLE HISTORY
+    </Text>
+
+    <Text style={styles.cycleHistoryTitle}>
+      Your recent completed cycles
+    </Text>
+
+    <Text style={styles.cycleHistoryText}>
+      {cycleLengthHistory
+        .slice(-4)
+        .map((length) => `${length} days`)
+        .join(' • ')}
+    </Text>
+
+    <Text style={styles.cycleHistoryNote}>
+      Based on your logged period start dates.
+    </Text>
+  </View>
+)}
+
+{averageCycleLength !== null &&
+  shortestCycle !== null &&
+  longestCycle !== null && (
+    <View style={styles.cyclePatternCard}>
+      <Text style={styles.cyclePatternEyebrow}>
+        YOUR CYCLE PATTERN
+      </Text>
+
+      <Text style={styles.cyclePatternTitle}>
+        Here’s what your recent cycles are showing
+      </Text>
+
+      <View style={styles.cyclePatternGrid}>
+        <View style={styles.cyclePatternItem}>
+          <Text style={styles.cyclePatternLabel}>
+            Average
+          </Text>
+
+          <Text style={styles.cyclePatternValue}>
+            {averageCycleLength} days
+          </Text>
+        </View>
+
+        <View style={styles.cyclePatternItem}>
+          <Text style={styles.cyclePatternLabel}>
+            Recent range
+          </Text>
+
+          <Text style={styles.cyclePatternValue}>
+            {shortestCycle}–{longestCycle} days
+          </Text>
+        </View>
+      </View>
+
+     {recentCycleLengths.length >= 3 &&
+  cycleVariation !== null && (
+    <View style={styles.variabilityCard}>
+      <Text style={styles.variabilityTitle}>
+        Your recent cycles have varied by{' '}
+        {cycleVariation} days.
+      </Text>
+
+      <Text style={styles.variabilityText}>
+        Cycle length can shift over time,
+        especially during perimenopause. We’ll
+        keep tracking your pattern as you log
+        more cycles.
+      </Text>
+    </View>
+  )} 
+
+{cycleTrendMessage && (
+  <View style={styles.trendCard}>
+    <Text style={styles.trendTitle}>
+      {cycleTrendMessage.title}
+    </Text>
+
+    <Text style={styles.trendText}>
+      {cycleTrendMessage.body}
+    </Text>
+  </View>
+)}
+
+      <Text style={styles.cyclePatternNote}>
+        Based on your most recent completed cycles. We’ll learn more about your pattern as you keep logging.
+      </Text>
+    </View>
+  )}
+
         <View style={styles.calendarCard}>
           <CalendarHeader
             monthLabel={monthLabel}
@@ -365,18 +564,36 @@ const todayStatus =
               const bodyLoad =
                 entry?.symptoms?.length ?? 0;
 
-              const estimatedCycleDay =
-                getEstimatedCycleDay(
-                  date,
-                  referenceDate,
-                  REFERENCE_CYCLE_DAY,
-                  ESTIMATED_CYCLE_LENGTH,
-                );
+              const periodStartDate =
+  lastPeriodStart
+    ? new Date(
+        `${lastPeriodStart}T12:00:00`,
+      )
+    : null;
 
-              const cycleDay =
-                entry?.cycleDay ?? estimatedCycleDay;
+const isOnOrAfterPeriodStart =
+  periodStartDate !== null &&
+  date.getTime() >=
+    periodStartDate.getTime();
 
-              const phase = getCyclePhase(cycleDay);
+const trackedDateCycleDay =
+  lastPeriodStart &&
+  isOnOrAfterPeriodStart
+    ? getCycleDayFromPeriodStart(
+        lastPeriodStart,
+        date,
+      )
+    : null;
+
+const cycleDay =
+  trackedDateCycleDay ??
+  entry?.cycleDay ??
+  null;
+
+const phase =
+  cycleDay !== null
+    ? getCyclePhase(cycleDay)
+    : null;
 
               const bodyLoadColor =
                 getBodyLoadColor(bodyLoad);
@@ -388,11 +605,12 @@ const todayStatus =
   isToday={isToday}
   isSelected={isSelected}
   hasEntry={Boolean(entry)}
-  phaseColor={phase.color}
+  phaseColor={phase?.color}
   moodEmoji={moodEmoji}
   bodyLoadColor={bodyLoadColor}
   flow={entry?.flow}
   startsNewPeriod={entry?.startsNewPeriod}
+  endsPeriod={entry?.endsPeriod}
   onPress={() => selectDay(date)}
 />
               );
@@ -442,6 +660,8 @@ const todayStatus =
       </ScrollView>
     </SafeAreaView>
   );
+
+
 }
 
 const styles = StyleSheet.create({
@@ -618,6 +838,12 @@ todayCycleDay: {
   marginTop: 4,
 },
 
+periodDuration: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  marginTop: 4,
+},
+
 statusBadge: {
   backgroundColor: Colors.surfaceLight,
   borderColor: Colors.border,
@@ -669,6 +895,134 @@ todayMessage: {
   color: Colors.textSecondary,
   fontSize: 14,
   lineHeight: 21,
+},
+
+cycleHistoryCard: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.border,
+  borderRadius: 20,
+  borderWidth: 1,
+  padding: Spacing.lg,
+  gap: Spacing.sm,
+},
+
+cycleHistoryEyebrow: {
+  color: Colors.gold,
+  fontSize: 11,
+  fontWeight: '800',
+  letterSpacing: 1.5,
+},
+
+cycleHistoryTitle: {
+  color: Colors.text,
+  fontSize: 18,
+  fontWeight: '800',
+},
+
+cycleHistoryText: {
+  color: Colors.text,
+  fontSize: 16,
+  fontWeight: '700',
+  lineHeight: 23,
+},
+
+cycleHistoryNote: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
+},
+
+cyclePatternCard: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.border,
+  borderRadius: 20,
+  borderWidth: 1,
+  padding: Spacing.lg,
+  gap: Spacing.md,
+},
+
+cyclePatternEyebrow: {
+  color: Colors.gold,
+  fontSize: 11,
+  fontWeight: '800',
+  letterSpacing: 1.5,
+},
+
+cyclePatternTitle: {
+  color: Colors.text,
+  fontSize: 18,
+  fontWeight: '800',
+},
+
+cyclePatternGrid: {
+  flexDirection: 'row',
+  gap: Spacing.md,
+},
+
+cyclePatternItem: {
+  flex: 1,
+  backgroundColor: Colors.surfaceLight,
+  borderRadius: 16,
+  padding: Spacing.md,
+  gap: 6,
+},
+
+cyclePatternLabel: {
+  color: Colors.textSecondary,
+  fontSize: 11,
+  fontWeight: '800',
+  letterSpacing: 0.8,
+  textTransform: 'uppercase',
+},
+
+cyclePatternValue: {
+  color: Colors.text,
+  fontSize: 18,
+  fontWeight: '800',
+},
+
+cyclePatternNote: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
+},
+
+variabilityCard: {
+  backgroundColor: Colors.surfaceLight,
+  borderRadius: 16,
+  padding: Spacing.md,
+  gap: 6,
+},
+
+variabilityTitle: {
+  color: Colors.text,
+  fontSize: 15,
+  fontWeight: '700',
+},
+
+variabilityText: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
+},
+
+trendCard: {
+  backgroundColor: Colors.surfaceLight,
+  borderRadius: 16,
+  padding: Spacing.md,
+  gap: 6,
+},
+
+trendTitle: {
+  color: Colors.text,
+  fontSize: 15,
+  fontWeight: '700',
+},
+
+trendText: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
 },
 
 });

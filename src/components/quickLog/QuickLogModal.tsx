@@ -1,9 +1,9 @@
 import {
-    Modal,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import type { FlowLevel } from '@/lib/flow';
@@ -25,6 +25,7 @@ type Props = {
 
   selectedFlow: FlowLevel | null;
   startsNewPeriod: boolean;
+  endsPeriod: boolean;
 
   onMoodSelect: (
     mood: string,
@@ -35,9 +36,10 @@ type Props = {
   ) => void | Promise<void>;
 
   onFlowSave: (
-    flow: FlowLevel,
-    startsNewPeriod: boolean,
-  ) => void | Promise<void>;
+  flow: FlowLevel,
+  startsNewPeriod: boolean,
+  endsPeriod: boolean,
+) => void | Promise<void>;
 
   onClose: () => void;
 };
@@ -49,11 +51,13 @@ export default function QuickLogModal({
   selectedSymptoms,
   selectedFlow,
   startsNewPeriod,
+  endsPeriod,
   onMoodSelect,
   onSymptomsSave,
   onFlowSave,
   onClose,
 }: Props) {
+
   function getTitle(): string {
     switch (activeLog) {
       case 'mood':
@@ -127,20 +131,26 @@ export default function QuickLogModal({
           )}
 
 {activeLog === 'flow' && (
-  <FlowScreen
-    selectedFlow={selectedFlow}
-    startsNewPeriod={startsNewPeriod}
-    onSave={(flow, startsNewPeriodValue) => {
-      onClose();
 
-      setTimeout(() => {
-        void onFlowSave(
-          flow,
-          startsNewPeriodValue,
-        );
-      }, 0);
-    }}
-  />
+<FlowScreen
+  selectedFlow={selectedFlow}
+  startsNewPeriod={startsNewPeriod}
+  endsPeriod={endsPeriod}
+  onSave={async (
+    flow,
+    startsNewPeriodValue,
+    endsPeriodValue,
+  ) => {
+    await onFlowSave(
+      flow,
+      startsNewPeriodValue,
+      endsPeriodValue,
+    );
+
+    onClose();
+  }}
+/>
+
 )}
 
           {activeLog !== 'mood' &&
