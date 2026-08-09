@@ -225,3 +225,34 @@ export function getCycleLengthHistory(
 
   return cycleLengths;
 }
+
+export function getCycleDayForDate(
+  entries: PeriodEntry[],
+  targetDate: Date,
+): number | null {
+  const targetDateString =
+    formatLocalDate(targetDate);
+
+  const periodStarts = entries
+    .filter(
+      (entry) =>
+        entry.startsNewPeriod === true &&
+        entry.date <= targetDateString,
+    )
+    .sort(
+      (a, b) =>
+        b.date.localeCompare(a.date),
+    );
+
+  const mostRecentStart =
+    periodStarts[0]?.date;
+
+  if (!mostRecentStart) {
+    return null;
+  }
+
+  return getCycleDayFromPeriodStart(
+    mostRecentStart,
+    targetDate,
+  );
+}

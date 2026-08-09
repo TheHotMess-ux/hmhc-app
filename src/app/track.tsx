@@ -5,6 +5,7 @@ import {
 } from 'react';
 
 import {
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,6 +22,7 @@ import SelectedDayCard from '@/components/SelectedDayCard';
 
 import { getCyclePhase } from '@/lib/cycle';
 import {
+  getCycleDayForDate,
   getCycleDayFromPeriodStart,
   getCycleLengthHistory,
   getLatestCycleLength,
@@ -29,14 +31,25 @@ import {
 } from '@/lib/cycleTracking';
 
 import {
-  loadJournalEntries
+  loadJournalEntries,
+  saveJournalEntry,
 } from '@/lib/journal';
-
 
 import {
   getCyclePatternInsight,
   getCycleTrendMessage,
 } from '@/lib/cycleInsights';
+
+import {
+  getNextPeriodPrediction,
+  getPredictionReadiness,
+} from '@/lib/cyclePrediction';
+
+import type { FlowLevel } from '@/lib/flow';
+
+import type { DailyEntry } from '@/lib/dashboard';
+
+import FlowScreen from '@/components/quickLog/FlowScreen';
 
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
@@ -181,6 +194,9 @@ export default function TrackScreen() {
       ),
     );
 
+  const [editingPeriod, setEditingPeriod] =
+    useState(false);
+
   const [selectedDate, setSelectedDate] =
     useState(today);
 
@@ -230,6 +246,45 @@ export default function TrackScreen() {
 
   const cycleTrendMessage =
     getCycleTrendMessage(trend);
+
+    const nextPeriodPrediction =
+  getNextPeriodPrediction(
+    lastPeriodStart,
+    cycleLengthHistory,
+  );
+
+  const predictionReadiness =
+  getPredictionReadiness(
+    lastPeriodStart,
+    cycleLengthHistory,
+  );
+
+  const predictedPeriodDate =
+  nextPeriodPrediction?.predictedDate.toLocaleDateString(
+    'en-CA',
+    {
+      month: 'long',
+      day: 'numeric',
+    },
+  );
+
+const predictedWindowStart =
+  nextPeriodPrediction?.windowStart.toLocaleDateString(
+    'en-CA',
+    {
+      month: 'short',
+      day: 'numeric',
+    },
+  );
+
+const predictedWindowEnd =
+  nextPeriodPrediction?.windowEnd.toLocaleDateString(
+    'en-CA',
+    {
+      month: 'short',
+      day: 'numeric',
+    },
+  );
 
   const calendarDays = useMemo(
     () =>
@@ -327,6 +382,41 @@ const todayStatus =
   function selectDay(date: Date) {
     setSelectedDate(date);
   }
+
+async function saveHistoricalPeriod(
+  flow: FlowLevel,
+  startsNewPeriod: boolean,
+  endsPeriod: boolean,
+) {
+  const selectedCycleDay =
+    getCycleDayForDate(
+      journalEntries,
+      selectedDate,
+    );
+
+  const updatedEntry: DailyEntry = {
+    ...(selectedEntry ?? {}),
+    date: selectedDateKey,
+    cycleDay:
+      selectedEntry?.cycleDay ??
+      selectedCycleDay ??
+      0,
+    mood: selectedEntry?.mood ?? null,
+    symptoms:
+      selectedEntry?.symptoms ?? [],
+    flow,
+    startsNewPeriod,
+    endsPeriod,
+  };
+
+  const updatedEntries =
+    await saveJournalEntry(
+      updatedEntry,
+    );
+
+  setJournalEntries(updatedEntries);
+  setEditingPeriod(false);
+}
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -520,6 +610,54 @@ const todayStatus =
     </View>
   )}
 
+{predictionReadiness === 'ready' &&
+  nextPeriodPrediction &&
+  predictedPeriodDate &&
+  predictedWindowStart &&
+  predictedWindowEnd && (
+    <View style={styles.predictionCard}>
+      <Text style={styles.predictionEyebrow}>
+        NEXT PERIOD ESTIMATE
+      </Text>
+
+      <Text style={styles.predictionTitle}>
+        🩸 Around {predictedPeriodDate}
+      </Text>
+
+      <View style={styles.predictionWindow}>
+        <Text style={styles.predictionWindowLabel}>
+          Likely window
+        </Text>
+
+        <Text style={styles.predictionWindowValue}>
+          {predictedWindowStart} – {predictedWindowEnd}
+        </Text>
+      </View>
+
+      <Text style={styles.predictionNote}>
+        Based on your recent cycle history. Your timing may shift as your cycle changes.
+      </Text>
+    </View>
+  )}
+
+{predictionReadiness !== 'ready' && (
+  <View style={styles.predictionCard}>
+    <Text style={styles.predictionEyebrow}>
+      NEXT PERIOD ESTIMATE
+    </Text>
+
+    <Text style={styles.predictionTitle}>
+      🌱 Learning your rhythm
+    </Text>
+
+    <Text style={styles.predictionNote}>
+      {predictionReadiness === 'not-started'
+        ? 'Log the first day of your period to begin cycle tracking.'
+        : 'Keep logging your period starts. Once we have enough completed cycles, we can begin estimating your next period window.'}
+    </Text>
+  </View>
+)}
+
         <View style={styles.calendarCard}>
           <CalendarHeader
             monthLabel={monthLabel}
@@ -636,10 +774,16 @@ const phase =
           </View>
         </View>
 
-        <SelectedDayCard
-          formattedDate={formatSelectedDate(selectedDate)}
-          entry={selectedEntry}
-        />
+<SelectedDayCard
+  formattedDate={formatSelectedDate(selectedDate)}
+  entry={selectedEntry}
+  onEditPeriod={() =>
+    setEditingPeriod(true)
+  }
+  onAddLog={() =>
+    setEditingPeriod(true)
+  }
+/>
 
         <View style={styles.futureCard}>
           <Text style={styles.futureEyebrow}>
@@ -657,7 +801,35 @@ const phase =
             turning wellness into another job.
           </Text>
         </View>
-      </ScrollView>
+ 
+ </ScrollView>
+
+      <Modal
+        visible={editingPeriod}
+        transparent
+        animationType="fade"
+        onRequestClose={() =>
+          setEditingPeriod(false)
+        }>
+        <View style={styles.editModalBackdrop}>
+          <View style={styles.editModalCard}>
+           <FlowScreen
+  selectedFlow={
+    selectedEntry?.flow ?? null
+  }
+  startsNewPeriod={
+    selectedEntry?.startsNewPeriod ??
+    false
+  }
+  endsPeriod={
+    selectedEntry?.endsPeriod ??
+    false
+  }
+  onSave={saveHistoricalPeriod}
+/>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 
@@ -844,6 +1016,55 @@ periodDuration: {
   marginTop: 4,
 },
 
+predictionCard: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.border,
+  borderRadius: 20,
+  borderWidth: 1,
+  padding: Spacing.lg,
+  gap: Spacing.md,
+},
+
+predictionEyebrow: {
+  color: Colors.gold,
+  fontSize: 11,
+  fontWeight: '800',
+  letterSpacing: 1.5,
+},
+
+predictionTitle: {
+  color: Colors.text,
+  fontSize: 20,
+  fontWeight: '800',
+},
+
+predictionWindow: {
+  backgroundColor: Colors.surfaceLight,
+  borderRadius: 16,
+  padding: Spacing.md,
+  gap: 5,
+},
+
+predictionWindowLabel: {
+  color: Colors.textSecondary,
+  fontSize: 11,
+  fontWeight: '800',
+  letterSpacing: 0.8,
+  textTransform: 'uppercase',
+},
+
+predictionWindowValue: {
+  color: Colors.text,
+  fontSize: 17,
+  fontWeight: '800',
+},
+
+predictionNote: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
+},
+
 statusBadge: {
   backgroundColor: Colors.surfaceLight,
   borderColor: Colors.border,
@@ -1023,6 +1244,22 @@ trendText: {
   color: Colors.textSecondary,
   fontSize: 13,
   lineHeight: 19,
+},
+
+editModalBackdrop: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#00000088',
+  padding: Spacing.lg,
+},
+
+editModalCard: {
+  width: '100%',
+  maxWidth: 620,
+  backgroundColor: Colors.surface,
+  borderRadius: 20,
+  padding: Spacing.lg,
 },
 
 });

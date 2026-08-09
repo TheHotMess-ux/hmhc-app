@@ -66,29 +66,27 @@ export function getCyclePatternInsight(
             recentCycleLengths[index],
         );
 
-    const mostlyShortening =
-      differences.filter(
-        (difference) =>
-          difference < 0,
-      ).length >=
-      differences.length - 1;
+    const consistentlyShortening =
+  differences.every(
+    (difference) =>
+      difference < 0,
+  );
 
-    const mostlyLengthening =
-      differences.filter(
-        (difference) =>
-          difference > 0,
-      ).length >=
-      differences.length - 1;
+const consistentlyLengthening =
+  differences.every(
+    (difference) =>
+      difference > 0,
+  );
 
-    if (cycleVariation <= 2) {
-      trend = 'steady';
-    } else if (mostlyShortening) {
-      trend = 'shortening';
-    } else if (mostlyLengthening) {
-      trend = 'lengthening';
-    } else {
-      trend = 'variable';
-    }
+if (cycleVariation <= 2) {
+  trend = 'steady';
+} else if (consistentlyShortening) {
+  trend = 'shortening';
+} else if (consistentlyLengthening) {
+  trend = 'lengthening';
+} else {
+  trend = 'variable';
+}
   }
 
   return {

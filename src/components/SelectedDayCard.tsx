@@ -1,4 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import HormoneBattery from '@/components/HormoneBattery';
 import { getCyclePhase } from '@/lib/cycle';
@@ -10,6 +15,7 @@ import InfoRow from '@/components/InfoRow';
 import SectionHeading from '@/components/SectionHeading';
 
 import { getDailyReflection } from '@/lib/dailyReflection';
+
 
 type Entry = {
   mood: string | null;
@@ -23,12 +29,18 @@ type Entry = {
 type Props = {
   formattedDate: string;
   entry?: Entry;
+  onEditPeriod?: () => void;
+  onAddLog?: () => void;
 };
+
 
 export default function SelectedDayCard({
   formattedDate,
   entry,
+  onEditPeriod,
+  onAddLog,
 }: Props) {
+
   const phase = entry
     ? getCyclePhase(entry.cycleDay)
     : null;
@@ -112,6 +124,16 @@ export default function SelectedDayCard({
   accentColor={phase?.color}
 />
 
+{entry && onEditPeriod && (
+  <Pressable
+    onPress={onEditPeriod}
+    style={styles.editButton}>
+    <Text style={styles.editButtonText}>
+      Edit period log
+    </Text>
+  </Pressable>
+)}
+
 {phase && (
   <View style={styles.hormoneSection}>
     <SectionHeading
@@ -191,18 +213,27 @@ export default function SelectedDayCard({
 )}
 
         </View>
-      ) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>
-            Nothing logged for this day
-          </Text>
+  ) : (
+  <View style={styles.emptyState}>
+    <Text style={styles.emptyTitle}>
+      Nothing logged for this day
+    </Text>
 
-          <Text style={styles.emptyText}>
-            No shame. No broken streak. This day is simply
-            waiting for information.
-          </Text>
-        </View>
-      )}
+    <Text style={styles.emptyText}>
+      Forgot to check in? No problem. Add what you remember.
+    </Text>
+
+    {onAddLog && (
+      <Pressable
+        onPress={onAddLog}
+        style={styles.editButton}>
+        <Text style={styles.editButtonText}>
+          + Add log for this day
+        </Text>
+      </Pressable>
+    )}
+  </View>
+)}
     </View>
   );
 }
@@ -358,6 +389,20 @@ subsectionTitle: {
   fontSize: 16,
   fontWeight: '700',
   marginBottom: 4,
+},
+
+editButton: {
+  alignSelf: 'flex-start',
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 10,
+  backgroundColor: Colors.surfaceLight,
+},
+
+editButtonText: {
+  color: Colors.gold,
+  fontSize: 13,
+  fontWeight: '700',
 },
 
 });
