@@ -19,6 +19,8 @@ type Props = {
   flow?: FlowLevel | null;
   startsNewPeriod?: boolean;
   endsPeriod?: boolean;
+  isPredictedPeriodWindow?: boolean;
+  isPredictedPeriodDate?: boolean;
   onPress: () => void;
 };
 
@@ -33,6 +35,8 @@ export default function CalendarDay({
   flow,
   startsNewPeriod = false,
   endsPeriod = false,
+  isPredictedPeriodWindow = false,
+  isPredictedPeriodDate = false,
   onPress,
 }: Props) {
 
@@ -61,6 +65,7 @@ export default function CalendarDay({
 
   return (
     <View style={styles.dayCell}>
+
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Select day ${day}`}
@@ -81,6 +86,12 @@ export default function CalendarDay({
           isToday &&
             styles.todayButton,
 
+          isPredictedPeriodWindow &&
+            styles.predictedWindowButton,
+
+          isPredictedPeriodDate &&
+            styles.predictedDateButton,
+
           isSelected &&
             styles.selectedButton,
 
@@ -95,6 +106,12 @@ export default function CalendarDay({
           ]}>
           {day}
         </Text>
+
+        {isPredictedPeriodDate && (
+  <Text style={styles.predictedPeriodMarker}>
+    🩸
+  </Text>
+)}
 
         <View style={styles.statusRow}>
           {moodEmoji && (
@@ -158,6 +175,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 3,
+    position: 'relative',
   },
 
   todayButton: {
@@ -249,6 +267,23 @@ periodEndText: {
   fontSize: 7,
   fontWeight: '800',
   letterSpacing: 0.5,
+},
+
+predictedWindowButton: {
+  borderWidth: 1,
+  borderColor: Colors.goldLight,
+},
+
+predictedDateButton: {
+  borderWidth: 2,
+  borderColor: Colors.gold,
+},
+
+predictedPeriodMarker: {
+  position: 'absolute',
+  top: 6,
+  right: 6,
+  fontSize: 11,
 },
 
 });

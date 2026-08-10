@@ -49,6 +49,14 @@ import type { FlowLevel } from '@/lib/flow';
 
 import type { DailyEntry } from '@/lib/dashboard';
 
+import {
+  getPeriodReminderStatus,
+} from '@/lib/cycleReminder';
+
+import {
+  getPeriodReminderMessage,
+} from '@/lib/cycleReminderMessages';
+
 import FlowScreen from '@/components/quickLog/FlowScreen';
 
 import { Colors } from '@/theme/colors';
@@ -253,11 +261,38 @@ export default function TrackScreen() {
     cycleLengthHistory,
   );
 
-  const predictionReadiness =
+const predictionReadiness =
   getPredictionReadiness(
     lastPeriodStart,
     cycleLengthHistory,
   );
+
+const periodReminderStatus =
+  getPeriodReminderStatus({
+   today,
+    predictionReadiness,
+    prediction:
+      nextPeriodPrediction,
+    hasStartedNewPeriodToday:
+      journalEntries.some(
+        (entry) =>
+          entry.date ===
+            createDateKey(today) &&
+          entry.startsNewPeriod === true,
+      ),
+  });  
+
+  const periodReminderMessage =
+  periodReminderStatus === 'remind'
+    ? getPeriodReminderMessage(
+        new Date().getDate(),
+      )
+    : null;
+
+console.log(
+  'Period reminder status:',
+  periodReminderStatus,
+);
 
   const predictedPeriodDate =
   nextPeriodPrediction?.predictedDate.toLocaleDateString(
@@ -696,6 +731,22 @@ async function saveHistoricalPeriod(
                   journalEntry.date === dateKey,
               );
 
+const isPredictedPeriodWindow =
+  predictionReadiness === 'ready' &&
+  nextPeriodPrediction !== null &&
+  date > today &&
+  date >= nextPeriodPrediction.windowStart &&
+  date <= nextPeriodPrediction.windowEnd;
+
+const isPredictedPeriodDate =
+  predictionReadiness === 'ready' &&
+  nextPeriodPrediction !== null &&
+  date > today &&
+  createDateKey(date) ===
+    createDateKey(
+      nextPeriodPrediction.predictedDate,
+    );
+
               const moodEmoji =
                 entry?.mood?.split(' ')[0];
 
@@ -733,11 +784,12 @@ const phase =
     ? getCyclePhase(cycleDay)
     : null;
 
-              const bodyLoadColor =
-                getBodyLoadColor(bodyLoad);
+const bodyLoadColor =
+    getBodyLoadColor(bodyLoad);
 
-              return (
-              <CalendarDay
+    return (
+
+<CalendarDay
   key={dateKey}
   day={date.getDate()}
   isToday={isToday}
@@ -749,28 +801,52 @@ const phase =
   flow={entry?.flow}
   startsNewPeriod={entry?.startsNewPeriod}
   endsPeriod={entry?.endsPeriod}
+  isPredictedPeriodWindow={
+    isPredictedPeriodWindow
+  }
+  isPredictedPeriodDate={
+    isPredictedPeriodDate
+  }
   onPress={() => selectDay(date)}
 />
               );
             })}
           </View>
 
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <View style={styles.loggedDot} />
+  <View style={styles.legend}>
+  <View style={styles.legendItem}>
+  <View style={styles.loggedDot} />
 
-              <Text style={styles.legendText}>
-                Logged day
+  <Text style={styles.legendText}>
+    Logged day
+ </Text>
+  </View>
+
+  <View style={styles.legendItem}>
+  <View style={styles.bodyLoadDot} />
+
+  <Text style={styles.legendText}>
+          Body load
               </Text>
-            </View>
-
             <View style={styles.legendItem}>
-              <View style={styles.bodyLoadDot} />
+  <View style={styles.predictedWindowLegend} />
 
-              <Text style={styles.legendText}>
-                Body load
-              </Text>
-            </View>
+  <Text style={styles.legendText}>
+    Predicted window
+  </Text>
+</View>
+
+<View style={styles.legendItem}>
+  <Text style={styles.predictedDateLegend}>
+    🩸
+  </Text>
+
+  <Text style={styles.legendText}>
+    Estimated start
+  </Text>
+</View>
+
+ </View>
           </View>
         </View>
 
@@ -1260,6 +1336,18 @@ editModalCard: {
   backgroundColor: Colors.surface,
   borderRadius: 20,
   padding: Spacing.lg,
+},
+
+predictedWindowLegend: {
+  width: 12,
+  height: 12,
+  borderRadius: 4,
+  borderWidth: 1,
+  borderColor: Colors.gold,
+},
+
+predictedDateLegend: {
+  fontSize: 11,
 },
 
 });
