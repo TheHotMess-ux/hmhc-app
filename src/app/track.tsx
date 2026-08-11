@@ -1,7 +1,8 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
-  useState,
+  useState
 } from 'react';
 
 import {
@@ -56,6 +57,13 @@ import {
 import {
   getPeriodReminderMessage,
 } from '@/lib/cycleReminderMessages';
+
+import {
+  configureNotificationChannel,
+  requestNotificationPermissions,
+  schedulePeriodReminder,
+  scheduleTestNotification,
+} from '@/lib/notifications';
 
 import FlowScreen from '@/components/quickLog/FlowScreen';
 
@@ -154,6 +162,7 @@ function getEstimatedCycleDay(
     (dateAtNoon.getTime() - referenceAtNoon.getTime()) /
       millisecondsPerDay,
   );
+
 
   return (
     ((referenceCycleDay - 1 + dayDifference) %
@@ -294,6 +303,24 @@ console.log(
   periodReminderStatus,
 );
 
+function createReminderKey(): string | null {
+  if (!nextPeriodPrediction) {
+    return null;
+  }
+
+  const start =
+    createDateKey(
+      nextPeriodPrediction.windowStart,
+    );
+
+  const end =
+    createDateKey(
+      nextPeriodPrediction.windowEnd,
+    );
+
+  return `${start}_${end}`;
+}
+
   const predictedPeriodDate =
   nextPeriodPrediction?.predictedDate.toLocaleDateString(
     'en-CA',
@@ -403,6 +430,26 @@ const todayStatus =
     );
   }
 
+async function testNotification() {
+  await configureNotificationChannel();
+
+  const hasPermission =
+    await requestNotificationPermissions();
+
+  if (!hasPermission) {
+    console.log(
+      'Notification permission was not granted.',
+    );
+    return;
+  }
+
+  console.log(
+    'Notification permission granted. Scheduling test...',
+  );
+
+  await scheduleTestNotification();
+}
+
   function showNextMonth() {
     setVisibleMonth(
       (currentMonth) =>
@@ -452,6 +499,62 @@ async function saveHistoricalPeriod(
   setJournalEntries(updatedEntries);
   setEditingPeriod(false);
 }
+
+async function scheduleRealPeriodReminder() {
+  if (
+    periodReminderStatus !== 'remind' ||
+    !periodReminderMessage
+  ) {
+    return;
+  }
+
+  const reminderKey =
+    createReminderKey();
+
+  if (!reminderKey) {
+    return;
+  }
+
+  const reminderDate =
+  new Date(
+    nextPeriodPrediction!.windowStart,
+  );
+
+reminderDate.setHours(
+  9,
+  0,
+  0,
+  0,
+);
+
+const now = new Date();
+
+if (reminderDate <= now) {
+  reminderDate.setTime(
+    now.getTime() + 5000,
+  );
+}
+
+  const notificationId =
+   await schedulePeriodReminder(
+  periodReminderMessage,
+  reminderKey,
+  reminderDate,
+);
+
+  console.log(
+    'Period reminder scheduling result:',
+    notificationId,
+  );
+}
+
+useEffect(() => {
+  void scheduleRealPeriodReminder();
+}, [
+  periodReminderStatus,
+  periodReminderMessage,
+]);
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -710,6 +813,8 @@ async function saveHistoricalPeriod(
             ))}
           </View>
 
+        
+
           <View style={styles.calendarGrid}>
             {calendarDays.map((date, index) => {
               if (!date) {
@@ -811,7 +916,7 @@ const bodyLoadColor =
 />
               );
             })}
-          </View>
+          </View>    
 
   <View style={styles.legend}>
   <View style={styles.legendItem}>
@@ -909,8 +1014,8 @@ const bodyLoadColor =
     </SafeAreaView>
   );
 
-
 }
+
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -1348,6 +1453,22 @@ predictedWindowLegend: {
 
 predictedDateLegend: {
   fontSize: 11,
+},
+
+testNotificationButton: {
+  backgroundColor: Colors.gold,
+  borderRadius: 14,
+  paddingVertical: 16,
+  paddingHorizontal: 20,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginVertical: Spacing.md,
+},
+
+testNotificationButtonText: {
+  color: Colors.background,
+  fontSize: 16,
+  fontWeight: '800',
 },
 
 });

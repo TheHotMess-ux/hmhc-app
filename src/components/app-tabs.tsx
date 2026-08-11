@@ -1,4 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { Colors } from '@/theme/colors';
 
@@ -10,6 +17,25 @@ export default function TrackScreen() {
       <Text style={styles.description}>
         Your cycle, moods, symptoms, sleep, and supplements will live here.
       </Text>
+
+<Pressable
+  onPress={() => {
+    router.push('/track');
+  }}
+  style={{
+    marginTop: 12,
+    paddingVertical: 10,
+  }}>
+  <Text
+    style={{
+      color: '#D4AF37',
+      fontSize: 16,
+      fontWeight: '700',
+    }}>
+    Open My Rhythm
+  </Text>
+</Pressable>
+
     </View>
   );
 }

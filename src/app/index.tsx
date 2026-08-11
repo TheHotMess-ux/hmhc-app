@@ -1,3 +1,4 @@
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import {
@@ -52,6 +53,7 @@ import {
 import {
   getCheckInStreak,
 } from '@/lib/companion/memory';
+
 
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
