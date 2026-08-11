@@ -59,10 +59,7 @@ import {
 } from '@/lib/cycleReminderMessages';
 
 import {
-  configureNotificationChannel,
-  requestNotificationPermissions,
-  schedulePeriodReminder,
-  scheduleTestNotification,
+  schedulePeriodReminder
 } from '@/lib/notifications';
 
 import FlowScreen from '@/components/quickLog/FlowScreen';
@@ -429,26 +426,6 @@ const todayStatus =
         ),
     );
   }
-
-async function testNotification() {
-  await configureNotificationChannel();
-
-  const hasPermission =
-    await requestNotificationPermissions();
-
-  if (!hasPermission) {
-    console.log(
-      'Notification permission was not granted.',
-    );
-    return;
-  }
-
-  console.log(
-    'Notification permission granted. Scheduling test...',
-  );
-
-  await scheduleTestNotification();
-}
 
   function showNextMonth() {
     setVisibleMonth(
@@ -985,32 +962,38 @@ const bodyLoadColor =
  
  </ScrollView>
 
-      <Modal
-        visible={editingPeriod}
-        transparent
-        animationType="fade"
-        onRequestClose={() =>
-          setEditingPeriod(false)
-        }>
-        <View style={styles.editModalBackdrop}>
-          <View style={styles.editModalCard}>
-           <FlowScreen
-  selectedFlow={
-    selectedEntry?.flow ?? null
-  }
-  startsNewPeriod={
-    selectedEntry?.startsNewPeriod ??
-    false
-  }
-  endsPeriod={
-    selectedEntry?.endsPeriod ??
-    false
-  }
-  onSave={saveHistoricalPeriod}
-/>
-          </View>
-        </View>
-      </Modal>
+<Modal
+  visible={editingPeriod}
+  transparent
+  animationType="fade"
+  onRequestClose={() =>
+    setEditingPeriod(false)
+  }>
+  <View style={styles.editModalBackdrop}>
+    <ScrollView
+      style={styles.editModalCard}
+      contentContainerStyle={
+        styles.editModalContent
+      }
+      showsVerticalScrollIndicator={false}>
+      <FlowScreen
+        selectedFlow={
+          selectedEntry?.flow ?? null
+        }
+        startsNewPeriod={
+          selectedEntry?.startsNewPeriod ??
+          false
+        }
+        endsPeriod={
+          selectedEntry?.endsPeriod ??
+          false
+        }
+        onSave={saveHistoricalPeriod}
+      />
+    </ScrollView>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
 
@@ -1438,9 +1421,9 @@ editModalBackdrop: {
 editModalCard: {
   width: '100%',
   maxWidth: 620,
+  maxHeight: "85%",
   backgroundColor: Colors.surface,
   borderRadius: 20,
-  padding: Spacing.lg,
 },
 
 predictedWindowLegend: {
@@ -1455,20 +1438,8 @@ predictedDateLegend: {
   fontSize: 11,
 },
 
-testNotificationButton: {
-  backgroundColor: Colors.gold,
-  borderRadius: 14,
-  paddingVertical: 16,
-  paddingHorizontal: 20,
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginVertical: Spacing.md,
-},
-
-testNotificationButtonText: {
-  color: Colors.background,
-  fontSize: 16,
-  fontWeight: '800',
+editModalContent: {
+  padding: Spacing.lg,
 },
 
 });

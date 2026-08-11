@@ -109,32 +109,6 @@ export async function configureNotificationChannel(): Promise<void> {
   );
 }
 
-export async function scheduleTestNotification(): Promise<void> {
-  if (Platform.OS === 'web') {
-    console.log(
-      'Test notifications are not scheduled on web.',
-    );
-    return;
-  }
-
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: '🔥 HMHC notification test',
-      body:
-        'If you can see this, the notification gremlins have been successfully domesticated.',
-    },
-    trigger: {
-      type:
-        Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-      seconds: 5,
-      channelId:
-        Platform.OS === 'android'
-          ? 'cycle-reminders'
-          : undefined,
-    },
-  });
-}
-
 type StoredPeriodReminder = {
   reminderKey: string;
   notificationId: string;
