@@ -1,19 +1,24 @@
 import {
-    useCallback,
-    useState,
+  useCallback,
+  useEffect,
+  useState,
 } from 'react';
 
 import {
-    useFocusEffect,
+  useFocusEffect,
 } from 'expo-router';
 
 import {
-    emptyUserProfile,
-    loadUserProfile,
+  emptyUserProfile,
+  loadUserProfile,
 } from '@/lib/profile';
 
 import type {
-    UserProfile,
+  UserProfile,
+} from '@/lib/profile';
+
+import {
+  subscribeToUserProfile
 } from '@/lib/profile';
 
 export function useUserProfile() {
@@ -24,6 +29,15 @@ export function useUserProfile() {
 
   const [isLoadingProfile, setIsLoadingProfile] =
     useState(true);
+
+useEffect(() => {
+  return subscribeToUserProfile(
+    (updatedProfile) => {
+      setProfile(updatedProfile);
+      setIsLoadingProfile(false);
+    },
+  );
+}, []);
 
   useFocusEffect(
     useCallback(() => {

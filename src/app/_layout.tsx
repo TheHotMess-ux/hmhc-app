@@ -5,7 +5,18 @@ import * as SplashScreen from 'expo-splash-screen';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Colors } from '@/theme/colors';
 
+import {
+  useEffect,
+  useState,
+} from 'react';
+
 SplashScreen.preventAutoHideAsync();
+
+import OnboardingModal from '@/components/onboarding/OnboardingModal';
+
+import {
+  hasCompletedOnboarding,
+} from '@/lib/onboarding';
 
 function getTabIcon(
   routeName: string,
@@ -42,13 +53,53 @@ function getTabIcon(
   }
 }
 
-export default function RootLayout() {
+  export default function RootLayout() {
+  const [
+    onboardingIsVisible,
+    setOnboardingIsVisible,
+  ] = useState(false);
+
+  const [
+    onboardingHasLoaded,
+    setOnboardingHasLoaded,
+  ] = useState(false);
+
+  const [
+  appRefreshKey,
+  setAppRefreshKey,
+] = useState(0);
+
+  useEffect(() => {
+    let layoutIsActive = true;
+
+    async function checkOnboarding() {
+      const onboardingIsComplete =
+        await hasCompletedOnboarding();
+
+      if (layoutIsActive) {
+        setOnboardingIsVisible(
+          !onboardingIsComplete,
+        );
+
+        setOnboardingHasLoaded(true);
+      }
+    }
+
+    void checkOnboarding();
+
+    return () => {
+      layoutIsActive = false;
+    };
+  }, []);
+
   return (
+
     <>
       <AnimatedSplashOverlay />
 
       <Tabs
-        screenOptions={({ route }) => ({
+  key={appRefreshKey}
+  screenOptions={({ route }) => ({
           headerShown: false,
           tabBarHideOnKeyboard: true,
 
@@ -135,6 +186,20 @@ export default function RootLayout() {
   }}
 />
       </Tabs>
+
+      <OnboardingModal
+  visible={
+    onboardingHasLoaded &&
+    onboardingIsVisible
+  }
+ onComplete={() => {
+  setOnboardingIsVisible(false);
+
+  setAppRefreshKey(
+    (currentKey) => currentKey + 1,
+  );
+}}
+/>
     </>
   );
 }

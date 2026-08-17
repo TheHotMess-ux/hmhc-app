@@ -43,6 +43,32 @@ export async function loadUserProfile(): Promise<UserProfile> {
 
     return emptyUserProfile;
   }
+
+}
+
+type UserProfileListener = (
+  profile: UserProfile,
+) => void;
+
+const userProfileListeners =
+  new Set<UserProfileListener>();
+
+export function subscribeToUserProfile(
+  listener: UserProfileListener,
+): () => void {
+  userProfileListeners.add(listener);
+
+  return () => {
+    userProfileListeners.delete(listener);
+  };
+}
+
+function notifyUserProfileListeners(
+  profile: UserProfile,
+) {
+  userProfileListeners.forEach(
+    (listener) => listener(profile),
+  );
 }
 
 export async function saveUserProfile(
@@ -64,6 +90,11 @@ export async function saveUserProfile(
       PROFILE_STORAGE_KEY,
       JSON.stringify(cleanedProfile),
     );
+
+    notifyUserProfileListeners(
+  cleanedProfile,
+);
+
   } catch (error) {
     console.error(
       'Unable to save user profile:',

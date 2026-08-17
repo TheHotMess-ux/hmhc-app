@@ -278,6 +278,17 @@ useEffect(() => {
 
 const greeting = getSmartGreeting();
 
+const preferredName =
+  profile.preferredName.trim();
+
+const personalizedGreetingTitle =
+  preferredName
+    ? `${greeting.title.replace(
+        /[.!?]+$/,
+        '',
+      )}, ${preferredName}!`
+    : greeting.title;
+
 const dailyWins = getDailyWins().map((win) => {
   let completed = false;
 
@@ -343,8 +354,9 @@ return (
           THE HOT MESS HORMONE CLUB
         </Text>
 
-      <Text style={styles.greeting}>
-  {greeting.emoji} {greeting.title}
+   <Text style={styles.greeting}>
+  {greeting.emoji}{' '}
+  {personalizedGreetingTitle}
 </Text>
 
 <Text style={styles.subtitle}>
