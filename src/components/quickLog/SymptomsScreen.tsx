@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { symptomCategories } from '@/lib/symptoms';
@@ -129,8 +129,10 @@ export default function SymptomsScreen({
 
 const styles = StyleSheet.create({
   container: {
-    gap: Spacing.md,
-  },
+  gap: Spacing.md,
+  flexShrink: 1,
+  minHeight: 0,
+},
 
   description: {
     color: Colors.textSecondary,
@@ -138,9 +140,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  scrollArea: {
-    maxHeight: 440,
-  },
+ scrollArea: {
+  flexShrink: 1,
+},
 
   categoryList: {
     gap: Spacing.lg,

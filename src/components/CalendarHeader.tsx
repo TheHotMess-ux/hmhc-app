@@ -58,12 +58,12 @@ const styles = StyleSheet.create({
   },
 
   arrow: {
-    color: Colors.textPrimary,
+    color: Colors.text,
     fontSize: 28,
   },
 
   title: {
-    color: Colors.textPrimary,
+    color: Colors.text,
     fontWeight: '700',
     fontSize: 20,
   },

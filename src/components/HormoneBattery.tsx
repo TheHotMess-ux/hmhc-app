@@ -130,7 +130,7 @@ export default function HormoneBattery({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.card,
+    backgroundColor: Colors.surface,
     borderColor: Colors.border,
     borderRadius: 14,
     borderWidth: 1,

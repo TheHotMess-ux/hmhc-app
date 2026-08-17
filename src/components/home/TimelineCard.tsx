@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   timelineDate: {
-    color: Colors.textPrimary,
+    color: Colors.text,
     fontSize: 16,
     fontWeight: '700',
   },

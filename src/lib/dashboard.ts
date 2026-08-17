@@ -1,5 +1,7 @@
 import type { FlowLevel } from './flow';
 
+import type { SleepLog } from './sleep';
+
 type CyclePhase =
   | 'Menstrual'
   | 'Follicular'
@@ -23,9 +25,11 @@ export type DailyEntry = {
   cycleDay: number;
   mood: string | null;
   symptoms: string[];
+  supplements?: string[];
   flow?: FlowLevel;
-startsNewPeriod?: boolean;
-endsPeriod?: boolean;
+  startsNewPeriod?: boolean;
+  endsPeriod?: boolean;
+  sleep?: SleepLog;
 };
 
 const pepTalks = [

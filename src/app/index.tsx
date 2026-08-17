@@ -1,6 +1,10 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useState } from 'react';
+import {
+  useEffect,
+  useState,
+} from 'react';
+
 import {
   Modal,
   Pressable,
@@ -11,7 +15,6 @@ import {
 } from 'react-native';
 
 import QuickLogHub from '@/components/quickLog/QuickLogHub';
-import type { FlowLevel } from '@/lib/flow';
 import { flowOptions } from '@/lib/flow';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
@@ -45,6 +48,8 @@ import MoreForYouCard from '@/components/home/MoreForYouCard';
 import DailyWinsCard from '@/components/home/DailyWinsCard';
 import { getDailyWins } from '@/lib/wins';
 
+import CycleSetupCard from '@/components/home/CycleSetupCard';
+
 import {
   getCycleDayFromPeriodStart,
   getMostRecentPeriodStart,
@@ -54,6 +59,14 @@ import {
   getCheckInStreak,
 } from '@/lib/companion/memory';
 
+import {
+  getLocalDateKey,
+  prepareDailyQuickLogs,
+} from '@/lib/dailyQuickLog';
+
+import {
+  useUserProfile,
+} from '@/hooks/useUserProfile';
 
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
@@ -81,6 +94,10 @@ export default function HomeScreen() {
 const dashboard = useHomeDashboard();
 
 const {
+  profile,
+} = useUserProfile();
+
+const {
   selectedMood,
   setSelectedMood,
 } = dashboard;
@@ -97,14 +114,19 @@ const {
 const [isFlowModalVisible, setIsFlowModalVisible] =
   useState(false);
 
-const [selectedFlow, setSelectedFlow] =
-  useState<FlowLevel | null>(null);
+const {
+  selectedFlow,
+  setSelectedFlow,
+  startsNewPeriod,
+  setStartsNewPeriod,
+  endsPeriod,
+  setEndsPeriod,
+} = dashboard;
 
-const [startsNewPeriod, setStartsNewPeriod] =
-  useState(false);
-
-const [endsPeriod, setEndsPeriod] =
-  useState(false);
+const {
+  selectedSleep,
+  setSelectedSleep,
+} = dashboard;
 
 const {
   journalEntries,
@@ -150,23 +172,28 @@ const toggleSymptom = (label: string) => {
   const lastPeriodStart =
   getMostRecentPeriodStart(journalEntries);
 
-const cycleDay =
+const trackedCycleDay =
   lastPeriodStart
     ? getCycleDayFromPeriodStart(
         lastPeriodStart,
       )
-    : 18;
+    : null;
+
+const cycleDayForCalculations =
+  trackedCycleDay ?? 1;
 
 const forecast =
-  getFeralForecast(cycleDay);
+  getFeralForecast(
+    cycleDayForCalculations,
+  );
 
-  const today = new Date()
-  .toISOString()
-  .split('T')[0];
+  const today =
+  getLocalDateKey();
 
 const dailyEntry = {
   date: today,
-  cycleDay,
+  cycleDay:
+  trackedCycleDay ?? 0,
   mood: selectedMood,
   symptoms: selectedSymptoms,
 };
@@ -186,8 +213,15 @@ const saveTodayToJournal = async (
   console.log('Journal entry saved:', entryToSave);
 };
 
-const phaseInsight = getDashboardCyclePhase(cycleDay);
-const cyclePhase = getCyclePhaseData(cycleDay);
+const phaseInsight =
+  getDashboardCyclePhase(
+    cycleDayForCalculations,
+  );
+
+const cyclePhase =
+  getCyclePhaseData(
+    cycleDayForCalculations,
+  );
 
 const feralLevel = getFeralLevel({
   mood: selectedMood,
@@ -196,10 +230,52 @@ const feralLevel = getFeralLevel({
   cyclePhase: phaseInsight.phase,
 });
 
-const symptomInsight = getSymptomInsight(
-  phaseInsight.phase,
-  selectedSymptoms,
-);
+const symptomInsight =
+  trackedCycleDay !== null
+    ? getSymptomInsight(
+        phaseInsight.phase,
+        selectedSymptoms,
+      )
+    : null;
+
+const [
+  selectedSupplements,
+  setSelectedSupplements,
+] = useState<string[]>([]);
+
+useEffect(() => {
+  async function loadSupplements() {
+    await prepareDailyQuickLogs();
+
+    const savedSupplements =
+      await AsyncStorage.getItem(
+        'todaysSupplements',
+      );
+
+    if (!savedSupplements) {
+      return;
+    }
+
+    try {
+      const parsedSupplements =
+        JSON.parse(
+          savedSupplements,
+        ) as string[];
+
+      setSelectedSupplements(
+        parsedSupplements,
+      );
+    } catch (error) {
+      console.error(
+        'Unable to load supplements:',
+        error,
+      );
+    }
+  }
+
+  void loadSupplements();
+}, []);
+
 const greeting = getSmartGreeting();
 
 const dailyWins = getDailyWins().map((win) => {
@@ -276,40 +352,60 @@ return (
 </Text>
       </View>
 
-<MorningBriefingCard
-  name="Sheena"
-  phase={cyclePhase.phase}
-  cycleDay={cycleDay}
-  mood={selectedMood}
-  symptoms={selectedSymptoms}
-  checkInStreak={checkInStreak}
-  yesterdayMood={
-    yesterdayEntry?.mood ?? null
-  }
-  yesterdaySymptoms={
-    yesterdayEntry?.symptoms ?? []
-  }
-  yesterdayFlow={
-    yesterdayEntry?.flow ?? null
-  }
-/>
+{trackedCycleDay !== null ? (
+  <>
+    <MorningBriefingCard
+      name={profile.preferredName}
+      phase={cyclePhase.phase}
+      cycleDay={trackedCycleDay}
+      mood={selectedMood}
+      symptoms={selectedSymptoms}
+      checkInStreak={checkInStreak}
+      yesterdayMood={
+        yesterdayEntry?.mood ?? null
+      }
+      yesterdaySymptoms={
+        yesterdayEntry?.symptoms ?? []
+      }
+      yesterdayFlow={
+        yesterdayEntry?.flow ?? null
+      }
+    />
 
-<FeralForecastCard
-  coffeeForecast={forecast.coffeeForecast}
-  brainFogForecast={forecast.brainFogForecast}
-  patienceForecast={forecast.patienceForecast}
-  survivalStrategy={forecast.survivalStrategy}
-  feralLevel={feralLevel}
-/>
+    <FeralForecastCard
+      coffeeForecast={
+        forecast.coffeeForecast
+      }
+      brainFogForecast={
+        forecast.brainFogForecast
+      }
+      patienceForecast={
+        forecast.patienceForecast
+      }
+      survivalStrategy={
+        forecast.survivalStrategy
+      }
+      feralLevel={feralLevel}
+    />
 
-<HormoneBriefingCard
-  title="Hormone Briefing"
-  phase={`${cyclePhase.emoji} ${cyclePhase.title}`}
-  description={cyclePhase.description}
-  encouragement={cyclePhase.encouragement}
-/>
+    <HormoneBriefingCard
+      title="Hormone Briefing"
+      phase={`${cyclePhase.emoji} ${cyclePhase.title}`}
+      description={
+        cyclePhase.description
+      }
+      encouragement={
+        cyclePhase.encouragement
+      }
+    />
 
-<MissionCard mission={phaseInsight.mission} />
+    <MissionCard
+      mission={phaseInsight.mission}
+    />
+  </>
+) : (
+  <CycleSetupCard />
+)}
 
 {/*
 <QuickLogCard
@@ -329,6 +425,9 @@ return (
 <QuickLogHub
   selectedMood={selectedMood}
   selectedSymptoms={selectedSymptoms}
+  selectedSupplements={
+  selectedSupplements}
+  selectedSleep={selectedSleep}
   selectedFlow={selectedFlow}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
@@ -356,6 +455,25 @@ return (
       symptoms,
     });
   }}
+
+  onSupplementsSave={async (
+  supplements,
+) => {
+  setSelectedSupplements(
+    supplements,
+  );
+
+  await AsyncStorage.setItem(
+    'todaysSupplements',
+    JSON.stringify(
+      supplements,
+    ),
+  );
+
+  await saveTodayToJournal({
+    supplements,
+  });
+}}
   
 onFlowSave={async (
   flow,
@@ -391,6 +509,19 @@ onFlowSave={async (
       startsNewPeriodValue,
     endsPeriod:
       endsPeriodValue,
+  });
+}}
+
+onSleepSave={async (sleep) => {
+  setSelectedSleep(sleep);
+
+  await AsyncStorage.setItem(
+    'todaysSleep',
+    JSON.stringify(sleep),
+  );
+
+  await saveTodayToJournal({
+    sleep,
   });
 }}
 />

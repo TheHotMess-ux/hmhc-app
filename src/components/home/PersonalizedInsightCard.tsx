@@ -38,7 +38,7 @@ export default function PersonalizedInsightCard({
 
 const styles = StyleSheet.create({
   title: {
-    color: Colors.textPrimary,
+    color: Colors.text,
     fontWeight: '700',
     fontSize: 16,
   },

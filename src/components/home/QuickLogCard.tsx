@@ -5,25 +5,58 @@ import { Spacing } from '@/theme/spacing';
 
 import SectionCard from '../SectionCard';
 
-import type { FlowLevel } from '@/lib/flow';
+import {
+  flowOptions,
+} from '@/lib/flow';
+
+import type {
+  FlowLevel,
+} from '@/lib/flow';
+
+import {
+  sleepQualityOptions,
+} from '@/lib/sleep';
+
+import type { SleepLog } from '@/lib/sleep';
 
 type Props = {
   selectedMood: string | null;
   selectedSymptoms: string[];
+  selectedSupplements: string[];
   selectedFlow: FlowLevel | null;
+  selectedSleep: SleepLog | null;
   onMoodPress: () => void;
   onSymptomsPress: () => void;
+  onSupplementsPress: () => void;
   onFlowPress: () => void;
+  onSleepPress: () => void;
 };
 
 export default function QuickLogCard({
   selectedMood,
   selectedSymptoms,
+  selectedSupplements,
   selectedFlow,
+  selectedSleep,
   onMoodPress,
   onSymptomsPress,
+  onSupplementsPress,
   onFlowPress,
+  onSleepPress,
 }: Props) {
+
+const selectedFlowEmoji =
+  flowOptions.find(
+    (option) =>
+      option.level === selectedFlow,
+  )?.emoji ?? '🌸';
+
+const selectedSleepEmoji =
+  sleepQualityOptions.find(
+    (option) =>
+      option.quality ===
+      selectedSleep?.quality,
+  )?.emoji ?? '😴';
 
   return (
     <SectionCard title="Quick Log">
@@ -61,7 +94,7 @@ export default function QuickLogCard({
             pressed && styles.buttonPressed,
           ]}>
           <Text style={styles.quickLogEmoji}>
-            {selectedSymptoms.length > 0 ? '✓' : '🔥'}
+          🔥
           </Text>
 
           <Text style={styles.quickLogLabel}>Symptoms</Text>
@@ -82,6 +115,38 @@ export default function QuickLogCard({
 
 <Pressable
   accessibilityRole="button"
+  accessibilityLabel="Log today's supplements"
+  onPress={onSupplementsPress}
+  style={({ pressed }) => [
+    styles.quickLogButton,
+    selectedSupplements.length > 0 &&
+      styles.quickLogButtonSelected,
+    pressed && styles.buttonPressed,
+  ]}>
+  <Text style={styles.quickLogEmoji}>
+    💊
+  </Text>
+
+  <Text style={styles.quickLogLabel}>
+    Supplements
+  </Text>
+
+  {selectedSupplements.length > 0 ? (
+    <Text style={styles.quickLogValue}>
+      {selectedSupplements.length}{' '}
+      {selectedSupplements.length === 1
+        ? 'supplement'
+        : 'supplements'}
+    </Text>
+  ) : (
+    <Text style={styles.comingSoon}>
+      Tap to log
+    </Text>
+  )}
+</Pressable>
+
+<Pressable
+  accessibilityRole="button"
   accessibilityLabel="Log today's flow"
   onPress={onFlowPress}
   style={({ pressed }) => [
@@ -90,7 +155,7 @@ export default function QuickLogCard({
     pressed && styles.buttonPressed,
   ]}>
   <Text style={styles.quickLogEmoji}>
-    {selectedFlow ? '🩸' : '🌸'}
+{selectedFlowEmoji}
   </Text>
 
   <Text style={styles.quickLogLabel}>Flow</Text>
@@ -106,13 +171,36 @@ export default function QuickLogCard({
   )}
 </Pressable>
 
-        <View style={styles.quickLogButton}>
-          <Text style={styles.quickLogEmoji}>😴</Text>
-          <Text style={styles.quickLogLabel}>Sleep</Text>
-          <Text style={styles.comingSoon}>
-            Coming soon
-          </Text>
-        </View>
+        <Pressable
+  accessibilityRole="button"
+  accessibilityLabel="Log last night's sleep"
+  onPress={onSleepPress}
+  style={({ pressed }) => [
+    styles.quickLogButton,
+    selectedSleep &&
+      styles.quickLogButtonSelected,
+    pressed && styles.buttonPressed,
+  ]}>
+  <Text style={styles.quickLogEmoji}>
+{selectedSleepEmoji}
+  </Text>
+
+  <Text style={styles.quickLogLabel}>
+    Sleep
+  </Text>
+
+  {selectedSleep ? (
+    <Text style={styles.quickLogValue}>
+      {selectedSleep.quality}
+      {' · '}
+      {selectedSleep.duration}
+    </Text>
+  ) : (
+    <Text style={styles.comingSoon}>
+      Tap to log
+    </Text>
+  )}
+</Pressable>
       </View>
     </SectionCard>
   );

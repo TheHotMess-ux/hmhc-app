@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -54,7 +55,8 @@ export default function FlowScreen({
     draftFlow === 'Moderate' ||
     draftFlow === 'Heavy';
 
-    const canEndPeriod =
+  const canEndPeriod =
+  draftFlow !== null &&
   draftFlow !== 'None';
 
   function selectFlow(flow: FlowLevel) {
@@ -72,8 +74,11 @@ export default function FlowScreen({
   }
 }
 
-  return (
-    <View style={styles.container}>
+ return (
+  <ScrollView
+    style={styles.scrollArea}
+    contentContainerStyle={styles.container}
+    showsVerticalScrollIndicator={false}>
       <Text style={styles.description}>
         How would you describe today&apos;s bleeding?
       </Text>
@@ -241,11 +246,15 @@ export default function FlowScreen({
           Done
         </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollArea: {
+  flexShrink: 1,
+},
+  
   container: {
     gap: Spacing.lg,
   },

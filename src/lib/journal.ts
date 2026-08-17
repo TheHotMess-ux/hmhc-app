@@ -31,11 +31,16 @@ export async function saveJournalEntry(
       (savedEntry) => savedEntry.date === entry.date,
     );
 
-    const updatedEntries = entryAlreadyExists
-      ? currentEntries.map((savedEntry) =>
-          savedEntry.date === entry.date ? entry : savedEntry,
-        )
-      : [entry, ...currentEntries];
+const updatedEntries = entryAlreadyExists
+  ? currentEntries.map((savedEntry) =>
+      savedEntry.date === entry.date
+        ? {
+            ...savedEntry,
+            ...entry,
+          }
+        : savedEntry,
+    )
+  : [entry, ...currentEntries];
 
     await AsyncStorage.setItem(
       JOURNAL_STORAGE_KEY,

@@ -7,11 +7,15 @@ import {
 } from 'react-native';
 
 import type { FlowLevel } from '@/lib/flow';
+import type { SleepLog } from '@/lib/sleep';
+
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
 import FlowScreen from './FlowScreen';
 import MoodScreen from './MoodScreen';
+import SleepScreen from './SleepScreen';
+import SupplementsScreen from './SupplementsScreen';
 import SymptomsScreen from './SymptomsScreen';
 
 import type { QuickLogType } from './types';
@@ -22,10 +26,13 @@ type Props = {
 
   selectedMood: string | null;
   selectedSymptoms: string[];
+  selectedSupplements: string[];
 
   selectedFlow: FlowLevel | null;
   startsNewPeriod: boolean;
   endsPeriod: boolean;
+
+  selectedSleep: SleepLog | null;
 
   onMoodSelect: (
     mood: string,
@@ -35,10 +42,18 @@ type Props = {
     symptoms: string[],
   ) => void | Promise<void>;
 
+onSupplementsSave: (
+  supplements: string[],
+) => void | Promise<void>;
+
   onFlowSave: (
   flow: FlowLevel,
   startsNewPeriod: boolean,
   endsPeriod: boolean,
+) => void | Promise<void>;
+
+onSleepSave: (
+  sleep: SleepLog,
 ) => void | Promise<void>;
 
   onClose: () => void;
@@ -49,12 +64,16 @@ export default function QuickLogModal({
   activeLog,
   selectedMood,
   selectedSymptoms,
+  selectedSupplements,
   selectedFlow,
   startsNewPeriod,
   endsPeriod,
+  selectedSleep,
   onMoodSelect,
   onSymptomsSave,
+  onSupplementsSave,
   onFlowSave,
+  onSleepSave,
   onClose,
 }: Props) {
 
@@ -130,6 +149,30 @@ export default function QuickLogModal({
             />
           )}
 
+{activeLog === 'supplements' && (
+  <SupplementsScreen
+    selectedSupplements={
+      selectedSupplements
+    }
+    onSave={async (supplements) => {
+      await onSupplementsSave(
+        supplements,
+      );
+      onClose();
+    }}
+  />
+)}
+
+{activeLog === 'sleep' && (
+  <SleepScreen
+    selectedSleep={selectedSleep}
+    onSave={async (sleep) => {
+      await onSleepSave(sleep);
+      onClose();
+    }}
+  />
+)}
+
 {activeLog === 'flow' && (
 
 <FlowScreen
@@ -154,8 +197,10 @@ export default function QuickLogModal({
 )}
 
           {activeLog !== 'mood' &&
-            activeLog !== 'symptoms' &&
-            activeLog !== 'flow' && (
+          activeLog !== 'symptoms' &&
+          activeLog !== 'flow' &&
+          activeLog !== 'supplements' &&
+          activeLog !== 'sleep' && (
               <>
                 <Text style={styles.subtitle}>
                   Screen coming next...
@@ -188,15 +233,17 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
   },
 
-  card: {
-    width: '100%',
-    maxWidth: 620,
-    maxHeight: '90%',
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    padding: Spacing.lg,
-    gap: Spacing.md,
-  },
+ card: {
+  width: '100%',
+  maxWidth: 620,
+  maxHeight: '90%',
+  flexShrink: 1,
+  overflow: 'hidden',
+  backgroundColor: Colors.surface,
+  borderRadius: 20,
+  padding: Spacing.lg,
+  gap: Spacing.md,
+},
 
   header: {
     flexDirection: 'row',

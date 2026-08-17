@@ -37,7 +37,7 @@ export default function HormoneBriefingCard({
 
 const styles = StyleSheet.create({
   phase: {
-    color: Colors.textPrimary,
+    color: Colors.text,
     fontSize: 18,
     fontWeight: '600',
   },

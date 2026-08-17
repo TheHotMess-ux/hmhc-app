@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react';
 import type { DailyEntry } from '@/lib/dashboard';
 import type { FlowLevel } from '@/lib/flow';
 import { loadJournalEntries } from '@/lib/journal';
+import type { SleepLog } from '@/lib/sleep';
+
+import {
+  prepareDailyQuickLogs,
+} from '@/lib/dailyQuickLog';
 
 export function useHomeDashboard() {
   const [selectedMood, setSelectedMood] =
@@ -18,6 +23,12 @@ export function useHomeDashboard() {
   const [startsNewPeriod, setStartsNewPeriod] =
     useState(false);
 
+  const [endsPeriod, setEndsPeriod] =
+    useState(false); 
+
+  const [selectedSleep, setSelectedSleep] =
+    useState<SleepLog | null>(null);
+
   const [journalEntries, setJournalEntries] =
     useState<DailyEntry[]>([]);
 
@@ -27,19 +38,24 @@ export function useHomeDashboard() {
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const [
-          savedMood,
-          savedSymptoms,
-          savedFlow,
-          savedPeriodStart,
-          savedJournal,
-        ] = await Promise.all([
-          AsyncStorage.getItem('todaysMood'),
-          AsyncStorage.getItem('todaysSymptoms'),
-          AsyncStorage.getItem('todaysFlow'),
-          AsyncStorage.getItem('startsNewPeriod'),
-          loadJournalEntries(),
-        ]);
+        await prepareDailyQuickLogs();
+ const [
+  savedMood,
+  savedSymptoms,
+  savedFlow,
+  savedPeriodStart,
+  savedPeriodEnd,
+  savedSleep,
+  savedJournal,
+] = await Promise.all([
+  AsyncStorage.getItem('todaysMood'),
+  AsyncStorage.getItem('todaysSymptoms'),
+  AsyncStorage.getItem('todaysFlow'),
+  AsyncStorage.getItem('startsNewPeriod'),
+  AsyncStorage.getItem('endsPeriod'),
+  AsyncStorage.getItem('todaysSleep'),
+  loadJournalEntries(),
+]);
 
         setSelectedMood(savedMood);
 
@@ -57,6 +73,18 @@ export function useHomeDashboard() {
           savedPeriodStart
             ? (JSON.parse(savedPeriodStart) as boolean)
             : false,
+        );
+
+        setEndsPeriod(
+          savedPeriodEnd
+            ? (JSON.parse(savedPeriodEnd) as boolean)
+            : false,
+        );
+
+        setSelectedSleep(
+          savedSleep
+            ? (JSON.parse(savedSleep) as SleepLog)
+            : null,
         );
 
         setJournalEntries(savedJournal);
@@ -85,6 +113,12 @@ export function useHomeDashboard() {
 
     startsNewPeriod,
     setStartsNewPeriod,
+
+    endsPeriod,
+    setEndsPeriod,
+
+    selectedSleep,
+    setSelectedSleep,
 
     journalEntries,
     setJournalEntries,

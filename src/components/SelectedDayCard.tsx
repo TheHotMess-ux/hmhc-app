@@ -31,18 +31,22 @@ type Props = {
   entry?: Entry;
   onEditPeriod?: () => void;
   onAddLog?: () => void;
+  cycleDay?: number | null;
 };
 
 
 export default function SelectedDayCard({
   formattedDate,
   entry,
+  cycleDay = null,
   onEditPeriod,
   onAddLog,
 }: Props) {
 
-  const phase = entry
-    ? getCyclePhase(entry.cycleDay)
+ const phase =
+  entry &&
+  cycleDay !== null
+    ? getCyclePhase(cycleDay)
     : null;
 
     const reflection =
@@ -119,8 +123,15 @@ export default function SelectedDayCard({
 <InfoRow
   emoji={phase?.emoji}
   label="Cycle phase"
-  value={phase?.title ?? 'Unknown'}
-  secondaryValue={`Day ${entry.cycleDay}`}
+  value={
+    phase?.title ??
+    'Not enough cycle data'
+  }
+  secondaryValue={
+    phase && cycleDay !== null
+      ? `Day ${cycleDay}`
+      : undefined
+  }
   accentColor={phase?.color}
 />
 

@@ -134,7 +134,7 @@ function getGreeting(): string {
 }
 
 export default function MorningBriefingCard({
-  name = 'Sheena',
+  name,
   phase = 'Luteal',
   cycleDay,
   mood = null,
@@ -232,6 +232,11 @@ const {
     [],
   );
 
+  const greetingText =
+  name?.trim()
+    ? `${greeting}, ${name.trim()}`
+    : greeting;
+
   const cycleLabel =
     typeof cycleDay === 'number'
       ? `${phase} phase • Cycle day ${cycleDay}`
@@ -258,8 +263,8 @@ const {
       <View style={styles.topRow}>
         <View style={styles.greetingGroup}>
           <Text style={styles.greeting}>
-            {greeting}, {name}
-          </Text>
+  {greetingText}
+</Text>
 
           <Text
             style={[

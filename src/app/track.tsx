@@ -83,9 +83,6 @@ const WEEKDAYS = [
   'Sat',
 ];
 
-const REFERENCE_CYCLE_DAY = 18;
-const ESTIMATED_CYCLE_LENGTH = 28;
-
 function createDateKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -133,42 +130,6 @@ function formatSelectedDate(date: Date) {
   });
 }
 
-function getEstimatedCycleDay(
-  date: Date,
-  referenceDate: Date,
-  referenceCycleDay: number,
-  cycleLength = ESTIMATED_CYCLE_LENGTH,
-): number {
-  const dateAtNoon = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    12,
-  );
-
-  const referenceAtNoon = new Date(
-    referenceDate.getFullYear(),
-    referenceDate.getMonth(),
-    referenceDate.getDate(),
-    12,
-  );
-
-  const millisecondsPerDay = 1000 * 60 * 60 * 24;
-
-  const dayDifference = Math.round(
-    (dateAtNoon.getTime() - referenceAtNoon.getTime()) /
-      millisecondsPerDay,
-  );
-
-
-  return (
-    ((referenceCycleDay - 1 + dayDifference) %
-      cycleLength +
-      cycleLength) %
-      cycleLength
-  ) + 1;
-}
-
 function getBodyLoadColor(
   symptomCount: number,
 ): string | undefined {
@@ -191,13 +152,25 @@ function getBodyLoadColor(
   return '#E53935';
 }
 
-export default function TrackScreen() {
-  const today = useMemo(() => new Date(), []);
 
-  const referenceDate = useMemo(
-    () => new Date(),
-    [],
-  );
+function getStoredCycleDay(
+  cycleDay:
+    | number
+    | undefined,
+): number | null {
+  if (
+    typeof cycleDay === 'number' &&
+    cycleDay > 0
+  ) {
+    return cycleDay;
+  }
+
+  return null;
+}
+
+export default function TrackScreen() {
+
+  const today = useMemo(() => new Date(), []);
 
   const [visibleMonth, setVisibleMonth] =
     useState(
@@ -392,9 +365,7 @@ const todayEntry = journalEntries.find(
 );
 
 const todayCycleDay =
-  trackedCycleDay ??
-  todayEntry?.cycleDay ??
-  null;
+  trackedCycleDay;
 
 const todayPhase =
   todayCycleDay !== null
@@ -415,6 +386,15 @@ const todayStatus =
   const selectedEntry = journalEntries.find(
     (entry) => entry.date === selectedDateKey,
   );
+
+  const selectedCycleDay =
+  lastPeriodStart &&
+  selectedDateKey >= lastPeriodStart
+    ? getCycleDayFromPeriodStart(
+        lastPeriodStart,
+        selectedDate,
+      )
+    : null;
 
   function showPreviousMonth() {
     setVisibleMonth(
@@ -857,9 +837,7 @@ const trackedDateCycleDay =
     : null;
 
 const cycleDay =
-  trackedDateCycleDay ??
-  entry?.cycleDay ??
-  null;
+  trackedDateCycleDay;
 
 const phase =
   cycleDay !== null
@@ -933,8 +911,11 @@ const bodyLoadColor =
         </View>
 
 <SelectedDayCard
-  formattedDate={formatSelectedDate(selectedDate)}
+  formattedDate={
+    formatSelectedDate(selectedDate)
+  }
   entry={selectedEntry}
+  cycleDay={selectedCycleDay}
   onEditPeriod={() =>
     setEditingPeriod(true)
   }
