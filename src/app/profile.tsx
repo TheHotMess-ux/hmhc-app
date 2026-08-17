@@ -8,6 +8,8 @@ import {
 import {
   Alert,
   Keyboard,
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -113,6 +115,49 @@ export default function ProfileScreen() {
   async function handleSave() {
     Keyboard.dismiss();
 
+  async function handleBetaFeedback() {
+  const subject = encodeURIComponent(
+    'HMHC Beta Feedback',
+  );
+
+  const body = encodeURIComponent(
+    `Hi HMHC,
+
+What I was doing:
+
+
+What worked well:
+
+
+What felt confusing or broken:
+
+
+Something I wish HMHC included:
+
+
+Device: ${Platform.OS} ${Platform.Version}
+`,
+  );
+
+  const emailUrl =
+    `mailto:sheena@thehotmesshormoneclub.com` +
+    `?subject=${subject}&body=${body}`;
+
+  try {
+    await Linking.openURL(emailUrl);
+  } catch (error) {
+    console.error(
+      'Unable to open beta feedback email:',
+      error,
+    );
+
+    Alert.alert(
+      'Unable to open email',
+      'Please send your feedback directly to sheena@thehotmesshormoneclub.com.',
+    );
+  }
+}  
+
     const cleanedDateOfBirth =
       profile.dateOfBirth.trim();
 
@@ -162,6 +207,49 @@ export default function ProfileScreen() {
       setIsSaving(false);
     }
   }
+
+async function handleBetaFeedback() {
+  const subject = encodeURIComponent(
+    'HMHC Beta Feedback',
+  );
+
+  const body = encodeURIComponent(
+    `Hi HMHC,
+
+What I was doing:
+
+
+What worked well:
+
+
+What felt confusing or broken:
+
+
+Something I wish HMHC included:
+
+
+Device: ${Platform.OS} ${Platform.Version}
+`,
+  );
+
+  const emailUrl =
+    `mailto:sheena@thehotmesshormoneclub.com` +
+    `?subject=${subject}&body=${body}`;
+
+  try {
+    await Linking.openURL(emailUrl);
+  } catch (error) {
+    console.error(
+      'Unable to open beta feedback email:',
+      error,
+    );
+
+    Alert.alert(
+      'Unable to open email',
+      'Please send your feedback directly to sheena@thehotmesshormoneclub.com.',
+    );
+  }
+}
 
   const accessTitle =
     accessMode === 'beta'
@@ -366,6 +454,51 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
 
+<View style={styles.feedbackCard}>
+  <View style={styles.feedbackHeading}>
+    <View style={styles.feedbackIcon}>
+      <Ionicons
+        name="chatbubble-ellipses-outline"
+        color={Colors.background}
+        size={24}
+      />
+    </View>
+
+    <View style={styles.feedbackText}>
+      <Text style={styles.feedbackTitle}>
+        Help shape HMHC
+      </Text>
+
+      <Text style={styles.feedbackDescription}>
+        Found something confusing, broken, or
+        unexpectedly brilliant? Send feedback
+        directly to the human building this app.
+      </Text>
+    </View>
+  </View>
+
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel="Send HMHC beta feedback"
+    onPress={() => {
+      void handleBetaFeedback();
+    }}
+    style={({ pressed }) => [
+      styles.feedbackButton,
+      pressed && styles.buttonPressed,
+    ]}>
+    <Ionicons
+      name="mail-outline"
+      color={Colors.background}
+      size={20}
+    />
+
+    <Text style={styles.feedbackButtonText}>
+      Send Beta Feedback
+    </Text>
+  </Pressable>
+</View>
+
       <View style={styles.privacyCard}>
         <Ionicons
           name="shield-checkmark-outline"
@@ -563,4 +696,63 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
   },
+
+  feedbackCard: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.gold,
+  borderWidth: 1,
+  borderRadius: 22,
+  padding: Spacing.lg,
+  gap: Spacing.lg,
+},
+
+feedbackHeading: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  gap: Spacing.md,
+},
+
+feedbackIcon: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: Colors.gold,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+feedbackText: {
+  flex: 1,
+  gap: 5,
+},
+
+feedbackTitle: {
+  color: Colors.text,
+  fontSize: 17,
+  fontWeight: '900',
+},
+
+feedbackDescription: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 20,
+},
+
+feedbackButton: {
+  minHeight: 48,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: Colors.gold,
+  borderRadius: 14,
+  paddingHorizontal: Spacing.md,
+  gap: Spacing.sm,
+},
+
+feedbackButtonText: {
+  color: Colors.background,
+  fontSize: 15,
+  fontWeight: '900',
+},
+
 });
