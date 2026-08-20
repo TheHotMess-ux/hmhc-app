@@ -35,6 +35,8 @@ import type {
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
+import TrackingPreferenceCard from '@/components/profile/TrackingPreferenceCard';
+
 function isValidDateOfBirth(
   value: string,
 ): boolean {
@@ -102,15 +104,43 @@ export default function ProfileScreen() {
     void loadProfile();
   }, []);
 
-  function updateProfile(
-    field: keyof UserProfile,
-    value: string,
-  ) {
+  function updateProfile<
+  Field extends keyof UserProfile,
+>(
+  field: Field,
+  value: UserProfile[Field],
+) {
     setProfile((currentProfile) => ({
       ...currentProfile,
       [field]: value,
     }));
   }
+
+  async function handleTrackingPreferenceChange(
+  value: UserProfile['trackingPreference'],
+) {
+  const previousProfile = profile;
+
+  const updatedProfile: UserProfile = {
+    ...profile,
+    trackingPreference: value,
+  };
+
+  setProfile(updatedProfile);
+
+  try {
+    await saveUserProfile(
+      updatedProfile,
+    );
+  } catch {
+    setProfile(previousProfile);
+
+    Alert.alert(
+      'Unable to save preference',
+      'Your tracking preference could not be updated. Please try again.',
+    );
+  }
+}
 
   async function handleSave() {
     Keyboard.dismiss();
@@ -156,7 +186,7 @@ Device: ${Platform.OS} ${Platform.Version}
       'Please send your feedback directly to sheena@thehotmesshormoneclub.com.',
     );
   }
-}  
+}
 
     const cleanedDateOfBirth =
       profile.dateOfBirth.trim();
@@ -186,6 +216,9 @@ Device: ${Platform.OS} ${Platform.Version}
 
         dateOfBirth:
           cleanedDateOfBirth,
+
+        trackingPreference:
+          profile.trackingPreference,
       };
 
       await saveUserProfile(
@@ -314,6 +347,15 @@ Device: ${Platform.OS} ${Platform.Version}
           </Text>
         </View>
       </View>
+
+<TrackingPreferenceCard
+  value={profile.trackingPreference}
+  onChange={(value) => {
+    void handleTrackingPreferenceChange(
+      value,
+    );
+  }}
+/>
 
       <View style={styles.formCard}>
         <Text style={styles.cardTitle}>

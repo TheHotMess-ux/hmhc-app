@@ -131,7 +131,7 @@ export default function InsightsScreen() {
     useState<ReportRange>(30);
 
   const [activeView, setActiveView] =
-  useState<InsightsView>('patterns');  
+  useState<InsightsView>('patterns');
 
   const [isLoading, setIsLoading] =
     useState(true);
@@ -139,6 +139,9 @@ export default function InsightsScreen() {
     const {
   profile,
 } = useUserProfile();
+
+const showsCycleTracking =
+  profile.trackingPreference === 'cycle';
 
   const [
     isGeneratingReport,
@@ -236,7 +239,7 @@ const advancedPatterns =
     await import('expo-print');
 
     const Sharing =
-      await import('expo-sharing'); 
+      await import('expo-sharing');
 
     const html =
   buildDoctorReportHtml(
@@ -405,19 +408,23 @@ const advancedPatterns =
 <PremiumGate
   feature="doctorReport"
   title="Turn your logs into a doctor-ready report"
-  description="See patterns across symptoms, mood, sleep, supplements, and bleeding—without having to remember everything yourself.">
+description={
+  showsCycleTracking
+    ? 'See patterns across symptoms, mood, sleep, supplements, and bleeding—without having to remember everything yourself.'
+    : 'See patterns across symptoms, mood, sleep, and supplements—without having to remember everything yourself.'
+}>
+  {isLoading ? (
+  <View style={styles.messageCard}>
+    <Text style={styles.messageTitle}>
+      Gathering the evidence…
+    </Text>
 
-      {isLoading ? (
-        <View style={styles.messageCard}>
-          <Text style={styles.messageTitle}>
-            Gathering the evidence…
-          </Text>
+    <Text style={styles.emptyText}>
+      Your hormones have submitted
+      several documents for review.
+    </Text>
+  </View>
 
-          <Text style={styles.emptyText}>
-            Your hormones have submitted
-            several documents for review.
-          </Text>
-        </View>
       ) : report.loggedDays === 0 ? (
         <View style={styles.messageCard}>
           <Text style={styles.messageEmoji}>
@@ -462,15 +469,17 @@ const advancedPatterns =
               </Text>
             </View>
 
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>
-                {report.bleedingDays}
-              </Text>
+{showsCycleTracking && (
+  <View style={styles.statCard}>
+    <Text style={styles.statNumber}>
+      {report.bleedingDays}
+    </Text>
 
-              <Text style={styles.statLabel}>
-                Bleeding days
-              </Text>
-            </View>
+    <Text style={styles.statLabel}>
+      Bleeding days
+    </Text>
+  </View>
+)}
 
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>
@@ -584,6 +593,7 @@ const advancedPatterns =
             </View>
           </View>
 
+{showsCycleTracking && (
           <View style={styles.reportCard}>
             <Text style={styles.cardEmoji}>
               🩸
@@ -634,6 +644,7 @@ const advancedPatterns =
               emptyMessage="No Flow information was logged."
             />
           </View>
+)}
 
           <View style={styles.reportCard}>
             <Text style={styles.cardEmoji}>

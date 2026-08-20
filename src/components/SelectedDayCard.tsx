@@ -16,10 +16,13 @@ import SectionHeading from '@/components/SectionHeading';
 
 import { getDailyReflection } from '@/lib/dailyReflection';
 
+import type { SleepLog } from '@/lib/sleep';
 
 type Entry = {
   mood: string | null;
   symptoms: string[];
+  supplements?: string[];
+  sleep?: SleepLog;
   cycleDay: number;
   flow?: FlowLevel | null;
   startsNewPeriod?: boolean;
@@ -32,6 +35,7 @@ type Props = {
   onEditPeriod?: () => void;
   onAddLog?: () => void;
   cycleDay?: number | null;
+  showCycleTracking?: boolean;
 };
 
 
@@ -39,11 +43,13 @@ export default function SelectedDayCard({
   formattedDate,
   entry,
   cycleDay = null,
+  showCycleTracking = true,
   onEditPeriod,
   onAddLog,
 }: Props) {
 
  const phase =
+  showCycleTracking &&
   entry &&
   cycleDay !== null
     ? getCyclePhase(cycleDay)
@@ -60,7 +66,7 @@ export default function SelectedDayCard({
     : null;
 
   return (
-    
+
     <View style={styles.card}>
     <Text style={styles.eyebrow}>DAILY SNAPSHOT</Text>
     <Text style={styles.date}>{formattedDate}</Text>
@@ -78,28 +84,31 @@ export default function SelectedDayCard({
           emoji="🌿"
           title="Your Body Today"
 />
-          <InfoRow
+<InfoRow
   emoji="😊"
   label="Mood"
   value={entry.mood ?? 'Not logged'}
 />
 
-<InfoRow
-  emoji="🩸"
-  label="Flow"
-  value={
-    entry.flow && entry.flow !== 'None'
-      ? entry.flow
-      : 'No bleeding logged'
-  }
-  secondaryValue={
-    entry.startsNewPeriod
-      ? 'First day of period'
-      : entry.endsPeriod
-        ? 'Last day of period'
-        : undefined
-  }
-/>
+{showCycleTracking && (
+  <InfoRow
+    emoji="🩸"
+    label="Flow"
+    value={
+      entry.flow &&
+      entry.flow !== 'None'
+        ? entry.flow
+        : 'No bleeding logged'
+    }
+    secondaryValue={
+      entry.startsNewPeriod
+        ? 'First day of period'
+        : entry.endsPeriod
+          ? 'Last day of period'
+          : undefined
+    }
+  />
+)}
 
           <View style={styles.row}>
             <Text style={styles.label}>Symptoms</Text>
@@ -120,6 +129,40 @@ export default function SelectedDayCard({
 </View>
           </View>
 
+          <InfoRow
+  emoji="💊"
+  label="Supplements"
+  value={
+    entry.supplements?.length
+      ? entry.supplements.join(', ')
+      : 'None logged'
+  }
+/>
+
+<InfoRow
+  emoji="😴"
+  label="Sleep"
+  value={
+    entry.sleep
+      ? `${entry.sleep.quality} · ${entry.sleep.duration}`
+      : 'Not logged'
+  }
+  secondaryValue={
+    entry.sleep
+      ? [
+          entry.sleep.wokeFrequently
+            ? 'Frequent waking'
+            : '',
+          entry.sleep.nightSweats
+            ? 'Night sweats'
+            : '',
+        ]
+          .filter(Boolean)
+          .join(' · ') || undefined
+      : undefined
+  }
+/>
+
 <InfoRow
   emoji={phase?.emoji}
   label="Cycle phase"
@@ -135,8 +178,11 @@ export default function SelectedDayCard({
   accentColor={phase?.color}
 />
 
-{entry && onEditPeriod && (
-  <Pressable
+{showCycleTracking &&
+  entry &&
+  onEditPeriod && (
+
+    <Pressable
     onPress={onEditPeriod}
     style={styles.editButton}>
     <Text style={styles.editButtonText}>

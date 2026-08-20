@@ -289,6 +289,10 @@ const personalizedGreetingTitle =
       )}, ${preferredName}!`
     : greeting.title;
 
+    const showsCycleTracking =
+  profile.trackingPreference ===
+  'cycle';
+
 const dailyWins = getDailyWins().map((win) => {
   let completed = false;
 
@@ -364,6 +368,8 @@ return (
 </Text>
       </View>
 
+{showsCycleTracking && (
+  <>
 {trackedCycleDay !== null ? (
   <>
     <MorningBriefingCard
@@ -418,6 +424,8 @@ return (
 ) : (
   <CycleSetupCard />
 )}
+</>
+)}
 
 {/*
 <QuickLogCard
@@ -441,6 +449,7 @@ return (
   selectedSupplements}
   selectedSleep={selectedSleep}
   selectedFlow={selectedFlow}
+  showFlow={showsCycleTracking}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
   onMoodSelect={async (value) => {

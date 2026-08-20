@@ -1,35 +1,41 @@
 import { Ionicons } from '@expo/vector-icons';
 
 import {
-    useEffect,
-    useState,
+  useEffect,
+  useState,
 } from 'react';
 
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
 
 import {
-    completeOnboarding,
+  completeOnboarding,
 } from '@/lib/onboarding';
 
 import {
-    loadUserProfile,
-    saveUserProfile,
+  loadUserProfile,
+  saveUserProfile,
+} from '@/lib/profile';
+
+import type {
+  TrackingPreference,
 } from '@/lib/profile';
 
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
+
+import TrackingPreferenceCard from '@/components/profile/TrackingPreferenceCard';
 
 type Props = {
   visible: boolean;
@@ -51,6 +57,11 @@ export default function OnboardingModal({
   const [preferredName, setPreferredName] =
     useState('');
 
+  const [
+    trackingPreference,
+    setTrackingPreference,
+] = useState<TrackingPreference>('cycle');
+
   const [isFinishing, setIsFinishing] =
     useState(false);
 
@@ -65,11 +76,15 @@ export default function OnboardingModal({
       const savedProfile =
         await loadUserProfile();
 
-      if (isActive) {
-        setPreferredName(
-          savedProfile.preferredName,
-        );
-      }
+    if (isActive) {
+      setPreferredName(
+    savedProfile.preferredName,
+  );
+
+  setTrackingPreference(
+    savedProfile.trackingPreference,
+  );
+}
     }
 
     void prepareOnboarding();
@@ -94,12 +109,15 @@ export default function OnboardingModal({
       const savedProfile =
         await loadUserProfile();
 
-      await saveUserProfile({
-        ...savedProfile,
-        preferredName:
-          preferredName.trim() ||
-          savedProfile.preferredName,
-      });
+     await saveUserProfile({
+  ...savedProfile,
+
+  preferredName:
+    preferredName.trim() ||
+    savedProfile.preferredName,
+
+  trackingPreference,
+});
 
       await completeOnboarding();
 
@@ -426,6 +444,11 @@ export default function OnboardingModal({
                     </View>
                   </View>
                 </View>
+
+    <TrackingPreferenceCard
+      value={trackingPreference}
+      onChange={setTrackingPreference}
+/>
 
                 <Pressable
                   accessibilityRole="button"

@@ -49,6 +49,7 @@ function renderCountList(
   emptyMessage: string,
 ): string {
   if (items.length === 0) {
+
     return `
       <p class="empty">
         ${escapeHtml(emptyMessage)}
@@ -151,8 +152,75 @@ const patientInformation =
       </div>
     `
     : '';
+const showsCycleTracking =
+  profile?.trackingPreference !==
+  'wellness';
 
-  return `
+const reportSubtitle =
+  showsCycleTracking
+    ? 'A summary of self-reported symptoms, mood, sleep, supplements, and bleeding.'
+    : 'A summary of self-reported symptoms, mood, sleep, and supplements.';
+
+    const bleedingSummaryCard: string =
+  showsCycleTracking
+    ? `
+      <div class="summary-card">
+        <span class="summary-number">
+          ${report.bleedingDays}
+        </span>
+
+        <span class="summary-label">
+          Bleeding days
+        </span>
+      </div>
+    `
+    : '';
+
+    const cycleAndBleedingSection: string =
+  showsCycleTracking
+    ? `
+      <section class="section">
+        <h2>Cycle &amp; Bleeding</h2>
+
+        <div class="detail-grid">
+          <div class="detail">
+            <strong>
+              ${report.periodStarts}
+            </strong>
+
+            <span>Period starts</span>
+          </div>
+
+          <div class="detail">
+            <strong>
+              ${report.bleedingDays}
+            </strong>
+
+            <span>Bleeding days</span>
+          </div>
+
+          <div class="detail">
+            <strong>
+              ${report.spottingDays}
+            </strong>
+
+            <span>Spotting days</span>
+          </div>
+        </div>
+
+        <div class="subheading">
+          Logged flow
+        </div>
+
+        ${renderCountList(
+          report.flowLevels,
+          'No Flow information was logged.',
+        )}
+      </section>
+    `
+    : '';
+
+return `
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -382,9 +450,8 @@ const patientInformation =
       <h1>Doctor's Report</h1>
 
       <p class="subtitle">
-        A summary of self-reported symptoms,
-        mood, sleep, supplements, and bleeding.
-      </p>
+  ${reportSubtitle}
+</p>
 
       ${patientInformation}
 
@@ -419,15 +486,7 @@ const patientInformation =
         </span>
       </div>
 
-      <div class="summary-card">
-        <span class="summary-number">
-          ${report.bleedingDays}
-        </span>
-
-        <span class="summary-label">
-          Bleeding days
-        </span>
-      </div>
+     ${bleedingSummaryCard}
 
       <div class="summary-card">
         <span class="summary-number">
@@ -512,50 +571,7 @@ const patientInformation =
       </div>
     </section>
 
-    <section class="section">
-      <h2>Cycle &amp; Bleeding</h2>
-
-      <div class="detail-grid">
-        <div class="detail">
-          <strong>
-            ${report.periodStarts}
-          </strong>
-
-          <span>
-            Period starts
-          </span>
-        </div>
-
-        <div class="detail">
-          <strong>
-            ${report.bleedingDays}
-          </strong>
-
-          <span>
-            Bleeding days
-          </span>
-        </div>
-
-        <div class="detail">
-          <strong>
-            ${report.spottingDays}
-          </strong>
-
-          <span>
-            Spotting days
-          </span>
-        </div>
-      </div>
-
-      <div class="subheading">
-        Logged flow
-      </div>
-
-      ${renderCountList(
-        report.flowLevels,
-        'No Flow information was logged.',
-      )}
-    </section>
+  ${cycleAndBleedingSection}
 
     <section class="section">
       <h2>Supplements Logged</h2>

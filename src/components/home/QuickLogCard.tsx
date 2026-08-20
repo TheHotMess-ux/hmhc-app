@@ -25,6 +25,7 @@ type Props = {
   selectedSupplements: string[];
   selectedFlow: FlowLevel | null;
   selectedSleep: SleepLog | null;
+  showFlow: boolean;
   onMoodPress: () => void;
   onSymptomsPress: () => void;
   onSupplementsPress: () => void;
@@ -38,6 +39,7 @@ export default function QuickLogCard({
   selectedSupplements,
   selectedFlow,
   selectedSleep,
+  showFlow,
   onMoodPress,
   onSymptomsPress,
   onSupplementsPress,
@@ -145,6 +147,7 @@ const selectedSleepEmoji =
   )}
 </Pressable>
 
+{showFlow && (
 <Pressable
   accessibilityRole="button"
   accessibilityLabel="Log today's flow"
@@ -170,6 +173,7 @@ const selectedSleepEmoji =
     </Text>
   )}
 </Pressable>
+)}
 
         <Pressable
   accessibilityRole="button"

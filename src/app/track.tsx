@@ -67,6 +67,10 @@ import FlowScreen from '@/components/quickLog/FlowScreen';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
+import {
+  useUserProfile,
+} from '@/hooks/useUserProfile';
+
 type JournalEntries = Awaited<
   ReturnType<typeof loadJournalEntries>
 >;
@@ -169,6 +173,14 @@ function getStoredCycleDay(
 }
 
 export default function TrackScreen() {
+
+  const {
+  profile,
+} = useUserProfile();
+
+const showsCycleTracking =
+  profile.trackingPreference ===
+  'cycle';
 
   const today = useMemo(() => new Date(), []);
 
@@ -458,12 +470,13 @@ async function saveHistoricalPeriod(
 }
 
 async function scheduleRealPeriodReminder() {
-  if (
-    periodReminderStatus !== 'remind' ||
-    !periodReminderMessage
-  ) {
-    return;
-  }
+ if (
+  !showsCycleTracking ||
+  periodReminderStatus !== 'remind' ||
+  !periodReminderMessage
+) {
+  return;
+}
 
   const reminderKey =
     createReminderKey();
@@ -508,6 +521,7 @@ if (reminderDate <= now) {
 useEffect(() => {
   void scheduleRealPeriodReminder();
 }, [
+  showsCycleTracking,
   periodReminderStatus,
   periodReminderMessage,
 ]);
@@ -540,15 +554,19 @@ useEffect(() => {
       <Text style={styles.todayEyebrow}>TODAY</Text>
 
       <Text style={styles.todayPhase}>
-        {todayPhase
-  ? `${todayPhase.emoji} ${todayPhase.title}`
-  : 'Cycle tracking not started'}
+       {showsCycleTracking
+  ? todayPhase
+    ? `${todayPhase.emoji} ${todayPhase.title}`
+    : 'Cycle tracking not started'
+  : 'Your wellness timeline'}
       </Text>
 
       <Text style={styles.todayCycleDay}>
-        {todayCycleDay !== null
-  ? `Cycle day ${todayCycleDay}`
-  : 'Log the first day of your period to begin cycle tracking'}
+   {showsCycleTracking
+  ? todayCycleDay !== null
+    ? `Cycle day ${todayCycleDay}`
+    : 'Log the first day of your period to begin cycle tracking'
+  : 'Mood, symptoms, sleep, supplements, and daily patterns'}
       </Text>
 
       {latestPeriodDuration !== null && (
@@ -705,7 +723,8 @@ useEffect(() => {
     </View>
   )}
 
-{predictionReadiness === 'ready' &&
+{showsCycleTracking &&
+  predictionReadiness === 'ready' &&
   nextPeriodPrediction &&
   predictedPeriodDate &&
   predictedWindowStart &&
@@ -735,8 +754,8 @@ useEffect(() => {
     </View>
   )}
 
-{predictionReadiness !== 'ready' && (
-  <View style={styles.predictionCard}>
+{showsCycleTracking &&
+  predictionReadiness !== 'ready' && (  <View style={styles.predictionCard}>
     <Text style={styles.predictionEyebrow}>
       NEXT PERIOD ESTIMATE
     </Text>
@@ -794,6 +813,7 @@ useEffect(() => {
               );
 
 const isPredictedPeriodWindow =
+  showsCycleTracking &&
   predictionReadiness === 'ready' &&
   nextPeriodPrediction !== null &&
   date > today &&
@@ -801,6 +821,7 @@ const isPredictedPeriodWindow =
   date <= nextPeriodPrediction.windowEnd;
 
 const isPredictedPeriodDate =
+  showsCycleTracking &&
   predictionReadiness === 'ready' &&
   nextPeriodPrediction !== null &&
   date > today &&
@@ -840,6 +861,7 @@ const cycleDay =
   trackedDateCycleDay;
 
 const phase =
+  showsCycleTracking &&
   cycleDay !== null
     ? getCyclePhase(cycleDay)
     : null;
@@ -858,9 +880,21 @@ const bodyLoadColor =
   phaseColor={phase?.color}
   moodEmoji={moodEmoji}
   bodyLoadColor={bodyLoadColor}
-  flow={entry?.flow}
-  startsNewPeriod={entry?.startsNewPeriod}
-  endsPeriod={entry?.endsPeriod}
+  flow={
+  showsCycleTracking
+    ? entry?.flow
+    : undefined
+}
+startsNewPeriod={
+  showsCycleTracking
+    ? entry?.startsNewPeriod
+    : undefined
+}
+endsPeriod={
+  showsCycleTracking
+    ? entry?.endsPeriod
+    : undefined
+}
   isPredictedPeriodWindow={
     isPredictedPeriodWindow
   }
@@ -875,53 +909,71 @@ const bodyLoadColor =
 
   <View style={styles.legend}>
   <View style={styles.legendItem}>
-  <View style={styles.loggedDot} />
+    <View style={styles.loggedDot} />
 
-  <Text style={styles.legendText}>
-    Logged day
- </Text>
+    <Text style={styles.legendText}>
+      Logged day
+    </Text>
   </View>
 
   <View style={styles.legendItem}>
-  <View style={styles.bodyLoadDot} />
+    <View style={styles.bodyLoadDot} />
 
-  <Text style={styles.legendText}>
-          Body load
-              </Text>
-            <View style={styles.legendItem}>
-  <View style={styles.predictedWindowLegend} />
+    <Text style={styles.legendText}>
+      Body load
+    </Text>
+  </View>
 
-  <Text style={styles.legendText}>
-    Predicted window
-  </Text>
+  {showsCycleTracking && (
+    <>
+      <View style={styles.legendItem}>
+        <View
+          style={
+            styles.predictedWindowLegend
+          }
+        />
+
+        <Text style={styles.legendText}>
+          Predicted window
+        </Text>
+      </View>
+
+      <View style={styles.legendItem}>
+        <Text
+          style={
+            styles.predictedDateLegend
+          }>
+          🩸
+        </Text>
+
+        <Text style={styles.legendText}>
+          Estimated start
+        </Text>
+      </View>
+    </>
+  )}
 </View>
-
-<View style={styles.legendItem}>
-  <Text style={styles.predictedDateLegend}>
-    🩸
-  </Text>
-
-  <Text style={styles.legendText}>
-    Estimated start
-  </Text>
-</View>
-
- </View>
-          </View>
         </View>
 
-<SelectedDayCard
+  <SelectedDayCard
   formattedDate={
     formatSelectedDate(selectedDate)
   }
   entry={selectedEntry}
   cycleDay={selectedCycleDay}
-  onEditPeriod={() =>
-    setEditingPeriod(true)
+  showCycleTracking={
+    showsCycleTracking
   }
-  onAddLog={() =>
-    setEditingPeriod(true)
-  }
+  onEditPeriod={
+  showsCycleTracking
+    ? () => setEditingPeriod(true)
+    : undefined
+}
+onAddLog={
+  showsCycleTracking
+    ? () => setEditingPeriod(true)
+    : undefined
+}
 />
 
         <View style={styles.futureCard}>

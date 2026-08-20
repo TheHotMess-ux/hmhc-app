@@ -1,9 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export type TrackingPreference =
+  | 'cycle'
+  | 'wellness';
+
 export type UserProfile = {
   preferredName: string;
   fullName: string;
   dateOfBirth: string;
+  trackingPreference: TrackingPreference;
 };
 
 const PROFILE_STORAGE_KEY =
@@ -13,6 +18,7 @@ export const emptyUserProfile: UserProfile = {
   preferredName: '',
   fullName: '',
   dateOfBirth: '',
+  trackingPreference: 'cycle',
 };
 
 export async function loadUserProfile(): Promise<UserProfile> {
@@ -84,6 +90,9 @@ export async function saveUserProfile(
 
       dateOfBirth:
         profile.dateOfBirth.trim(),
+
+        trackingPreference:
+  profile.trackingPreference,
     };
 
     await AsyncStorage.setItem(

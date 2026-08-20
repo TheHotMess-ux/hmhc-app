@@ -16,6 +16,7 @@ type Props = {
   startsNewPeriod: boolean;
   endsPeriod: boolean;
   selectedSleep: SleepLog | null;
+  showFlow: boolean;
 
   onMoodSelect: (
     mood: string,
@@ -48,6 +49,7 @@ export default function QuickLogHub({
   selectedSleep,
   startsNewPeriod,
   endsPeriod,
+  showFlow,
   onMoodSelect,
   onSymptomsSave,
   onSupplementsSave,
@@ -66,6 +68,7 @@ export default function QuickLogHub({
   selectedSupplements={selectedSupplements}
   selectedFlow={selectedFlow}
   selectedSleep={selectedSleep}
+  showFlow={showFlow}
   onMoodPress={() => setActiveQuickLog('mood')}
   onSymptomsPress={() =>
     setActiveQuickLog('symptoms')
