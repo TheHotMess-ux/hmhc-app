@@ -7,6 +7,13 @@ export type CyclePrediction = {
   longestCycle: number;
 };
 
+export type FertileWindowPrediction = {
+  estimatedOvulationDate: Date;
+  windowStart: Date;
+  windowEnd: Date;
+  cycleVariationDays: number;
+};
+
 export type PredictionReadiness =
   | 'not-started'
   | 'learning'
@@ -77,17 +84,56 @@ export function getNextPeriodPrediction(
       periodStart,
       averageCycleLength,
     ),
+
     windowStart: addDays(
       periodStart,
       shortestCycle,
     ),
+
     windowEnd: addDays(
       periodStart,
       longestCycle,
     ),
+
     averageCycleLength,
     shortestCycle,
     longestCycle,
+  };
+}
+
+export function getEstimatedFertileWindow(
+  periodPrediction: CyclePrediction | null,
+): FertileWindowPrediction | null {
+  if (!periodPrediction) {
+    return null;
+  }
+
+  const estimatedOvulationDate =
+    addDays(
+      periodPrediction.predictedDate,
+      -14,
+    );
+
+  const windowStart =
+    addDays(
+      periodPrediction.windowStart,
+      -19,
+    );
+
+  const windowEnd =
+    addDays(
+      periodPrediction.windowEnd,
+      -13,
+    );
+
+  return {
+    estimatedOvulationDate,
+    windowStart,
+    windowEnd,
+
+    cycleVariationDays:
+      periodPrediction.longestCycle -
+      periodPrediction.shortestCycle,
   };
 }
 

@@ -21,6 +21,8 @@ type Props = {
   endsPeriod?: boolean;
   isPredictedPeriodWindow?: boolean;
   isPredictedPeriodDate?: boolean;
+  isEstimatedFertileWindow?: boolean;
+  isEstimatedOvulationDate?: boolean;
   onPress: () => void;
 };
 
@@ -37,6 +39,8 @@ export default function CalendarDay({
   endsPeriod = false,
   isPredictedPeriodWindow = false,
   isPredictedPeriodDate = false,
+  isEstimatedFertileWindow = false,
+  isEstimatedOvulationDate = false,
   onPress,
 }: Props) {
 
@@ -80,6 +84,12 @@ export default function CalendarDay({
             backgroundColor: phaseColor,
           },
 
+          isEstimatedFertileWindow &&
+  styles.fertileWindowButton,
+
+isEstimatedOvulationDate &&
+  styles.ovulationDateButton,
+
           startsNewPeriod &&
             styles.periodStartButton,
 
@@ -106,6 +116,12 @@ export default function CalendarDay({
           ]}>
           {day}
         </Text>
+
+        {isEstimatedOvulationDate && (
+  <View
+    style={styles.ovulationMarker}
+  />
+)}
 
         {isPredictedPeriodDate && (
   <Text style={styles.predictedPeriodMarker}>
@@ -284,6 +300,25 @@ predictedPeriodMarker: {
   top: 6,
   right: 6,
   fontSize: 11,
+},
+
+fertileWindowButton: {
+  backgroundColor: '#C2183A22',
+},
+
+ovulationDateButton: {
+  borderWidth: 2,
+  borderColor: Colors.accent,
+},
+
+ovulationMarker: {
+  position: 'absolute',
+  top: 7,
+  left: 7,
+  width: 7,
+  height: 7,
+  borderRadius: 4,
+  backgroundColor: Colors.accent,
 },
 
 });

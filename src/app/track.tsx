@@ -7,10 +7,11 @@ import {
 
 import {
   Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,6 +33,12 @@ import {
 } from '@/lib/cycleTracking';
 
 import {
+  getEstimatedFertileWindow,
+  getNextPeriodPrediction,
+  getPredictionReadiness,
+} from '@/lib/cyclePrediction';
+
+import {
   loadJournalEntries,
   saveJournalEntry,
 } from '@/lib/journal';
@@ -41,10 +48,6 @@ import {
   getCycleTrendMessage,
 } from '@/lib/cycleInsights';
 
-import {
-  getNextPeriodPrediction,
-  getPredictionReadiness,
-} from '@/lib/cyclePrediction';
 
 import type { FlowLevel } from '@/lib/flow';
 
@@ -204,6 +207,13 @@ const showsCycleTracking =
     setJournalEntries,
   ] = useState<JournalEntry[]>([]);
 
+ const [
+  expandedEstimate,
+  setExpandedEstimate,
+] = useState<
+  'fertile' | 'period' | null
+>(null);
+
   const lastPeriodStart =
     getMostRecentPeriodStart(
       journalEntries,
@@ -252,6 +262,11 @@ const showsCycleTracking =
     cycleLengthHistory,
   );
 
+  const fertileWindowPrediction =
+  getEstimatedFertileWindow(
+    nextPeriodPrediction,
+  );
+
 const predictionReadiness =
   getPredictionReadiness(
     lastPeriodStart,
@@ -271,7 +286,7 @@ const periodReminderStatus =
             createDateKey(today) &&
           entry.startsNewPeriod === true,
       ),
-  });  
+  });
 
   const periodReminderMessage =
   periodReminderStatus === 'remind'
@@ -329,6 +344,39 @@ const predictedWindowEnd =
       day: 'numeric',
     },
   );
+
+  const estimatedOvulationDate =
+  fertileWindowPrediction
+    ?.estimatedOvulationDate
+    .toLocaleDateString(
+      'en-CA',
+      {
+        month: 'long',
+        day: 'numeric',
+      },
+    );
+
+const fertileWindowStart =
+  fertileWindowPrediction
+    ?.windowStart
+    .toLocaleDateString(
+      'en-CA',
+      {
+        month: 'short',
+        day: 'numeric',
+      },
+    );
+
+const fertileWindowEnd =
+  fertileWindowPrediction
+    ?.windowEnd
+    .toLocaleDateString(
+      'en-CA',
+      {
+        month: 'short',
+        day: 'numeric',
+      },
+    );
 
   const calendarDays = useMemo(
     () =>
@@ -703,7 +751,7 @@ useEffect(() => {
         more cycles.
       </Text>
     </View>
-  )} 
+  )}
 
 {cycleTrendMessage && (
   <View style={styles.trendCard}>
@@ -725,38 +773,205 @@ useEffect(() => {
 
 {showsCycleTracking &&
   predictionReadiness === 'ready' &&
+  fertileWindowPrediction &&
   nextPeriodPrediction &&
+  estimatedOvulationDate &&
+  fertileWindowStart &&
+  fertileWindowEnd &&
   predictedPeriodDate &&
   predictedWindowStart &&
   predictedWindowEnd && (
-    <View style={styles.predictionCard}>
-      <Text style={styles.predictionEyebrow}>
-        NEXT PERIOD ESTIMATE
-      </Text>
+    <>
+      <View style={styles.predictionCard}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="View estimated fertile window"
+          accessibilityState={{
+            expanded:
+              expandedEstimate ===
+              'fertile',
+          }}
+          onPress={() =>
+            setExpandedEstimate(
+              (current) =>
+                current === 'fertile'
+                  ? null
+                  : 'fertile',
+            )
+          }
+          style={({ pressed }) => [
+            styles.estimateHeader,
+            pressed &&
+              styles.estimatePressed,
+          ]}>
+          <Text style={styles.estimateIcon}>
+            🌸
+          </Text>
 
-      <Text style={styles.predictionTitle}>
-        🩸 Around {predictedPeriodDate}
-      </Text>
+          <View style={styles.estimateText}>
+            <Text
+              style={
+                styles.predictionEyebrow
+              }>
+              ESTIMATED FERTILE WINDOW
+            </Text>
 
-      <View style={styles.predictionWindow}>
-        <Text style={styles.predictionWindowLabel}>
-          Likely window
-        </Text>
+            <Text
+              style={
+                styles.estimateSummary
+              }>
+              {fertileWindowStart} –{' '}
+              {fertileWindowEnd}
+            </Text>
+          </View>
 
-        <Text style={styles.predictionWindowValue}>
-          {predictedWindowStart} – {predictedWindowEnd}
-        </Text>
+          <Text
+            style={
+              styles.estimateToggle
+            }>
+            {expandedEstimate ===
+            'fertile'
+              ? '−'
+              : '+'}
+          </Text>
+        </Pressable>
+
+        {expandedEstimate ===
+          'fertile' && (
+          <View
+            style={
+              styles.estimateDetails
+            }>
+            <View
+              style={
+                styles.predictionWindow
+              }>
+              <Text
+                style={
+                  styles.predictionWindowLabel
+                }>
+                Estimated ovulation
+              </Text>
+
+              <Text
+                style={
+                  styles.predictionWindowValue
+                }>
+                Around{' '}
+                {estimatedOvulationDate}
+              </Text>
+            </View>
+
+            <Text
+              style={
+                styles.predictionNote
+              }>
+              Based on your recent cycle
+              history. Perimenopause can
+              shift ovulation, so this
+              estimate should not be used
+              as birth control.
+            </Text>
+          </View>
+        )}
       </View>
 
-      <Text style={styles.predictionNote}>
-        Based on your recent cycle history. Your timing may shift as your cycle changes.
-      </Text>
-    </View>
+      <View style={styles.predictionCard}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="View next period estimate"
+          accessibilityState={{
+            expanded:
+              expandedEstimate ===
+              'period',
+          }}
+          onPress={() =>
+            setExpandedEstimate(
+              (current) =>
+                current === 'period'
+                  ? null
+                  : 'period',
+            )
+          }
+          style={({ pressed }) => [
+            styles.estimateHeader,
+            pressed &&
+              styles.estimatePressed,
+          ]}>
+          <Text style={styles.estimateIcon}>
+            🩸
+          </Text>
+
+          <View style={styles.estimateText}>
+            <Text
+              style={
+                styles.predictionEyebrow
+              }>
+              NEXT PERIOD ESTIMATE
+            </Text>
+
+            <Text
+              style={
+                styles.estimateSummary
+              }>
+              Around {predictedPeriodDate}
+            </Text>
+          </View>
+
+          <Text
+            style={
+              styles.estimateToggle
+            }>
+            {expandedEstimate ===
+            'period'
+              ? '−'
+              : '+'}
+          </Text>
+        </Pressable>
+
+        {expandedEstimate ===
+          'period' && (
+          <View
+            style={
+              styles.estimateDetails
+            }>
+            <View
+              style={
+                styles.predictionWindow
+              }>
+              <Text
+                style={
+                  styles.predictionWindowLabel
+                }>
+                Likely window
+              </Text>
+
+              <Text
+                style={
+                  styles.predictionWindowValue
+                }>
+                {predictedWindowStart} –{' '}
+                {predictedWindowEnd}
+              </Text>
+            </View>
+
+            <Text
+              style={
+                styles.predictionNote
+              }>
+              Based on your recent cycle
+              history. Your timing may
+              shift as your cycle changes.
+            </Text>
+          </View>
+        )}
+      </View>
+    </>
   )}
 
 {showsCycleTracking &&
-  predictionReadiness !== 'ready' && (  <View style={styles.predictionCard}>
-    <Text style={styles.predictionEyebrow}>
+  predictionReadiness !== 'ready' && (
+    <View style={styles.predictionCard}>    <Text style={styles.predictionEyebrow}>
       NEXT PERIOD ESTIMATE
     </Text>
 
@@ -789,7 +1004,7 @@ useEffect(() => {
             ))}
           </View>
 
-        
+
 
           <View style={styles.calendarGrid}>
             {calendarDays.map((date, index) => {
@@ -828,6 +1043,25 @@ const isPredictedPeriodDate =
   createDateKey(date) ===
     createDateKey(
       nextPeriodPrediction.predictedDate,
+    );
+
+    const isEstimatedFertileWindow =
+  showsCycleTracking &&
+  predictionReadiness === 'ready' &&
+  fertileWindowPrediction !== null &&
+  date >=
+    fertileWindowPrediction.windowStart &&
+  date <=
+    fertileWindowPrediction.windowEnd;
+
+const isEstimatedOvulationDate =
+  showsCycleTracking &&
+  predictionReadiness === 'ready' &&
+  fertileWindowPrediction !== null &&
+  createDateKey(date) ===
+    createDateKey(
+      fertileWindowPrediction
+        .estimatedOvulationDate,
     );
 
               const moodEmoji =
@@ -901,11 +1135,17 @@ endsPeriod={
   isPredictedPeriodDate={
     isPredictedPeriodDate
   }
+  isEstimatedFertileWindow={
+  isEstimatedFertileWindow
+}
+isEstimatedOvulationDate={
+  isEstimatedOvulationDate
+}
   onPress={() => selectDay(date)}
 />
               );
             })}
-          </View>    
+          </View>
 
   <View style={styles.legend}>
   <View style={styles.legendItem}>
@@ -992,7 +1232,7 @@ onAddLog={
             turning wellness into another job.
           </Text>
         </View>
- 
+
  </ScrollView>
 
 <Modal
@@ -1260,6 +1500,44 @@ predictionNote: {
   color: Colors.textSecondary,
   fontSize: 13,
   lineHeight: 19,
+},
+
+estimateHeader: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: Spacing.md,
+},
+
+estimateIcon: {
+  fontSize: 24,
+},
+
+estimateText: {
+  flex: 1,
+  gap: 4,
+},
+
+estimateSummary: {
+  color: Colors.text,
+  fontSize: 17,
+  fontWeight: '800',
+},
+
+estimateToggle: {
+  color: Colors.gold,
+  fontSize: 26,
+  fontWeight: '500',
+},
+
+estimateDetails: {
+  gap: Spacing.md,
+  borderTopColor: Colors.border,
+  borderTopWidth: 1,
+  paddingTop: Spacing.md,
+},
+
+estimatePressed: {
+  opacity: 0.7,
 },
 
 statusBadge: {
