@@ -9,6 +9,7 @@ export type UserProfile = {
   fullName: string;
   dateOfBirth: string;
   trackingPreference: TrackingPreference;
+  tracksPeriodGap: boolean;
 };
 
 const PROFILE_STORAGE_KEY =
@@ -19,6 +20,7 @@ export const emptyUserProfile: UserProfile = {
   fullName: '',
   dateOfBirth: '',
   trackingPreference: 'cycle',
+  tracksPeriodGap: false,
 };
 
 export async function loadUserProfile(): Promise<UserProfile> {
@@ -81,19 +83,22 @@ export async function saveUserProfile(
   profile: UserProfile,
 ): Promise<void> {
   try {
-    const cleanedProfile: UserProfile = {
-      preferredName:
-        profile.preferredName.trim(),
+   const cleanedProfile: UserProfile = {
+  preferredName:
+    profile.preferredName.trim(),
 
-      fullName:
-        profile.fullName.trim(),
+  fullName:
+    profile.fullName.trim(),
 
-      dateOfBirth:
-        profile.dateOfBirth.trim(),
+  dateOfBirth:
+    profile.dateOfBirth.trim(),
 
-        trackingPreference:
-  profile.trackingPreference,
-    };
+  trackingPreference:
+    profile.trackingPreference,
+
+  tracksPeriodGap:
+    profile.tracksPeriodGap,
+};
 
     await AsyncStorage.setItem(
       PROFILE_STORAGE_KEY,

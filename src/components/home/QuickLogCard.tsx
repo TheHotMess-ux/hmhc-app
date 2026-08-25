@@ -61,7 +61,10 @@ const selectedSleepEmoji =
   )?.emoji ?? '😴';
 
   return (
-    <SectionCard title="Quick Log">
+    <SectionCard
+  title="Quick Log"
+  compact
+>
       <View style={styles.quickLogGrid}>
         <Pressable
           accessibilityRole="button"
@@ -78,11 +81,15 @@ const selectedSleepEmoji =
 
           <Text style={styles.quickLogLabel}>Mood</Text>
 
-          {selectedMood && (
-            <Text style={styles.quickLogValue}>
-              {selectedMood}
-            </Text>
-          )}
+{selectedMood ? (
+  <Text style={styles.quickLogValue}>
+    {selectedMood}
+  </Text>
+) : (
+  <Text style={styles.comingSoon}>
+    Tap to log
+  </Text>
+)}
         </Pressable>
 
         <Pressable
@@ -211,21 +218,25 @@ const selectedSleepEmoji =
 }
 
 const styles = StyleSheet.create({
-  quickLogGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.md,
-  },
+quickLogGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: Spacing.md,
+},
 
-  quickLogButton: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: Spacing.md,
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
+quickLogButton: {
+  flexGrow: 0,
+  flexShrink: 0,
+  flexBasis: '47%',
+  minHeight: 96,
+  backgroundColor: Colors.surface,
+  borderRadius: 14,
+  paddingHorizontal: Spacing.sm,
+  paddingVertical: 10,
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 3,
+},
 
   quickLogButtonSelected: {
     borderColor: Colors.gold,
@@ -233,7 +244,7 @@ const styles = StyleSheet.create({
   },
 
   quickLogEmoji: {
-    fontSize: 28,
+    fontSize: 25,
   },
 
   quickLogLabel: {

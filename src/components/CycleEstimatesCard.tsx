@@ -1,14 +1,14 @@
 import { useState } from 'react';
 
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import type {
-    PredictionReadiness,
+  PredictionReadiness,
 } from '@/lib/cyclePrediction';
 
 import { Colors } from '@/theme/colors';
@@ -117,11 +117,11 @@ export default function CycleEstimatesCard({
             </Text>
           </View>
 
-          <Text style={styles.estimateToggle}>
-            {expandedEstimate === 'fertile'
-              ? '−'
-              : '+'}
-          </Text>
+         <Text style={styles.estimateToggle}>
+  {expandedEstimate === 'fertile'
+    ? '▲'
+    : '▼'}
+</Text>
         </Pressable>
 
         {expandedEstimate === 'fertile' && (
@@ -186,10 +186,10 @@ export default function CycleEstimatesCard({
           </View>
 
           <Text style={styles.estimateToggle}>
-            {expandedEstimate === 'period'
-              ? '−'
-              : '+'}
-          </Text>
+  {expandedEstimate === 'period'
+    ? '▲'
+    : '▼'}
+</Text>
         </Pressable>
 
         {expandedEstimate === 'period' && (
@@ -243,26 +243,29 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
 
-  estimateIcon: {
-    fontSize: 24,
-  },
+ estimateIcon: {
+  fontSize: 22,
+  lineHeight: 26,
+  width: 28,
+  textAlign: 'center',
+},
 
   estimateText: {
     flex: 1,
     gap: 4,
   },
 
-  estimateSummary: {
-    color: Colors.text,
-    fontSize: 17,
-    fontWeight: '800',
-  },
+ estimateSummary: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 18,
+},
 
   estimateToggle: {
-    color: Colors.gold,
-    fontSize: 26,
-    fontWeight: '500',
-  },
+  color: Colors.gold,
+  fontSize: 13,
+  fontWeight: '700',
+},
 
   estimateDetails: {
     gap: Spacing.md,

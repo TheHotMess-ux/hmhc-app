@@ -81,3 +81,9 @@ export async function prepareDailyQuickLogs(): Promise<string> {
     preparationPromise = null;
   }
 }
+
+export async function clearDailyQuickLogs(): Promise<void> {
+  await AsyncStorage.multiRemove(
+    DAILY_QUICK_LOG_KEYS,
+  );
+}

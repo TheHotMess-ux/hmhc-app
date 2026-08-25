@@ -6,7 +6,9 @@ import {
 } from 'react';
 
 import {
+  Alert,
   Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,6 +23,8 @@ import CalendarDay from '@/components/CalendarDay';
 import CalendarHeader from '@/components/CalendarHeader';
 import CycleEstimatesCard from '@/components/CycleEstimatesCard';
 import CycleHistoryCard from '@/components/CycleHistoryCard';
+import QuickLogHub from '@/components/quickLog/QuickLogHub';
+import SectionCard from '@/components/SectionCard';
 import SelectedDayCard from '@/components/SelectedDayCard';
 
 import { getCyclePhase } from '@/lib/cycle';
@@ -40,6 +44,7 @@ import {
 } from '@/lib/cyclePrediction';
 
 import {
+  deleteJournalEntry,
   loadJournalEntries,
   saveJournalEntry,
 } from '@/lib/journal';
@@ -65,6 +70,15 @@ import {
 import {
   schedulePeriodReminder
 } from '@/lib/notifications';
+
+import {
+  clearDailyQuickLogs,
+  getLocalDateKey,
+} from '@/lib/dailyQuickLog';
+
+import {
+  getAdvancedPatterns,
+} from '@/lib/advancedPatterns';
 
 import FlowScreen from '@/components/quickLog/FlowScreen';
 
@@ -186,6 +200,10 @@ const showsCycleTracking =
   profile.trackingPreference ===
   'cycle';
 
+const showsPeriodLogging =
+  showsCycleTracking ||
+  profile.tracksPeriodGap;
+
   const today = useMemo(() => new Date(), []);
 
   const [visibleMonth, setVisibleMonth] =
@@ -199,6 +217,9 @@ const showsCycleTracking =
 
   const [editingPeriod, setEditingPeriod] =
     useState(false);
+
+    const [editingDailyLog, setEditingDailyLog] =
+  useState(false);
 
   const [selectedDate, setSelectedDate] =
     useState(today);
@@ -450,6 +471,45 @@ const todayStatus =
       )
     : null;
 
+    const recentStoryEntries = useMemo(() => {
+  const storyStartDate = new Date(today);
+
+  storyStartDate.setDate(
+    storyStartDate.getDate() - 29,
+  );
+
+  storyStartDate.setHours(
+    0,
+    0,
+    0,
+    0,
+  );
+
+  return journalEntries.filter(
+    (entry) => {
+      const entryDate = new Date(
+        `${entry.date}T12:00:00`,
+      );
+
+      return (
+        !Number.isNaN(
+          entryDate.getTime(),
+        ) &&
+        entryDate >= storyStartDate &&
+        entryDate <= today
+      );
+    },
+  );
+}, [
+  journalEntries,
+  today,
+]);
+
+const hormonalStory =
+  getAdvancedPatterns(
+    recentStoryEntries,
+  );
+
   function showPreviousMonth() {
     setVisibleMonth(
       (currentMonth) =>
@@ -475,6 +535,44 @@ const todayStatus =
   function selectDay(date: Date) {
     setSelectedDate(date);
   }
+
+async function clearSelectedDateLogs() {
+  const updatedEntries =
+    await deleteJournalEntry(
+      selectedDateKey,
+    );
+
+  if (
+    selectedDateKey ===
+    getLocalDateKey()
+  ) {
+    await clearDailyQuickLogs();
+  }
+
+  setJournalEntries(updatedEntries);
+}
+
+async function saveSelectedDateToJournal(
+  updates: Partial<DailyEntry>,
+) {
+  const entryToSave: DailyEntry = {
+    ...(selectedEntry ?? {}),
+    date: selectedDateKey,
+    cycleDay:
+      selectedEntry?.cycleDay ??
+      selectedCycleDay ??
+      0,
+    mood: selectedEntry?.mood ?? null,
+    symptoms:
+      selectedEntry?.symptoms ?? [],
+    ...updates,
+  };
+
+  const updatedEntries =
+    await saveJournalEntry(entryToSave);
+
+  setJournalEntries(updatedEntries);
+}
 
 async function saveHistoricalPeriod(
   flow: FlowLevel,
@@ -612,20 +710,26 @@ useEffect(() => {
       </Text>
 
 {showsCycleTracking &&
-  latestPeriodDuration !== null && (
-      <Text style={styles.periodDuration}>
-    Last period: {latestPeriodDuration}{' '}
-    {latestPeriodDuration === 1
-      ? 'day'
-      : 'days'}
-  </Text>
-)}
+  (latestPeriodDuration !== null ||
+    latestCycleLength !== null) && (
+    <Text style={styles.periodDuration}>
+      {latestPeriodDuration !== null
+        ? `Last period: ${latestPeriodDuration} ${
+            latestPeriodDuration === 1
+              ? 'day'
+              : 'days'
+          }`
+        : ''}
 
-{showsCycleTracking &&
-  latestCycleLength !== null && (
-      <Text style={styles.periodDuration}>
-    Last cycle: {latestCycleLength} days
-  </Text>
+      {latestPeriodDuration !== null &&
+      latestCycleLength !== null
+        ? '  •  '
+        : ''}
+
+      {latestCycleLength !== null
+        ? `Last cycle: ${latestCycleLength} days`
+        : ''}
+    </Text>
 )}
 
     </View>
@@ -856,6 +960,15 @@ isEstimatedOvulationDate={
 
   {showsCycleTracking && (
     <>
+
+<View style={styles.legendItem}>
+  <View style={styles.ovulationLegendDot} />
+
+  <Text style={styles.legendText}>
+    Estimated ovulation
+  </Text>
+</View>
+
       <View style={styles.legendItem}>
         <View
           style={
@@ -868,18 +981,13 @@ isEstimatedOvulationDate={
         </Text>
       </View>
 
-      <View style={styles.legendItem}>
-        <Text
-          style={
-            styles.predictedDateLegend
-          }>
-          🩸
-        </Text>
+     <View style={styles.legendItem}>
+  <View style={styles.predictedDateLegend} />
 
-        <Text style={styles.legendText}>
-          Estimated start
-        </Text>
-      </View>
+  <Text style={styles.legendText}>
+    Estimated start
+  </Text>
+</View>
     </>
   )}
 </View>
@@ -894,16 +1002,53 @@ isEstimatedOvulationDate={
   showCycleTracking={
     showsCycleTracking
   }
-  onEditPeriod={
-  showsCycleTracking
+onEditPeriod={
+  showsPeriodLogging
     ? () => setEditingPeriod(true)
     : undefined
 }
-onAddLog={
-  showsCycleTracking
-    ? () => setEditingPeriod(true)
+onAddLog={() =>
+  setEditingDailyLog(true)
+}
+
+onClearLog={
+  selectedEntry
+    ? () => {
+        const hasPeriodData =
+          Boolean(
+            selectedEntry.flow &&
+            selectedEntry.flow !== 'None',
+          ) ||
+          selectedEntry.startsNewPeriod ||
+          selectedEntry.endsPeriod;
+
+        Alert.alert(
+          'Clear this day’s logs?',
+          hasPeriodData
+            ? `This will remove everything logged for ${formatSelectedDate(
+                selectedDate,
+              )}, including period information. Your cycle estimates may update. This cannot be undone.`
+            : `This will remove everything logged for ${formatSelectedDate(
+                selectedDate,
+              )}. This cannot be undone.`,
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            {
+              text: 'Clear logs',
+              style: 'destructive',
+              onPress: () => {
+                void clearSelectedDateLogs();
+              },
+            },
+          ],
+        );
+      }
     : undefined
 }
+
 />
 
 <CycleEstimatesCard
@@ -960,24 +1105,227 @@ onAddLog={
   }
 />
 
-        <View style={styles.futureCard}>
-          <Text style={styles.futureEyebrow}>
-            COMING TO MY RHYTHM
+<SectionCard
+  title="Your Hormonal Story"
+  emoji="🧬"
+  collapsible
+  defaultExpanded={false}
+  summary={
+    !hormonalStory.hasEnoughData
+      ? `${hormonalStory.loggedDays} of ${hormonalStory.minimumDays} days logged`
+      : hormonalStory.patterns.length === 0
+        ? 'No repeated patterns yet'
+        : `${hormonalStory.patterns.length} ${
+            hormonalStory.patterns.length === 1
+              ? 'pattern'
+              : 'patterns'
+          } noticed`
+  }>
+
+  <Text style={styles.futureTitle}>
+    What your recent logs are showing
+  </Text>
+
+  {!hormonalStory.hasEnoughData ? (
+    <>
+      <Text style={styles.futureText}>
+        HMHC is still learning your rhythm.
+        You&apos;ve logged{' '}
+        {hormonalStory.loggedDays} of the{' '}
+        {hormonalStory.minimumDays} days
+        needed to begin spotting repeated
+        patterns.
+      </Text>
+
+      <Text style={styles.storyNote}>
+        Keep checking in when you can.
+        You&apos;re building the picture one
+        ordinary day at a time.
+      </Text>
+    </>
+  ) : hormonalStory.patterns.length === 0 ? (
+    <>
+      <Text style={styles.futureText}>
+        Nothing is repeating strongly enough
+        yet to call it a pattern.
+      </Text>
+
+      <Text style={styles.storyNote}>
+        That&apos;s still useful information.
+        HMHC will keep watching without
+        inventing connections that aren&apos;t
+        there.
+      </Text>
+    </>
+  ) : (
+    <>
+      {hormonalStory.patterns
+        .slice(0, 2)
+        .map((pattern) => (
+          <View
+            key={pattern.id}
+            style={styles.storyPatternCard}>
+            <Text style={styles.storyPatternEyebrow}>
+              {pattern.eyebrow}
+            </Text>
+
+            <Text style={styles.storyPatternTitle}>
+              {pattern.title}
+            </Text>
+
+            <Text style={styles.storyPatternMessage}>
+              {pattern.message}
+            </Text>
+
+            <Text style={styles.storyEvidence}>
+              {pattern.evidence}
+            </Text>
+          </View>
+        ))}
+
+      <Text style={styles.storyNote}>
+        These are observations from your
+        recent logs, not diagnoses. The story
+        gets clearer as you keep logging.
+      </Text>
+    </>
+  )}
+</SectionCard>
+
+ </ScrollView>
+
+<Modal
+  visible={editingDailyLog}
+  transparent
+  animationType="fade"
+  onRequestClose={() =>
+    setEditingDailyLog(false)
+  }>
+  <View style={styles.editModalBackdrop}>
+    <ScrollView
+      style={styles.editModalCard}
+      contentContainerStyle={
+        styles.editModalContent
+      }
+      showsVerticalScrollIndicator={false}>
+
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}>
+        <View>
+          <Text
+            style={{
+              color: Colors.gold,
+              fontSize: 11,
+              fontWeight: '800',
+              letterSpacing: 1.5,
+            }}>
+            DAILY LOG
           </Text>
 
-          <Text style={styles.futureTitle}>
-            Your full hormonal story
-          </Text>
-
-          <Text style={styles.futureText}>
-            Period tracking, predicted phases, sleep,
-            supplements and journal notes will eventually
-            connect here to help uncover your patterns without
-            turning wellness into another job.
+          <Text
+            style={{
+              color: '#FFFFFF',
+              fontSize: 22,
+              fontWeight: '800',
+              marginTop: 4,
+            }}>
+            {formatSelectedDate(selectedDate)}
           </Text>
         </View>
 
- </ScrollView>
+        <Pressable
+          onPress={() =>
+            setEditingDailyLog(false)
+          }
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+          }}>
+          <Text
+            style={{
+              color: '#FFFFFF',
+              fontSize: 28,
+            }}>
+            ×
+          </Text>
+        </Pressable>
+      </View>
+
+      <QuickLogHub
+        selectedMood={
+          selectedEntry?.mood ?? null
+        }
+        selectedSymptoms={
+          selectedEntry?.symptoms ?? []
+        }
+        selectedSupplements={
+          selectedEntry?.supplements ?? []
+        }
+        selectedSleep={
+          selectedEntry?.sleep ?? null
+        }
+        selectedFlow={
+          selectedEntry?.flow ?? null
+        }
+        startsNewPeriod={
+          selectedEntry?.startsNewPeriod ??
+          false
+        }
+        endsPeriod={
+          selectedEntry?.endsPeriod ??
+          false
+        }
+        showFlow={showsPeriodLogging}
+
+        onMoodSelect={async (mood) => {
+          await saveSelectedDateToJournal({
+            mood,
+          });
+        }}
+
+        onSymptomsSave={async (
+          symptoms,
+        ) => {
+          await saveSelectedDateToJournal({
+            symptoms,
+          });
+        }}
+
+        onSupplementsSave={async (
+          supplements,
+        ) => {
+          await saveSelectedDateToJournal({
+            supplements,
+          });
+        }}
+
+        onSleepSave={async (sleep) => {
+          await saveSelectedDateToJournal({
+            sleep,
+          });
+        }}
+
+      onFlowSave={async (
+  flow,
+  startsNewPeriod,
+  endsPeriod,
+) => {
+  await saveHistoricalPeriod(
+    flow,
+    startsNewPeriod,
+    endsPeriod,
+  );
+}}
+      />
+
+    </ScrollView>
+  </View>
+</Modal>
 
 <Modal
   visible={editingPeriod}
@@ -1039,9 +1387,9 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    gap: Spacing.sm,
-    paddingBottom: Spacing.sm,
-  },
+  gap: 6,
+  paddingBottom: 0,
+},
 
   eyebrow: {
     color: Colors.gold,
@@ -1050,12 +1398,12 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
 
-  title: {
-    color: Colors.text,
-    fontSize: 30,
-    fontWeight: '800',
-    lineHeight: 36,
-  },
+title: {
+  color: Colors.text,
+  fontSize: 26,
+  fontWeight: '800',
+  lineHeight: 31,
+},
 
   subtitle: {
     color: Colors.textSecondary,
@@ -1073,8 +1421,11 @@ const styles = StyleSheet.create({
   },
 
   weekdayRow: {
-    flexDirection: 'row',
-  },
+  flexDirection: 'row',
+  paddingBottom: 6,
+  borderBottomWidth: 1,
+  borderBottomColor: Colors.border,
+},
 
   weekdayLabel: {
     width: `${100 / 7}%`,
@@ -1094,19 +1445,19 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
   },
 
-  legend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-    gap: Spacing.md,
-    paddingTop: Spacing.xs,
-  },
+ legend: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  paddingTop: Spacing.sm,
+  rowGap: 10,
+},
 
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
+ legendItem: {
+  width: '50%',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 6,
+},
 
   loggedDot: {
     width: 7,
@@ -1121,6 +1472,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gold,
     borderRadius: 4,
   },
+
+  ovulationLegendDot: {
+  width: 7,
+  height: 7,
+  borderRadius: 4,
+  backgroundColor: Colors.accent,
+},
 
   legendText: {
     color: Colors.textSecondary,
@@ -1148,6 +1506,49 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
   },
+
+  storyPatternCard: {
+  backgroundColor: Colors.background,
+  borderColor: Colors.border,
+  borderRadius: 16,
+  borderWidth: 1,
+  gap: 6,
+  padding: 16,
+},
+
+storyPatternEyebrow: {
+  color: Colors.gold,
+  fontSize: 10,
+  fontWeight: '800',
+  letterSpacing: 1.3,
+},
+
+storyPatternTitle: {
+  color: '#F4F4F5',
+  fontSize: 16,
+  fontWeight: '800',
+  lineHeight: 22,
+},
+
+storyPatternMessage: {
+  color: Colors.textSecondary,
+  fontSize: 14,
+  lineHeight: 21,
+},
+
+storyEvidence: {
+  color: Colors.gold,
+  fontSize: 12,
+  fontWeight: '700',
+  marginTop: 4,
+},
+
+storyNote: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  fontStyle: 'italic',
+  lineHeight: 20,
+},
 
   futureText: {
     color: Colors.textSecondary,
@@ -1225,9 +1626,10 @@ summaryGrid: {
 summaryItem: {
   flex: 1,
   backgroundColor: Colors.surfaceLight,
-  borderRadius: 16,
-  padding: Spacing.md,
-  gap: 6,
+  borderRadius: 14,
+  paddingHorizontal: Spacing.md,
+  paddingVertical: 11,
+  gap: 4,
 },
 
 summaryLabel: {
@@ -1247,8 +1649,9 @@ summaryValue: {
 
 todayMessage: {
   color: Colors.textSecondary,
-  fontSize: 14,
-  lineHeight: 21,
+  fontSize: 13,
+  fontStyle: 'italic',
+  lineHeight: 19,
 },
 
 
@@ -1277,7 +1680,14 @@ predictedWindowLegend: {
 },
 
 predictedDateLegend: {
-  fontSize: 11,
+  width: 8,
+  height: 8,
+  backgroundColor: Colors.danger,
+  borderRadius: 6,
+  borderTopLeftRadius: 1,
+  transform: [
+    { rotate: '45deg' },
+  ],
 },
 
 editModalContent: {

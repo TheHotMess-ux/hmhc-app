@@ -1,5 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import {
+  useCallback,
+  useState,
+} from 'react';
+
+import {
+  useFocusEffect,
+} from '@react-navigation/native';
 
 import type { DailyEntry } from '@/lib/dashboard';
 import type { FlowLevel } from '@/lib/flow';
@@ -35,8 +42,10 @@ export function useHomeDashboard() {
   const [isLoadingDashboard, setIsLoadingDashboard] =
     useState(true);
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     async function loadDashboardData() {
+
       try {
         await prepareDailyQuickLogs();
  const [
@@ -98,8 +107,9 @@ export function useHomeDashboard() {
       }
     }
 
-    void loadDashboardData();
-  }, []);
+       void loadDashboardData();
+  }, []),
+);
 
   return {
     selectedMood,

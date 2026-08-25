@@ -36,6 +36,7 @@ type Props = {
   onAddLog?: () => void;
   cycleDay?: number | null;
   showCycleTracking?: boolean;
+  onClearLog?: () => void;
 };
 
 
@@ -46,6 +47,8 @@ export default function SelectedDayCard({
   showCycleTracking = true,
   onEditPeriod,
   onAddLog,
+  onClearLog,
+
 }: Props) {
 
  const phase =
@@ -110,34 +113,63 @@ export default function SelectedDayCard({
   />
 )}
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Symptoms</Text>
-            <View style={styles.symptomList}>
+<View style={styles.row}>
+  <Text style={styles.label}>
+    Symptoms
+  </Text>
+
   {entry.symptoms.length > 0 ? (
-    entry.symptoms.map((symptom) => (
-      <Text
-        key={symptom}
-        style={styles.symptomItem}>
-        • {symptom}
-      </Text>
-    ))
+    <View style={styles.symptomList}>
+      {entry.symptoms.map(
+        (symptom) => (
+          <View
+            key={symptom}
+            style={styles.symptomChip}>
+            <Text
+              style={
+                styles.symptomChipText
+              }>
+              {symptom}
+            </Text>
+          </View>
+        ),
+      )}
+    </View>
   ) : (
     <Text style={styles.value}>
       None logged
     </Text>
   )}
 </View>
-          </View>
 
-          <InfoRow
-  emoji="💊"
-  label="Supplements"
-  value={
-    entry.supplements?.length
-      ? entry.supplements.join(', ')
-      : 'None logged'
-  }
-/>
+<View style={styles.row}>
+  <Text style={styles.label}>
+    Supplements
+  </Text>
+
+  {entry.supplements?.length ? (
+    <View style={styles.symptomList}>
+      {entry.supplements.map(
+        (supplement) => (
+          <View
+            key={supplement}
+            style={styles.symptomChip}>
+            <Text
+              style={
+                styles.symptomChipText
+              }>
+              {supplement}
+            </Text>
+          </View>
+        ),
+      )}
+    </View>
+  ) : (
+    <Text style={styles.value}>
+      None logged
+    </Text>
+  )}
+</View>
 
 <InfoRow
   emoji="😴"
@@ -178,15 +210,36 @@ export default function SelectedDayCard({
   accentColor={phase?.color}
 />
 
-{showCycleTracking &&
-  entry &&
-  onEditPeriod && (
+<View style={styles.editActions}>
+  {showCycleTracking &&
+    entry &&
+    onEditPeriod && (
+      <Pressable
+        onPress={onEditPeriod}
+        style={styles.editButton}>
+        <Text style={styles.editButtonText}>
+          Edit period log
+        </Text>
+      </Pressable>
+  )}
 
+  {onAddLog && (
     <Pressable
-    onPress={onEditPeriod}
-    style={styles.editButton}>
-    <Text style={styles.editButtonText}>
-      Edit period log
+      onPress={onAddLog}
+      style={styles.editButton}>
+      <Text style={styles.editButtonText}>
+        Edit daily log
+      </Text>
+    </Pressable>
+  )}
+</View>
+
+{onClearLog && (
+  <Pressable
+    onPress={onClearLog}
+    style={styles.clearButton}>
+    <Text style={styles.clearButtonText}>
+      Clear this day&apos;s logs
     </Text>
   </Pressable>
 )}
@@ -225,36 +278,38 @@ export default function SelectedDayCard({
 
 {phase && (
   <>
-    <View style={styles.insightSection}>
-     <SectionHeading
-      emoji="💡"
-      title="Understanding Today"
-/>
+<View style={styles.insightSection}>
+  <SectionHeading
+    emoji="💡"
+    title="Understanding Today"
+  />
 
-<Text style={styles.subsectionTitle}>
-  What This Means
-</Text>
-      <Text style={styles.bodyText}>
-        {phase.description}
-      </Text>
-    </View>
+  <Text style={styles.subsectionTitle}>
+    What This Means
+  </Text>
 
-    <View style={styles.insightSection}>
-      <Text style={styles.subsectionTitle}>
-  Today&apos;s Focus
-</Text>
+  <Text style={styles.bodyText}>
+    {phase.description}
+  </Text>
 
-      <View style={styles.recommendationList}>
-        {phase.recommendations.map((recommendation) => (
-          <Text
-            key={recommendation}
-            style={styles.recommendationItem}
-          >
-            • {recommendation}
-          </Text>
-        ))}
-      </View>
-    </View>
+  <View style={styles.insightDivider} />
+
+  <Text style={styles.subsectionTitle}>
+    Today&apos;s Focus
+  </Text>
+
+  <View style={styles.recommendationList}>
+    {phase.recommendations.map(
+      (recommendation) => (
+        <Text
+          key={recommendation}
+          style={styles.recommendationItem}>
+          • {recommendation}
+        </Text>
+      ),
+    )}
+  </View>
+</View>
 
     <View style={styles.reminderCard}>
    <SectionHeading
@@ -296,14 +351,14 @@ export default function SelectedDayCard({
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: 20,
-    gap: 12,
-  },
+card: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.border,
+  borderRadius: 22,
+  borderWidth: 1,
+  padding: 20,
+  gap: 12,
+},
 
   eyebrow: {
     color: Colors.gold,
@@ -359,14 +414,25 @@ emptyText: {
   lineHeight: 21,
 },
 
-  symptomList: {
-  gap:10,
+symptomList: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 8,
 },
 
-symptomItem: {
+symptomChip: {
+  backgroundColor: Colors.surfaceLight,
+  borderColor: Colors.border,
+  borderRadius: 999,
+  borderWidth: 1,
+  paddingHorizontal: 11,
+  paddingVertical: 7,
+},
+
+symptomChipText: {
   color: '#F4F4F5',
-  fontSize: 16,
-  lineHeight: 24,
+  fontSize: 13,
+  fontWeight: '600',
 },
 
 secondaryValue: {
@@ -379,6 +445,12 @@ insightSection: {
   borderRadius: 16,
   padding: 16,
   gap: 8,
+},
+
+insightDivider: {
+  height: 1,
+  backgroundColor: Colors.border,
+  marginVertical: 6,
 },
 
 sectionTitle: {
@@ -460,6 +532,24 @@ editButtonText: {
   color: Colors.gold,
   fontSize: 13,
   fontWeight: '700',
+},
+
+clearButton: {
+  alignSelf: 'flex-start',
+  paddingHorizontal: 4,
+  paddingVertical: 8,
+},
+
+clearButtonText: {
+  color: '#FF8A8A',
+  fontSize: 13,
+  fontWeight: '600',
+},
+
+editActions: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 8,
 },
 
 });

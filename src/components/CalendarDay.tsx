@@ -123,10 +123,8 @@ isEstimatedOvulationDate &&
   />
 )}
 
-        {isPredictedPeriodDate && (
-  <Text style={styles.predictedPeriodMarker}>
-    🩸
-  </Text>
+{isPredictedPeriodDate && (
+  <View style={styles.predictedPeriodMarker} />
 )}
 
         <View style={styles.statusRow}>
@@ -148,9 +146,11 @@ isEstimatedOvulationDate &&
             />
           )}
 
-          {hasEntry && !moodEmoji && (
-            <View style={styles.entryDot} />
-          )}
+          {hasEntry &&
+  !moodEmoji &&
+  !bodyLoadColor && (
+    <View style={styles.entryDot} />
+  )}
         </View>
 
 {hasBleeding && (
@@ -167,11 +167,7 @@ isEstimatedOvulationDate &&
 )}
 
 {endsPeriod && (
-  <View style={styles.periodEndMarker}>
-    <Text style={styles.periodEndText}>
-      END
-    </Text>
-  </View>
+  <View style={styles.periodEndMarker} />
 )}
       </Pressable>
     </View>
@@ -180,10 +176,10 @@ isEstimatedOvulationDate &&
 
 const styles = StyleSheet.create({
   dayCell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
-    padding: 3,
-  },
+  width: `${100 / 7}%`,
+  height: 58,
+  padding: 3,
+},
 
   dayButton: {
     flex: 1,
@@ -269,20 +265,14 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 
-  periodEndMarker: {
-  marginTop: 2,
-  paddingHorizontal: 5,
-  paddingVertical: 1,
-  borderRadius: 999,
-  borderWidth: 1,
-  borderColor: Colors.gold,
-},
-
-periodEndText: {
-  color: Colors.gold,
-  fontSize: 7,
-  fontWeight: '800',
-  letterSpacing: 0.5,
+periodEndMarker: {
+  position: 'absolute',
+  bottom: 5,
+  right: 5,
+  width: 5,
+  height: 5,
+  borderRadius: 3,
+  backgroundColor: Colors.gold,
 },
 
 predictedWindowButton: {
@@ -297,9 +287,16 @@ predictedDateButton: {
 
 predictedPeriodMarker: {
   position: 'absolute',
-  top: 6,
-  right: 6,
-  fontSize: 11,
+  top: 28,
+  right: 5,
+  width: 8,
+  height: 8,
+  backgroundColor: Colors.danger,
+  borderRadius: 6,
+  borderTopLeftRadius: 1,
+  transform: [
+    { rotate: '45deg' },
+  ],
 },
 
 fertileWindowButton: {
@@ -313,8 +310,8 @@ ovulationDateButton: {
 
 ovulationMarker: {
   position: 'absolute',
-  top: 7,
-  left: 7,
+  top: 27,
+  left: 5,
   width: 7,
   height: 7,
   borderRadius: 4,

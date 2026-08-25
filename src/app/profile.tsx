@@ -35,6 +35,7 @@ import type {
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
+import PeriodGapTrackingCard from '@/components/profile/PeriodGapTrackingCard';
 import TrackingPreferenceCard from '@/components/profile/TrackingPreferenceCard';
 
 function isValidDateOfBirth(
@@ -142,6 +143,32 @@ export default function ProfileScreen() {
   }
 }
 
+async function handlePeriodGapChange(
+  value: boolean,
+) {
+  const previousProfile = profile;
+
+  const updatedProfile: UserProfile = {
+    ...profile,
+    tracksPeriodGap: value,
+  };
+
+  setProfile(updatedProfile);
+
+  try {
+    await saveUserProfile(
+      updatedProfile,
+    );
+  } catch {
+    setProfile(previousProfile);
+
+    Alert.alert(
+      'Unable to save preference',
+      'Your period timeline preference could not be updated. Please try again.',
+    );
+  }
+}
+
   async function handleSave() {
     Keyboard.dismiss();
 
@@ -219,6 +246,9 @@ Device: ${Platform.OS} ${Platform.Version}
 
         trackingPreference:
           profile.trackingPreference,
+
+        tracksPeriodGap:
+          profile.tracksPeriodGap,
       };
 
       await saveUserProfile(
@@ -356,6 +386,18 @@ Device: ${Platform.OS} ${Platform.Version}
     );
   }}
 />
+
+{profile.trackingPreference ===
+  'wellness' && (
+  <PeriodGapTrackingCard
+    value={profile.tracksPeriodGap}
+    onChange={(value) => {
+      void handlePeriodGapChange(
+        value,
+      );
+    }}
+  />
+)}
 
       <View style={styles.formCard}>
         <Text style={styles.cardTitle}>

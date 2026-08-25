@@ -19,15 +19,21 @@ type Props = {
 };
 
 function getBatteryLevel(status: string) {
-  const normalizedStatus = status.toLowerCase();
+  const normalizedStatus =
+    status.toLowerCase();
 
-  if (normalizedStatus.includes('peak')) {
+  if (
+    normalizedStatus.includes('peak') ||
+    normalizedStatus.includes('highest')
+  ) {
     return 5;
   }
 
   if (
     normalizedStatus.includes('high') ||
-    normalizedStatus.includes('rising')
+    normalizedStatus.includes('rising') ||
+    normalizedStatus.includes('increasing') ||
+    normalizedStatus.includes('rise')
   ) {
     return 4;
   }
@@ -46,7 +52,9 @@ function getBatteryLevel(status: string) {
     return 2;
   }
 
-  if (normalizedStatus.includes('low')) {
+  if (
+    normalizedStatus.includes('low')
+  ) {
     return 1;
   }
 
@@ -54,23 +62,40 @@ function getBatteryLevel(status: string) {
 }
 
 function getStatusSymbol(status: string) {
-  const normalizedStatus = status.toLowerCase();
+  const normalizedStatus =
+    status.toLowerCase();
 
   if (
     normalizedStatus.includes('rising') ||
-    normalizedStatus.includes('high') ||
-    normalizedStatus.includes('peak')
+    normalizedStatus.includes('increasing') ||
+    normalizedStatus.includes('rise')
   ) {
     return '↗';
   }
 
-  if (normalizedStatus.includes('falling')) {
+  if (
+    normalizedStatus.includes('falling') ||
+    normalizedStatus.includes('lower')
+  ) {
     return '↘';
+  }
+
+  if (
+    normalizedStatus.includes('high') ||
+    normalizedStatus.includes('highest') ||
+    normalizedStatus.includes('peak')
+  ) {
+    return '↑';
+  }
+
+  if (
+    normalizedStatus.includes('low')
+  ) {
+    return '↓';
   }
 
   return '→';
 }
-
 export default function HormoneBattery({
   name,
   status,
@@ -79,7 +104,10 @@ export default function HormoneBattery({
 }: Props) {
   const batteryLevel = getBatteryLevel(status);
   const statusSymbol = getStatusSymbol(status);
-
+const batteryAccentColor =
+  accentColor.length === 9
+    ? accentColor.slice(0, 7)
+    : accentColor;
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -87,18 +115,16 @@ export default function HormoneBattery({
           {emoji} {name}
         </Text>
 
-        <Text style={[styles.status, { color: accentColor }]}>
+        <Text style={[styles.status, { color: batteryAccentColor }]}>
           {statusSymbol} {status}
         </Text>
       </View>
 
       <View style={styles.batteryRow}>
-        <View
-          style={[
-            styles.batteryShell,
-            { borderColor: accentColor },
-          ]}
-        >
+       <View
+  style={styles.batteryShell}
+>
+
           <View style={styles.batterySegments}>
             {[1, 2, 3, 4, 5].map((segment) => (
               <View
@@ -106,10 +132,17 @@ export default function HormoneBattery({
                 style={[
                   styles.batterySegment,
                   {
-                    backgroundColor:
-                      segment <= batteryLevel
-                        ? accentColor
-                        : Colors.border,
+                   backgroundColor:
+  segment <= batteryLevel
+    ? batteryAccentColor
+    : 'transparent',
+
+borderColor:
+  segment <= batteryLevel
+    ? batteryAccentColor
+    : '#4A4A50',
+
+borderWidth: 1,
                   },
                 ]}
               />
@@ -117,26 +150,22 @@ export default function HormoneBattery({
           </View>
         </View>
 
-        <View
-          style={[
-            styles.batteryTip,
-            { backgroundColor: accentColor },
-          ]}
-        />
+       <View style={styles.batteryTip} />
+
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 14,
-    gap: 12,
-  },
+card: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.border,
+  borderRadius: 14,
+  borderWidth: 1,
+  padding: 11,
+  gap: 8,
+},
 
   header: {
     alignItems: 'center',
@@ -163,17 +192,18 @@ const styles = StyleSheet.create({
   },
 
   batteryShell: {
-    borderRadius: 6,
-    borderWidth: 1.5,
-    flex: 1,
-    padding: 3,
-  },
+  borderColor: '#55555C',
+  borderRadius: 7,
+  borderWidth: 1.5,
+  flex: 1,
+  padding: 4,
+},
 
   batterySegments: {
-    flexDirection: 'row',
-    gap: 3,
-    height: 12,
-  },
+  flexDirection: 'row',
+  gap: 3,
+  height: 14,
+},
 
   batterySegment: {
     borderRadius: 2,
@@ -181,10 +211,12 @@ const styles = StyleSheet.create({
   },
 
   batteryTip: {
-    borderBottomRightRadius: 3,
-    borderTopRightRadius: 3,
-    height: 10,
-    marginLeft: 3,
-    width: 4,
-  },
+  backgroundColor: '#55555C',
+  borderBottomRightRadius: 3,
+  borderTopRightRadius: 3,
+  height: 10,
+  marginLeft: 3,
+  width: 4,
+},
+
 });

@@ -196,8 +196,8 @@ const styles = StyleSheet.create({
   },
 
   symptomLabelSelected: {
-    color: Colors.gold,
-  },
+  color: Colors.text,
+},
 
   check: {
     color: Colors.gold,

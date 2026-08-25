@@ -75,10 +75,12 @@ export default function FlowScreen({
 }
 
  return (
-  <ScrollView
-    style={styles.scrollArea}
-    contentContainerStyle={styles.container}
-    showsVerticalScrollIndicator={false}>
+  <View style={styles.screen}>
+    <ScrollView
+      style={styles.scrollArea}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}>
+
       <Text style={styles.description}>
         How would you describe today&apos;s bleeding?
       </Text>
@@ -218,6 +220,8 @@ export default function FlowScreen({
   </Pressable>
 )}
 
+</ScrollView>
+
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Save bleeding"
@@ -246,11 +250,17 @@ export default function FlowScreen({
           Done
         </Text>
       </Pressable>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+screen: {
+  flexShrink: 1,
+  minHeight: 0,
+  gap: Spacing.md,
+},
+
   scrollArea: {
   flexShrink: 1,
 },
@@ -300,9 +310,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  labelSelected: {
-    color: Colors.gold,
-  },
+ labelSelected: {
+  color: Colors.text,
+},
 
   check: {
     color: Colors.gold,

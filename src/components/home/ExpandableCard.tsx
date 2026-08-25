@@ -1,9 +1,9 @@
 import { ReactNode, useState } from 'react';
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { Colors } from '@/theme/colors';
@@ -56,8 +56,8 @@ export default function ExpandableCard({
           )}
         </View>
 
-        <Text style={styles.chevron}>
-          {isExpanded ? '⌃' : '⌄'}
+       <Text style={styles.chevron}>
+        {isExpanded ? '▲' : '▼'}
         </Text>
       </Pressable>
 
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    minHeight: 72,
+    minHeight: 64,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
@@ -112,11 +112,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  chevron: {
-    color: Colors.gold,
-    fontSize: 22,
-    fontWeight: '800',
-  },
+ chevron: {
+  color: Colors.gold,
+  fontSize: 13,
+  fontWeight: '700',
+},
 
   content: {
     borderTopColor: Colors.border,

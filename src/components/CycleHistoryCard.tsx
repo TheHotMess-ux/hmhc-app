@@ -1,11 +1,13 @@
 import {
-    StyleSheet,
-    Text,
-    View,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
+
+import SectionCard from '@/components/SectionCard';
 
 type CycleTrendMessage = {
   title: string;
@@ -42,17 +44,32 @@ export default function CycleHistoryCard({
   const hasCycleHistory =
     cycleLengthHistory.length >= 2;
 
-  const hasCyclePattern =
-    averageCycleLength !== null &&
-    shortestCycle !== null &&
-    longestCycle !== null;
+    const hasCyclePattern =
+  averageCycleLength !== null &&
+  shortestCycle !== null &&
+  longestCycle !== null;
+
+  const cycleHistorySummary =
+  hasCyclePattern
+    ? `Average ${averageCycleLength} days · Range ${shortestCycle}–${longestCycle} days`
+    : `${cycleLengthHistory.length} completed ${
+        cycleLengthHistory.length === 1
+          ? 'cycle'
+          : 'cycles'
+      } logged`;
 
   if (!hasCycleHistory && !hasCyclePattern) {
     return null;
   }
 
-  return (
-    <View style={styles.container}>
+ return (
+  <SectionCard
+    title="Cycle History"
+    emoji="🔄"
+    collapsible
+    defaultExpanded={false}
+    summary={cycleHistorySummary}>
+
       {hasCycleHistory && (
         <View style={styles.cycleHistoryCard}>
           <Text style={styles.cycleHistoryEyebrow}>
@@ -168,7 +185,7 @@ export default function CycleHistoryCard({
           </Text>
         </View>
       )}
-    </View>
+</SectionCard>
   );
 }
 

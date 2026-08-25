@@ -1,8 +1,9 @@
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { Colors } from '@/theme/colors';
@@ -26,62 +27,74 @@ export default function MoodScreen({
   onSelect,
 }: Props) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.description}>
-        Choose the answer requiring the least emotional paperwork.
-      </Text>
+<View style={styles.container}>
+  <Text style={styles.description}>
+    Choose the answer requiring the least emotional paperwork.
+  </Text>
 
-      <View style={styles.optionList}>
-        {moodOptions.map((mood) => {
-          const value = `${mood.emoji} ${mood.label}`;
-          const isSelected = selectedMood === value;
+  <ScrollView
+    style={styles.scrollArea}
+    contentContainerStyle={styles.optionList}
+    showsVerticalScrollIndicator={false}>
+    {moodOptions.map((mood) => {
+      const value = `${mood.emoji} ${mood.label}`;
+      const isSelected = selectedMood === value;
 
-          return (
-            <Pressable
-              key={mood.label}
-              accessibilityRole="button"
-              accessibilityLabel={`Log mood as ${mood.label}`}
-              onPress={() => onSelect(value)}
-              style={({ pressed }) => [
-                styles.option,
-                isSelected && styles.optionSelected,
-                pressed && styles.optionPressed,
-              ]}>
-              <Text style={styles.emoji}>{mood.emoji}</Text>
+      return (
+        <Pressable
+          key={mood.label}
+          accessibilityRole="button"
+          accessibilityLabel={`Log mood as ${mood.label}`}
+          onPress={() => onSelect(value)}
+          style={({ pressed }) => [
+            styles.option,
+            isSelected && styles.optionSelected,
+            pressed && styles.optionPressed,
+          ]}>
+          <Text style={styles.emoji}>
+            {mood.emoji}
+          </Text>
 
-              <Text
-                style={[
-                  styles.label,
-                  isSelected && styles.labelSelected,
-                ]}>
-                {mood.label}
-              </Text>
+          <Text
+            style={[
+              styles.label,
+              isSelected && styles.labelSelected,
+            ]}>
+            {mood.label}
+          </Text>
 
-              {isSelected && (
-                <Text style={styles.check}>✓</Text>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
+          {isSelected && (
+            <Text style={styles.check}>✓</Text>
+          )}
+        </Pressable>
+      );
+    })}
+  </ScrollView>
+</View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: Spacing.lg,
-  },
+container: {
+  flexShrink: 1,
+  minHeight: 0,
+  gap: Spacing.lg,
+},
 
-  description: {
-    color: Colors.textSecondary,
-    fontSize: 15,
-    lineHeight: 22,
-  },
+description: {
+  color: Colors.textSecondary,
+  fontSize: 15,
+  lineHeight: 22,
+},
 
-  optionList: {
-    gap: Spacing.sm,
-  },
+scrollArea: {
+  flexShrink: 1,
+},
+
+optionList: {
+  gap: Spacing.sm,
+  paddingBottom: Spacing.sm,
+},
 
   option: {
     flexDirection: 'row',
@@ -115,8 +128,8 @@ const styles = StyleSheet.create({
   },
 
   labelSelected: {
-    color: Colors.gold,
-  },
+  color: Colors.text,
+},
 
   check: {
     color: Colors.gold,

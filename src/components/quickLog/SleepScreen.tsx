@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react';
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import {
-    sleepDurationOptions,
-    sleepQualityOptions,
+  sleepDurationOptions,
+  sleepQualityOptions,
 } from '@/lib/sleep';
 
 import type {
-    SleepDuration,
-    SleepLog,
-    SleepQuality,
+  SleepDuration,
+  SleepLog,
+  SleepQuality,
 } from '@/lib/sleep';
 
 import { Colors } from '@/theme/colors';
@@ -413,8 +413,8 @@ const styles = StyleSheet.create({
   },
 
   optionLabelSelected: {
-    color: Colors.gold,
-  },
+  color: Colors.text,
+},
 
   optionValue: {
     color: Colors.textSecondary,

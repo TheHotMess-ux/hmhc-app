@@ -16,7 +16,11 @@ export async function loadJournalEntries(): Promise<DailyEntry[]> {
 
     return JSON.parse(savedEntries) as DailyEntry[];
   } catch (error) {
-    console.error('Unable to load journal entries:', error);
+    console.error(
+      'Unable to load journal entries:',
+      error,
+    );
+
     return [];
   }
 }
@@ -25,22 +29,27 @@ export async function saveJournalEntry(
   entry: DailyEntry,
 ): Promise<DailyEntry[]> {
   try {
-    const currentEntries = await loadJournalEntries();
+    const currentEntries =
+      await loadJournalEntries();
 
-    const entryAlreadyExists = currentEntries.some(
-      (savedEntry) => savedEntry.date === entry.date,
-    );
+    const entryAlreadyExists =
+      currentEntries.some(
+        (savedEntry) =>
+          savedEntry.date === entry.date,
+      );
 
-const updatedEntries = entryAlreadyExists
-  ? currentEntries.map((savedEntry) =>
-      savedEntry.date === entry.date
-        ? {
-            ...savedEntry,
-            ...entry,
-          }
-        : savedEntry,
-    )
-  : [entry, ...currentEntries];
+    const updatedEntries =
+      entryAlreadyExists
+        ? currentEntries.map(
+            (savedEntry) =>
+              savedEntry.date === entry.date
+                ? {
+                    ...savedEntry,
+                    ...entry,
+                  }
+                : savedEntry,
+          )
+        : [entry, ...currentEntries];
 
     await AsyncStorage.setItem(
       JOURNAL_STORAGE_KEY,
@@ -49,7 +58,39 @@ const updatedEntries = entryAlreadyExists
 
     return updatedEntries;
   } catch (error) {
-    console.error('Unable to save journal entry:', error);
+    console.error(
+      'Unable to save journal entry:',
+      error,
+    );
+
+    return [];
+  }
+}
+
+export async function deleteJournalEntry(
+  date: string,
+): Promise<DailyEntry[]> {
+  try {
+    const currentEntries =
+      await loadJournalEntries();
+
+    const updatedEntries =
+      currentEntries.filter(
+        (entry) => entry.date !== date,
+      );
+
+    await AsyncStorage.setItem(
+      JOURNAL_STORAGE_KEY,
+      JSON.stringify(updatedEntries),
+    );
+
+    return updatedEntries;
+  } catch (error) {
+    console.error(
+      'Unable to delete journal entry:',
+      error,
+    );
+
     return [];
   }
 }

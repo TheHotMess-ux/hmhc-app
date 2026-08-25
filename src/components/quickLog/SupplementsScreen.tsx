@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { Colors } from '@/theme/colors';
@@ -37,37 +37,36 @@ export default function SupplementsScreen({
   selectedSupplements,
   onSave,
 }: Props) {
-
   const [
-  draftSupplements,
-  setDraftSupplements,
-] = useState<string[]>(
-  selectedSupplements,
-);
-
-const toggleSupplement = (
-  supplement: string,
-) => {
-  setDraftSupplements(
-    (currentSupplements) => {
-      if (
-        currentSupplements.includes(
-          supplement,
-        )
-      ) {
-        return currentSupplements.filter(
-          (item) =>
-            item !== supplement,
-        );
-      }
-
-      return [
-        ...currentSupplements,
-        supplement,
-      ];
-    },
+    draftSupplements,
+    setDraftSupplements,
+  ] = useState<string[]>(
+    selectedSupplements,
   );
-};
+
+  const toggleSupplement = (
+    supplement: string,
+  ) => {
+    setDraftSupplements(
+      (currentSupplements) => {
+        if (
+          currentSupplements.includes(
+            supplement,
+          )
+        ) {
+          return currentSupplements.filter(
+            (item) =>
+              item !== supplement,
+          );
+        }
+
+        return [
+          ...currentSupplements,
+          supplement,
+        ];
+      },
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -85,10 +84,10 @@ const toggleSupplement = (
         }>
         {SUPPLEMENT_OPTIONS.map(
           (supplement) => {
-           const isSelected =
-            draftSupplements.includes(
-             supplement,
-         );
+            const isSelected =
+              draftSupplements.includes(
+                supplement,
+              );
 
             return (
               <Pressable
@@ -116,9 +115,7 @@ const toggleSupplement = (
 
                 {isSelected && (
                   <Text
-                    style={
-                      styles.check
-                    }>
+                    style={styles.check}>
                     ✓
                   </Text>
                 )}
@@ -128,23 +125,25 @@ const toggleSupplement = (
         )}
       </ScrollView>
 
-<Pressable
-  accessibilityRole="button"
-  accessibilityLabel="Save supplements"
-  onPress={() => {
-    void onSave(
-      draftSupplements,
-    );
-  }}
-  style={({ pressed }) => [
-    styles.saveButton,
-    pressed && styles.pressed,
-  ]}>
-  <Text style={styles.saveButtonText}>
-    Save Supplements
-  </Text>
-</Pressable>
-
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Save supplements"
+        onPress={() => {
+          void onSave(
+            draftSupplements,
+          );
+        }}
+        style={({ pressed }) => [
+          styles.saveButton,
+          pressed && styles.pressed,
+        ]}>
+        <Text style={styles.saveButtonText}>
+  Done
+  {draftSupplements.length > 0
+    ? ` · ${draftSupplements.length} selected`
+    : ''}
+</Text>
+      </Pressable>
     </View>
   );
 }
@@ -192,8 +191,8 @@ const styles = StyleSheet.create({
   },
 
   optionTextSelected: {
-    color: Colors.gold,
-  },
+  color: Colors.text,
+},
 
   check: {
     color: Colors.gold,
@@ -201,22 +200,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
+  saveButton: {
+    backgroundColor: Colors.gold,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  saveButtonText: {
+    color: Colors.background,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+
   pressed: {
     opacity: 0.7,
   },
-  
-saveButton: {
-  backgroundColor: Colors.gold,
-  borderRadius: 14,
-  paddingVertical: 14,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-
-saveButtonText: {
-  color: Colors.background,
-  fontSize: 16,
-  fontWeight: '800',
-},
-
 });

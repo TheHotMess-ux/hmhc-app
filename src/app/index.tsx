@@ -1,21 +1,18 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  useEffect,
-  useState,
+  useCallback,
+  useState
 } from 'react';
 
 import {
-  Modal,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 
 import QuickLogHub from '@/components/quickLog/QuickLogHub';
-import { flowOptions } from '@/lib/flow';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 import FeralForecastCard from '../components/home/FeralForecastCard';
@@ -67,6 +64,10 @@ import {
 import {
   useUserProfile,
 } from '@/hooks/useUserProfile';
+
+import {
+  useFocusEffect,
+} from '@react-navigation/native';
 
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
@@ -242,39 +243,43 @@ const [
   selectedSupplements,
   setSelectedSupplements,
 ] = useState<string[]>([]);
+useFocusEffect(
+  useCallback(() => {
+    async function loadSupplements() {
+      await prepareDailyQuickLogs();
 
-useEffect(() => {
-  async function loadSupplements() {
-    await prepareDailyQuickLogs();
+      const savedSupplements =
+        await AsyncStorage.getItem(
+          'todaysSupplements',
+        );
 
-    const savedSupplements =
-      await AsyncStorage.getItem(
-        'todaysSupplements',
-      );
+      if (!savedSupplements) {
+        setSelectedSupplements([]);
+        return;
+      }
 
-    if (!savedSupplements) {
-      return;
+      try {
+        const parsedSupplements =
+          JSON.parse(
+            savedSupplements,
+          ) as string[];
+
+        setSelectedSupplements(
+          parsedSupplements,
+        );
+      } catch (error) {
+        console.error(
+          'Unable to load supplements:',
+          error,
+        );
+
+        setSelectedSupplements([]);
+      }
     }
 
-    try {
-      const parsedSupplements =
-        JSON.parse(
-          savedSupplements,
-        ) as string[];
-
-      setSelectedSupplements(
-        parsedSupplements,
-      );
-    } catch (error) {
-      console.error(
-        'Unable to load supplements:',
-        error,
-      );
-    }
-  }
-
-  void loadSupplements();
-}, []);
+    void loadSupplements();
+  }, []),
+);
 
 const greeting = getSmartGreeting();
 
@@ -292,6 +297,10 @@ const personalizedGreetingTitle =
     const showsCycleTracking =
   profile.trackingPreference ===
   'cycle';
+
+  const showsPeriodLogging =
+  showsCycleTracking ||
+  profile.tracksPeriodGap;
 
 const dailyWins = getDailyWins().map((win) => {
   let completed = false;
@@ -427,21 +436,6 @@ return (
 </>
 )}
 
-{/*
-<QuickLogCard
-  selectedMood={selectedMood}
-  selectedSymptoms={selectedSymptoms}
-  selectedFlow={selectedFlow}
-  onMoodPress={() => setIsMoodModalVisible(true)}
-  onSymptomsPress={() => setIsSymptomsModalVisible(true)}
-  onFlowPress={() => {
-    setIsMoodModalVisible(false);
-    setIsSymptomsModalVisible(false);
-    setIsFlowModalVisible(true);
-  }}
-/>
-*/}
-
 <QuickLogHub
   selectedMood={selectedMood}
   selectedSymptoms={selectedSymptoms}
@@ -449,7 +443,7 @@ return (
   selectedSupplements}
   selectedSleep={selectedSleep}
   selectedFlow={selectedFlow}
-  showFlow={showsCycleTracking}
+  showFlow={showsPeriodLogging}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
   onMoodSelect={async (value) => {
@@ -551,372 +545,6 @@ onSleepSave={async (sleep) => {
   items={moreForYouItems}
 />
 
-<Modal
-  animationType="fade"
-  transparent
-  visible={isMoodModalVisible}
-  onRequestClose={() => setIsMoodModalVisible(false)}>
-  <View style={styles.modalBackdrop}>
-    <View style={styles.modalCard}>
-      <View style={styles.modalHeader}>
-        <View>
-          <Text style={styles.modalEyebrow}>QUICK LOG</Text>
-          <Text style={styles.modalTitle}>How are we doing today?</Text>
-        </View>
-
-        <Pressable
-  accessibilityRole="button"
-  accessibilityLabel="Close mood log"
-  onPress={() => setIsMoodModalVisible(false)}
-  style={({ pressed }) => [
-    styles.closeButton,
-    pressed && styles.buttonPressed,
-  ]}>
-  <Text style={styles.closeButtonText}>×</Text>
-</Pressable>
-      </View>
-
-      <Text style={styles.modalDescription}>
-        Choose the answer that requires the least emotional paperwork.
-      </Text>
-
-      <View style={styles.moodList}>
-        {moodOptions.map((mood) => (
-          <Pressable
-            key={mood.label}
-            accessibilityRole="button"
-            accessibilityLabel={`Log mood as ${mood.label}`}
-            onPress={async () => {
-  const value = `${mood.emoji} ${mood.label}`;
-
-  setSelectedMood(value);
-
-  await AsyncStorage.setItem(
-    'todaysMood',
-    value
-  );
-
-  await saveTodayToJournal({
-  mood: value,
-});
-
-console.log('Mood saved:', value);
-  setIsMoodModalVisible(false);
-}}
-            style={({ pressed }) => [
-              styles.moodOption,
-              pressed && styles.buttonPressed,
-            ]}>
-            <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-            <Text style={styles.moodLabel}>{mood.label}</Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {selectedMood && (
-  <Pressable
-    accessibilityRole="button"
-    accessibilityLabel="Clear selected mood"
-    onPress={async () => {
-      setSelectedMood(null);
-
-      await AsyncStorage.removeItem('todaysMood');
-
-      setIsMoodModalVisible(false);
-    }}>
-    <Text style={styles.clearMood}>Clear today&apos;s mood</Text>
-  </Pressable>
-)}
-    </View>
-  </View>
-</Modal>
-<Modal
-  animationType="fade"
-  transparent
-  visible={isSymptomsModalVisible}
-  onRequestClose={() => setIsSymptomsModalVisible(false)}>
-  <View style={styles.modalBackdrop}>
-    <View style={styles.modalCard}>
-      <View style={styles.modalHeader}>
-        <View>
-          <Text style={styles.modalEyebrow}>QUICK LOG</Text>
-          <Text style={styles.modalTitle}>
-            What is your body complaining about?
-          </Text>
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close symptoms log"
-          onPress={() => setIsSymptomsModalVisible(false)}
-          style={({ pressed }) => [
-            styles.closeButton,
-            pressed && styles.buttonPressed,
-          ]}>
-          <Text style={styles.closeButtonText}>×</Text>
-        </Pressable>
-      </View>
-
-      <Text style={styles.modalDescription}>
-        Select everything that applies. Your hormones may have
-        submitted several grievances.
-      </Text>
-
-{false && (
-    <Modal
-    animationType="fade"
-    transparent
-    visible
-    onRequestClose={() => setIsFlowModalVisible(false)}
-  >
-  <View style={styles.modalBackdrop}>
-    <View style={styles.modalCard}>
-      <View style={styles.modalHeader}>
-        <View>
-          <Text style={styles.modalEyebrow}>QUICK LOG</Text>
-
-          <Text style={styles.modalTitle}>
-            What is today’s flow doing?
-          </Text>
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Close flow log"
-          onPress={() => setIsFlowModalVisible(false)}
-          style={({ pressed }) => [
-            styles.closeButton,
-            pressed && styles.buttonPressed,
-          ]}
-        >
-          <Text style={styles.closeButtonText}>×</Text>
-        </Pressable>
-      </View>
-
-      <Text style={styles.modalDescription}>
-        Choose the option that best matches today. Perimenopause may reserve the
-        right to change the plot without notice.
-      </Text>
-
-      <View style={styles.flowList}>
-        {flowOptions.map((option) => {
-          const isSelected = selectedFlow === option.level;
-
-          return (
-            <Pressable
-              key={option.level}
-              accessibilityRole="button"
-              accessibilityLabel={`Log flow as ${option.label}`}
-              onPress={() => {
-                setSelectedFlow(option.level);
-
-                if (
-                  option.level === 'None' ||
-                  option.level === 'Spotting'
-                ) {
-                  setStartsNewPeriod(false);
-                }
-              }}
-              style={({ pressed }) => [
-                styles.flowOption,
-                isSelected && styles.flowOptionSelected,
-                pressed && styles.buttonPressed,
-              ]}
-            >
-              <Text style={styles.flowEmoji}>
-                {option.emoji}
-              </Text>
-
-              <Text
-                style={[
-                  styles.flowLabel,
-                  isSelected && styles.flowLabelSelected,
-                ]}
-              >
-                {option.label}
-              </Text>
-
-              {isSelected && (
-                <Text style={styles.flowCheck}>✓</Text>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {selectedFlow &&
-        selectedFlow !== 'None' &&
-        selectedFlow !== 'Spotting' && (
-          <Pressable
-            accessibilityRole="checkbox"
-            accessibilityState={{
-              checked: startsNewPeriod,
-            }}
-            accessibilityLabel="This is the first day of a new period"
-            onPress={() =>
-              setStartsNewPeriod((currentValue) => !currentValue)
-            }
-            style={styles.periodStartRow}
-          >
-            <View
-              style={[
-                styles.checkbox,
-                startsNewPeriod && styles.checkboxSelected,
-              ]}
-            >
-              {startsNewPeriod && (
-                <Text style={styles.checkboxCheck}>✓</Text>
-              )}
-            </View>
-
-            <View style={styles.periodStartTextGroup}>
-              <Text style={styles.periodStartTitle}>
-                This is the first day of a new period
-              </Text>
-
-              <Text style={styles.periodStartDescription}>
-                This helps us track your cycle and menopause journey more
-                accurately.
-              </Text>
-            </View>
-          </Pressable>
-        )}
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Save flow"
-        disabled={!selectedFlow}
-        onPress={async () => {
-          if (!selectedFlow) {
-            return;
-          }
-
-          try {
-            await AsyncStorage.setItem(
-              'todaysFlow',
-              selectedFlow,
-            );
-
-            await AsyncStorage.setItem(
-              'startsNewPeriod',
-              JSON.stringify(startsNewPeriod),
-            );
-
-            await saveTodayToJournal({
-              flow: selectedFlow,
-              startsNewPeriod,
-            });
-
-            setIsFlowModalVisible(false);
-          } catch (error) {
-            console.error('Unable to save flow:', error);
-          }
-        }}
-        style={({ pressed }) => [
-          styles.saveButton,
-          !selectedFlow && styles.saveButtonDisabled,
-          pressed && styles.buttonPressed,
-        ]}
-      >
-        <Text style={styles.saveButtonText}>
-          Save Flow
-        </Text>
-      </Pressable>
-    </View>
-  </View>
-  </Modal>
-)}
-
-      <ScrollView
-        style={styles.symptomScroll}
-        contentContainerStyle={styles.symptomGrid}>
-        {symptomOptions.map((symptom) => {
-          const isSelected = selectedSymptoms.includes(
-            symptom.label,
-          );
-
-          return (
-            <Pressable
-              key={symptom.label}
-              accessibilityRole="button"
-              accessibilityLabel={`Log ${symptom.label}`}
-              onPress={() => toggleSymptom(symptom.label)}
-              style={({ pressed }) => [
-                styles.symptomOption,
-                isSelected && styles.symptomOptionSelected,
-                pressed && styles.buttonPressed,
-              ]}>
-              <Text style={styles.symptomEmoji}>
-                {symptom.emoji}
-              </Text>
-
-              <Text
-                style={[
-                  styles.symptomLabel,
-                  isSelected && styles.symptomLabelSelected,
-                ]}>
-                {symptom.label}
-              </Text>
-
-              {isSelected && (
-                <Text style={styles.symptomCheck}>✓</Text>
-              )}
-            </Pressable>
-          );
-        })}
-      </ScrollView>
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Save selected symptoms"
-        onPress={async () => {
-          try {
-            await AsyncStorage.setItem(
-              'todaysSymptoms',
-              JSON.stringify(selectedSymptoms),
-            );
-
-            await saveTodayToJournal({
-  symptoms: selectedSymptoms,
-});
-
-            setIsSymptomsModalVisible(false);
-          } catch (error) {
-            console.error(
-              'Unable to save symptoms:',
-              error,
-            );
-          }
-        }}
-        style={({ pressed }) => [
-          styles.saveButton,
-          pressed && styles.buttonPressed,
-        ]}>
-        <Text style={styles.saveButtonText}>
-          Save {selectedSymptoms.length || ''}{' '}
-          {selectedSymptoms.length === 1
-            ? 'Symptom'
-            : 'Symptoms'}
-        </Text>
-      </Pressable>
-
-      {selectedSymptoms.length > 0 && (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Clear selected symptoms"
-          onPress={async () => {
-            setSelectedSymptoms([]);
-            await AsyncStorage.removeItem('todaysSymptoms');
-            setIsSymptomsModalVisible(false);
-          }}>
-          <Text style={styles.clearMood}>
-            Clear today&apos;s symptoms
-          </Text>
-        </Pressable>
-      )}
-    </View>
-  </View>
-</Modal>
     </ScrollView>
   );
 }

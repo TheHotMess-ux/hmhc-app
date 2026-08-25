@@ -252,12 +252,13 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
 
-  title: {
-    flex: 1,
-    color: Colors.text,
-    fontSize: 24,
-    fontWeight: '700',
-  },
+title: {
+  flex: 1,
+  color: Colors.text,
+  fontSize: 21,
+  fontWeight: '700',
+  lineHeight: 26,
+},
 
   subtitle: {
     color: Colors.textSecondary,
