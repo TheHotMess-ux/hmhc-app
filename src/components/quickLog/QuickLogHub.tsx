@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import QuickLogCard from '@/components/home/QuickLogCard';
+import type { FitnessLog } from '@/lib/fitness';
 import type { FlowLevel } from '@/lib/flow';
 import type { SleepLog } from '@/lib/sleep';
 
@@ -17,6 +18,7 @@ type Props = {
   endsPeriod: boolean;
   selectedSleep: SleepLog | null;
   showFlow: boolean;
+  selectedFitness: FitnessLog | null;
 
   onMoodSelect: (
     mood: string,
@@ -39,6 +41,10 @@ type Props = {
 onSleepSave: (
   sleep: SleepLog,
 ) => void | Promise<void>;
+
+onFitnessSave: (
+  fitness: FitnessLog,
+) => void | Promise<void>;
 };
 
 export default function QuickLogHub({
@@ -50,11 +56,13 @@ export default function QuickLogHub({
   startsNewPeriod,
   endsPeriod,
   showFlow,
+  selectedFitness,
   onMoodSelect,
   onSymptomsSave,
   onSupplementsSave,
   onFlowSave,
   onSleepSave,
+  onFitnessSave,
 }: Props) {
 
   const [activeQuickLog, setActiveQuickLog] =
@@ -69,6 +77,7 @@ export default function QuickLogHub({
   selectedFlow={selectedFlow}
   selectedSleep={selectedSleep}
   showFlow={showFlow}
+  selectedFitness={selectedFitness}
   onMoodPress={() => setActiveQuickLog('mood')}
   onSymptomsPress={() =>
     setActiveQuickLog('symptoms')
@@ -82,6 +91,9 @@ export default function QuickLogHub({
   onSleepPress={() =>
     setActiveQuickLog('sleep')
   }
+  onFitnessPress={() =>
+  setActiveQuickLog('fitness')
+}
 />
 
       {activeQuickLog !== null && (
@@ -95,6 +107,7 @@ export default function QuickLogHub({
   }
   selectedFlow={selectedFlow}
   selectedSleep={selectedSleep}
+  selectedFitness={selectedFitness}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
   onMoodSelect={onMoodSelect}
@@ -104,6 +117,7 @@ export default function QuickLogHub({
   }
   onFlowSave={onFlowSave}
   onSleepSave={onSleepSave}
+  onFitnessSave={onFitnessSave}
   onClose={() =>
     setActiveQuickLog(null)
   }

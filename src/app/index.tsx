@@ -16,8 +16,6 @@ import QuickLogHub from '@/components/quickLog/QuickLogHub';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 import FeralForecastCard from '../components/home/FeralForecastCard';
-import HormoneBriefingCard from '../components/home/HormoneBriefingCard';
-import MissionCard from '../components/home/MissionCard';
 import PersonalizedInsightCard from '../components/home/PersonalizedInsightCard';
 
 import {
@@ -127,6 +125,11 @@ const {
 const {
   selectedSleep,
   setSelectedSleep,
+} = dashboard;
+
+const {
+  selectedFitness,
+  setSelectedFitness,
 } = dashboard;
 
 const {
@@ -326,7 +329,32 @@ const dailyWins = getDailyWins().map((win) => {
 const moreForYouItems = [
   ...(symptomInsight
     ? [
-        {
+
+{
+  id: 'feral-forecast',
+  emoji: '🔥',
+  title: 'Feral Forecast',
+  summary: feralLevel.title,
+  content: (
+    <FeralForecastCard
+      coffeeForecast={
+        forecast.coffeeForecast
+      }
+      brainFogForecast={
+        forecast.brainFogForecast
+      }
+      patienceForecast={
+        forecast.patienceForecast
+      }
+      survivalStrategy={
+        forecast.survivalStrategy
+      }
+      feralLevel={feralLevel}
+    />
+  ),
+},
+
+      {
           id: 'insight',
           emoji: '🧠',
           title: 'Personalized Insight',
@@ -366,15 +394,14 @@ return (
         <Text style={styles.eyebrow}>
           THE HOT MESS HORMONE CLUB
         </Text>
-
-   <Text style={styles.greeting}>
+<Text style={styles.greeting}>
   {greeting.emoji}{' '}
   {personalizedGreetingTitle}
-</Text>
-
-<Text style={styles.subtitle}>
+</Text><Text style={styles.subtitle}>
   {greeting.subtitle}
 </Text>
+
+
       </View>
 
 {showsCycleTracking && (
@@ -399,36 +426,6 @@ return (
       }
     />
 
-    <FeralForecastCard
-      coffeeForecast={
-        forecast.coffeeForecast
-      }
-      brainFogForecast={
-        forecast.brainFogForecast
-      }
-      patienceForecast={
-        forecast.patienceForecast
-      }
-      survivalStrategy={
-        forecast.survivalStrategy
-      }
-      feralLevel={feralLevel}
-    />
-
-    <HormoneBriefingCard
-      title="Hormone Briefing"
-      phase={`${cyclePhase.emoji} ${cyclePhase.title}`}
-      description={
-        cyclePhase.description
-      }
-      encouragement={
-        cyclePhase.encouragement
-      }
-    />
-
-    <MissionCard
-      mission={phaseInsight.mission}
-    />
   </>
 ) : (
   <CycleSetupCard />
@@ -442,6 +439,7 @@ return (
   selectedSupplements={
   selectedSupplements}
   selectedSleep={selectedSleep}
+  selectedFitness={selectedFitness}
   selectedFlow={selectedFlow}
   showFlow={showsPeriodLogging}
   startsNewPeriod={startsNewPeriod}
@@ -537,6 +535,19 @@ onSleepSave={async (sleep) => {
 
   await saveTodayToJournal({
     sleep,
+  });
+}}
+
+onFitnessSave={async (fitness) => {
+  setSelectedFitness(fitness);
+
+  await AsyncStorage.setItem(
+    'todaysFitness',
+    JSON.stringify(fitness),
+  );
+
+  await saveTodayToJournal({
+    fitness,
   });
 }}
 />

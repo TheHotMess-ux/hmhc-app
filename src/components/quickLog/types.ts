@@ -4,5 +4,5 @@ export type QuickLogType =
   | 'flow'
   | 'sleep'
   | 'supplements'
-  | 'energy'
+  | 'fitness'
   | null;

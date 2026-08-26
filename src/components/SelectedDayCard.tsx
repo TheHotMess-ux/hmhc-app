@@ -7,7 +7,9 @@ import {
 
 import HormoneBattery from '@/components/HormoneBattery';
 import { getCyclePhase } from '@/lib/cycle';
+import type { FitnessLog } from '@/lib/fitness';
 import type { FlowLevel } from '@/lib/flow';
+
 import { Colors } from '@/theme/colors';
 
 import InfoRow from '@/components/InfoRow';
@@ -23,6 +25,7 @@ type Entry = {
   symptoms: string[];
   supplements?: string[];
   sleep?: SleepLog;
+  fitness?: FitnessLog;
   cycleDay: number;
   flow?: FlowLevel | null;
   startsNewPeriod?: boolean;
@@ -159,6 +162,32 @@ export default function SelectedDayCard({
                 styles.symptomChipText
               }>
               {supplement}
+            </Text>
+          </View>
+        ),
+      )}
+    </View>
+  ) : (
+    <Text style={styles.value}>
+      None logged
+    </Text>
+  )}
+</View>
+
+<View style={styles.row}>
+  <Text style={styles.label}>
+    Fitness
+  </Text>
+
+  {entry.fitness?.activities.length ? (
+    <View style={styles.symptomList}>
+      {entry.fitness.activities.map(
+        (activity) => (
+          <View
+            key={activity}
+            style={styles.symptomChip}>
+            <Text style={styles.symptomChipText}>
+              {activity}
             </Text>
           </View>
         ),

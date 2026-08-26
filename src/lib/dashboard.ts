@@ -2,6 +2,8 @@ import type { FlowLevel } from './flow';
 
 import type { SleepLog } from './sleep';
 
+import type { FitnessLog } from '@/lib/fitness';
+
 type CyclePhase =
   | 'Menstrual'
   | 'Follicular'
@@ -30,6 +32,7 @@ export type DailyEntry = {
   startsNewPeriod?: boolean;
   endsPeriod?: boolean;
   sleep?: SleepLog;
+  fitness?: FitnessLog;
 };
 
 const pepTalks = [

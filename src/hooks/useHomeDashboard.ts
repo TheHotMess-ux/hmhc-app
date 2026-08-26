@@ -9,6 +9,7 @@ import {
 } from '@react-navigation/native';
 
 import type { DailyEntry } from '@/lib/dashboard';
+import type { FitnessLog } from '@/lib/fitness';
 import type { FlowLevel } from '@/lib/flow';
 import { loadJournalEntries } from '@/lib/journal';
 import type { SleepLog } from '@/lib/sleep';
@@ -36,6 +37,9 @@ export function useHomeDashboard() {
   const [selectedSleep, setSelectedSleep] =
     useState<SleepLog | null>(null);
 
+    const [selectedFitness, setSelectedFitness] =
+  useState<FitnessLog | null>(null);
+
   const [journalEntries, setJournalEntries] =
     useState<DailyEntry[]>([]);
 
@@ -55,6 +59,7 @@ export function useHomeDashboard() {
   savedPeriodStart,
   savedPeriodEnd,
   savedSleep,
+  savedFitness,
   savedJournal,
 ] = await Promise.all([
   AsyncStorage.getItem('todaysMood'),
@@ -63,6 +68,7 @@ export function useHomeDashboard() {
   AsyncStorage.getItem('startsNewPeriod'),
   AsyncStorage.getItem('endsPeriod'),
   AsyncStorage.getItem('todaysSleep'),
+  AsyncStorage.getItem('todaysFitness'),
   loadJournalEntries(),
 ]);
 
@@ -95,6 +101,12 @@ export function useHomeDashboard() {
             ? (JSON.parse(savedSleep) as SleepLog)
             : null,
         );
+
+        setSelectedFitness(
+  savedFitness
+    ? (JSON.parse(savedFitness) as FitnessLog)
+    : null,
+);
 
         setJournalEntries(savedJournal);
       } catch (error) {
@@ -129,6 +141,9 @@ export function useHomeDashboard() {
 
     selectedSleep,
     setSelectedSleep,
+
+    selectedFitness,
+    setSelectedFitness,
 
     journalEntries,
     setJournalEntries,

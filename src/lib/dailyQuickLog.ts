@@ -11,6 +11,7 @@ const DAILY_QUICK_LOG_KEYS = [
   'startsNewPeriod',
   'endsPeriod',
   'todaysSleep',
+  'todaysFitness',
 ];
 
 let preparedDate: string | null = null;

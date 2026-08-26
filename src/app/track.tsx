@@ -1269,6 +1269,9 @@ onClearLog={
         selectedSleep={
           selectedEntry?.sleep ?? null
         }
+             selectedFitness={
+          selectedEntry?.fitness ?? null
+        }
         selectedFlow={
           selectedEntry?.flow ?? null
         }
@@ -1309,6 +1312,12 @@ onClearLog={
             sleep,
           });
         }}
+
+        onFitnessSave={async (fitness) => {
+  await saveSelectedDateToJournal({
+    fitness,
+  });
+}}
 
       onFlowSave={async (
   flow,

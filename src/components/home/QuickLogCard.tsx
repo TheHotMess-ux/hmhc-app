@@ -19,18 +19,22 @@ import {
 
 import type { SleepLog } from '@/lib/sleep';
 
+import type { FitnessLog } from '@/lib/fitness';
+
 type Props = {
   selectedMood: string | null;
   selectedSymptoms: string[];
   selectedSupplements: string[];
   selectedFlow: FlowLevel | null;
   selectedSleep: SleepLog | null;
+  selectedFitness: FitnessLog | null;
   showFlow: boolean;
   onMoodPress: () => void;
   onSymptomsPress: () => void;
   onSupplementsPress: () => void;
   onFlowPress: () => void;
   onSleepPress: () => void;
+  onFitnessPress: () => void;
 };
 
 export default function QuickLogCard({
@@ -39,12 +43,14 @@ export default function QuickLogCard({
   selectedSupplements,
   selectedFlow,
   selectedSleep,
+  selectedFitness,
   showFlow,
   onMoodPress,
   onSymptomsPress,
   onSupplementsPress,
   onFlowPress,
   onSleepPress,
+  onFitnessPress,
 }: Props) {
 
 const selectedFlowEmoji =
@@ -212,6 +218,39 @@ const selectedSleepEmoji =
     </Text>
   )}
 </Pressable>
+
+<Pressable
+  accessibilityRole="button"
+  accessibilityLabel="Log today's fitness"
+  onPress={onFitnessPress}
+ style={({ pressed }) => [
+  styles.quickLogButton,
+  selectedFitness &&
+    styles.quickLogButtonSelected,
+  pressed && styles.buttonPressed,
+]}>
+  <Text style={styles.quickLogEmoji}>
+    🏋️
+  </Text>
+
+  <Text style={styles.quickLogLabel}>
+    Fitness
+  </Text>
+
+  {selectedFitness?.activities.length ? (
+  <Text style={styles.quickLogValue}>
+    {selectedFitness.activities.length}{' '}
+    {selectedFitness.activities.length === 1
+      ? 'activity'
+      : 'activities'}
+  </Text>
+) : (
+  <Text style={styles.comingSoon}>
+    Tap to log
+  </Text>
+)}
+</Pressable>
+
       </View>
     </SectionCard>
   );

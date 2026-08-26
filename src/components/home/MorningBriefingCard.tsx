@@ -261,35 +261,18 @@ const {
         },
       ]}>
       <View style={styles.topRow}>
-        <View style={styles.greetingGroup}>
-          <Text style={styles.greeting}>
-  {greetingText}
-</Text>
+      <View style={styles.greetingGroup}>
+  <Text
+    style={[
+      styles.phaseLabel,
+      {
+        color: briefing.accent,
+      },
+    ]}>
+    {cycleLabel}
+  </Text>
+</View>
 
-          <Text
-            style={[
-              styles.phaseLabel,
-              {
-                color:
-                  briefing.accent,
-              },
-            ]}>
-            {cycleLabel}
-          </Text>
-        </View>
-
-        <View
-          style={[
-            styles.sunIcon,
-            {
-              backgroundColor:
-                `${briefing.accent}18`,
-            },
-          ]}>
-          <Text style={styles.sunEmoji}>
-            ☀️
-          </Text>
-        </View>
       </View>
 
       <View style={styles.introSection}>
@@ -309,30 +292,6 @@ const {
 
         <Text style={styles.explanation}>
           {briefing.explanation}
-        </Text>
-      </View>
-
-      <View
-        style={[
-          styles.focusCard,
-          {
-            borderLeftColor:
-              briefing.accent,
-          },
-        ]}>
-        <Text style={styles.focusLabel}>
-          TODAY’S MISSION
-        </Text>
-
-        <Text style={styles.focusTitle}>
-          {briefing.focus}
-</Text>
-
-        <Text
-          style={
-            styles.focusDescription
-          }>
-          {briefing.focusDescription}
         </Text>
       </View>
 
@@ -370,7 +329,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 28,
     padding: 22,
-    gap: 22,
+    gap: 16,
 
     shadowColor: '#000000',
     shadowOffset: {
@@ -383,12 +342,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
+topRow: {
+  alignItems: 'flex-start',
+},
 
   greetingGroup: {
     flex: 1,
@@ -402,11 +358,17 @@ const styles = StyleSheet.create({
     letterSpacing: -0.6,
   },
 
-  phaseLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
+phaseLabel: {
+  alignSelf: 'flex-start',
+  backgroundColor: 'rgba(255, 255, 255, 0.55)',
+  borderRadius: 999,
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  fontSize: 12,
+  fontWeight: '800',
+  letterSpacing: 0.5,
+  textTransform: 'uppercase',
+},
 
   sunIcon: {
     width: 48,

@@ -9,6 +9,10 @@ import {
 import type { FlowLevel } from '@/lib/flow';
 import type { SleepLog } from '@/lib/sleep';
 
+import type { FitnessLog } from '@/lib/fitness';
+
+import FitnessScreen from './FitnessScreen';
+
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
@@ -34,6 +38,8 @@ type Props = {
 
   selectedSleep: SleepLog | null;
 
+  selectedFitness: FitnessLog | null;
+
   onMoodSelect: (
     mood: string,
   ) => void | Promise<void>;
@@ -57,6 +63,10 @@ onSleepSave: (
 ) => void | Promise<void>;
 
   onClose: () => void;
+
+  onFitnessSave: (
+  fitness: FitnessLog,
+) => void | Promise<void>;
 };
 
 export default function QuickLogModal({
@@ -69,11 +79,13 @@ export default function QuickLogModal({
   startsNewPeriod,
   endsPeriod,
   selectedSleep,
+  selectedFitness,
   onMoodSelect,
   onSymptomsSave,
   onSupplementsSave,
   onFlowSave,
   onSleepSave,
+  onFitnessSave,
   onClose,
 }: Props) {
 
@@ -94,8 +106,8 @@ export default function QuickLogModal({
       case 'supplements':
         return 'Supplements';
 
-      case 'energy':
-        return 'Energy';
+      case 'fitness':
+        return 'How did you move today?';
 
       default:
         return '';
@@ -173,6 +185,16 @@ export default function QuickLogModal({
   />
 )}
 
+{activeLog === 'fitness' && (
+  <FitnessScreen
+    selectedFitness={selectedFitness}
+    onSave={async (fitness) => {
+      await onFitnessSave(fitness);
+      onClose();
+    }}
+  />
+)}
+
 {activeLog === 'flow' && (
 
 <FlowScreen
@@ -200,7 +222,8 @@ export default function QuickLogModal({
           activeLog !== 'symptoms' &&
           activeLog !== 'flow' &&
           activeLog !== 'supplements' &&
-          activeLog !== 'sleep' && (
+          activeLog !== 'sleep' &&
+          activeLog !== 'fitness' && (
               <>
                 <Text style={styles.subtitle}>
                   Screen coming next...
