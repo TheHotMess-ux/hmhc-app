@@ -25,6 +25,7 @@ export type DoctorReportSummary = {
   moods: ReportCount[];
   supplements: ReportCount[];
   flowLevels: ReportCount[];
+  bleedingDetails: ReportCount[];
 
   periodStarts: number;
   bleedingDays: number;
@@ -224,6 +225,56 @@ const highestCrampIntensity =
     ? Math.max(...crampIntensityValues)
     : null;
 
+const bleedingDetailValues =
+  entriesInRange.flatMap((entry) => {
+    const details = entry.flowDetails;
+
+    if (!details) {
+      return [];
+    }
+
+    const loggedDetails: string[] = [];
+
+    if (details.flooding) {
+      loggedDetails.push(
+        'Flooding or sudden gushes',
+      );
+    }
+
+    if (details.clots) {
+      loggedDetails.push('Clots');
+    }
+
+    if (details.betweenPeriods) {
+      loggedDetails.push(
+        'Bleeding between periods',
+      );
+    }
+
+    if (details.afterSex) {
+      loggedDetails.push(
+        'Bleeding after sex',
+      );
+    }
+
+    if (details.sleepDisruption) {
+      loggedDetails.push(
+        'Bleeding disrupted sleep',
+      );
+    }
+
+    if (details.unusuallyLong) {
+      loggedDetails.push(
+        'Bleeding longer than usual',
+      );
+    }
+
+    return loggedDetails;
+  });
+
+const bleedingDetails =
+  countValues(bleedingDetailValues);
+
   const periodStarts =
     entriesInRange.filter(
       (entry) =>
@@ -267,6 +318,7 @@ const highestCrampIntensity =
 
     flowLevels:
       countValues(flowValues),
+      bleedingDetails,
 
     periodStarts,
     bleedingDays,

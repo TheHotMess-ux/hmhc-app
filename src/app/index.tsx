@@ -199,6 +199,11 @@ const forecast =
     (entry) => entry.date === today,
   )?.symptomDetails ?? {};
 
+  const todayFlowDetails =
+  journalEntries.find(
+    (entry) => entry.date === today,
+  )?.flowDetails ?? {};
+
 const dailyEntry = {
   date: today,
   cycleDay:
@@ -449,6 +454,9 @@ return (
   selectedSleep={selectedSleep}
   selectedFitness={selectedFitness}
   selectedFlow={selectedFlow}
+  selectedFlowDetails={
+  todayFlowDetails
+}
   showFlow={showsPeriodLogging}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
@@ -504,6 +512,7 @@ onFlowSave={async (
   flow,
   startsNewPeriodValue,
   endsPeriodValue,
+  flowDetails,
 ) => {
   setSelectedFlow(flow);
   setStartsNewPeriod(startsNewPeriodValue);
@@ -529,12 +538,13 @@ onFlowSave={async (
   );
 
   await saveTodayToJournal({
-    flow,
-    startsNewPeriod:
-      startsNewPeriodValue,
-    endsPeriod:
-      endsPeriodValue,
-  });
+  flow,
+  flowDetails,
+  startsNewPeriod:
+    startsNewPeriodValue,
+  endsPeriod:
+    endsPeriodValue,
+});
 }}
 
 onSleepSave={async (sleep) => {

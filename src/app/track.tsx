@@ -55,7 +55,10 @@ import {
 } from '@/lib/cycleInsights';
 
 
-import type { FlowLevel } from '@/lib/flow';
+import type {
+  FlowDetails,
+  FlowLevel,
+} from '@/lib/flow';
 
 import type { DailyEntry } from '@/lib/dashboard';
 
@@ -578,7 +581,9 @@ async function saveHistoricalPeriod(
   flow: FlowLevel,
   startsNewPeriod: boolean,
   endsPeriod: boolean,
+  flowDetails: FlowDetails,
 ) {
+
   const selectedCycleDay =
     getCycleDayForDate(
       journalEntries,
@@ -596,6 +601,7 @@ async function saveHistoricalPeriod(
     symptoms:
       selectedEntry?.symptoms ?? [],
     flow,
+    flowDetails,
     startsNewPeriod,
     endsPeriod,
   };
@@ -1278,6 +1284,9 @@ onClearLog={
         selectedFlow={
           selectedEntry?.flow ?? null
         }
+        selectedFlowDetails={
+  selectedEntry?.flowDetails ?? {}
+}
         startsNewPeriod={
           selectedEntry?.startsNewPeriod ??
           false
@@ -1324,15 +1333,17 @@ onClearLog={
   });
 }}
 
-      onFlowSave={async (
+onFlowSave={async (
   flow,
   startsNewPeriod,
   endsPeriod,
+  flowDetails,
 ) => {
   await saveHistoricalPeriod(
     flow,
     startsNewPeriod,
     endsPeriod,
+    flowDetails,
   );
 }}
       />
@@ -1359,6 +1370,9 @@ onClearLog={
         selectedFlow={
           selectedEntry?.flow ?? null
         }
+       selectedFlowDetails={
+  selectedEntry?.flowDetails ?? {}
+}
         startsNewPeriod={
           selectedEntry?.startsNewPeriod ??
           false

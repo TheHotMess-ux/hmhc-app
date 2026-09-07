@@ -7,25 +7,63 @@ import {
   View,
 } from 'react-native';
 
-import type { FlowLevel } from '@/lib/flow';
+import type {
+  FlowDetailKey,
+  FlowDetails,
+  FlowLevel,
+} from '@/lib/flow';
+
 import { flowOptions } from '@/lib/flow';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
+const flowDetailOptions: Array<{
+  key: FlowDetailKey;
+  label: string;
+}> = [
+  {
+    key: 'flooding',
+    label: 'Flooding or sudden gushes',
+  },
+  {
+    key: 'clots',
+    label: 'Clots',
+  },
+  {
+    key: 'betweenPeriods',
+    label: 'Bleeding between periods',
+  },
+  {
+    key: 'afterSex',
+    label: 'Bleeding after sex',
+  },
+  {
+    key: 'sleepDisruption',
+    label: 'Bleeding disrupted my sleep',
+  },
+  {
+    key: 'unusuallyLong',
+    label: 'Bleeding longer than usual',
+  },
+];
+
 type Props = {
   selectedFlow: FlowLevel | null;
+  selectedFlowDetails?: FlowDetails;
   startsNewPeriod: boolean;
   endsPeriod: boolean;
 
   onSave: (
-    flow: FlowLevel,
-    startsNewPeriod: boolean,
-    endsPeriod: boolean,
-  ) => void | Promise<void>;
+  flow: FlowLevel,
+  startsNewPeriod: boolean,
+  endsPeriod: boolean,
+  flowDetails: FlowDetails,
+) => void | Promise<void>;
 };
 
 export default function FlowScreen({
   selectedFlow,
+  selectedFlowDetails = {},
   startsNewPeriod,
   endsPeriod,
   onSave,
@@ -34,18 +72,36 @@ export default function FlowScreen({
   const [draftFlow, setDraftFlow] =
     useState<FlowLevel | null>(selectedFlow);
 
+const [
+  draftFlowDetails,
+  setDraftFlowDetails,
+] = useState<FlowDetails>(
+  selectedFlowDetails,
+);
+
   const [draftStartsNewPeriod, setDraftStartsNewPeriod] =
     useState(startsNewPeriod);
 
     const [draftEndsPeriod, setDraftEndsPeriod] =
   useState(endsPeriod);
 
-  useEffect(() => {
+ useEffect(() => {
   setDraftFlow(selectedFlow);
-  setDraftStartsNewPeriod(startsNewPeriod);
-  setDraftEndsPeriod(endsPeriod);
+
+  setDraftFlowDetails(
+    selectedFlowDetails,
+  );
+
+  setDraftStartsNewPeriod(
+    startsNewPeriod,
+  );
+
+  setDraftEndsPeriod(
+    endsPeriod,
+  );
 }, [
   selectedFlow,
+  selectedFlowDetails,
   startsNewPeriod,
   endsPeriod,
 ]);
@@ -62,6 +118,18 @@ export default function FlowScreen({
   function selectFlow(flow: FlowLevel) {
   setDraftFlow(flow);
 
+function toggleFlowDetail(
+  detailKey: FlowDetailKey,
+) {
+  setDraftFlowDetails(
+    (currentDetails) => ({
+      ...currentDetails,
+      [detailKey]:
+        !currentDetails[detailKey],
+    }),
+  );
+}
+
   if (
     flow === 'None' ||
     flow === 'Spotting'
@@ -72,6 +140,18 @@ export default function FlowScreen({
   if (flow === 'None') {
     setDraftEndsPeriod(false);
   }
+}
+
+function toggleFlowDetail(
+  detailKey: FlowDetailKey,
+) {
+  setDraftFlowDetails(
+    (currentDetails) => ({
+      ...currentDetails,
+      [detailKey]:
+        !currentDetails[detailKey],
+    }),
+  );
 }
 
  return (
@@ -124,6 +204,76 @@ export default function FlowScreen({
           );
         })}
       </View>
+
+      {draftFlow !== null &&
+  draftFlow !== 'None' && (
+  <View style={styles.detailsSection}>
+    <View style={styles.detailsHeader}>
+      <Text style={styles.detailsTitle}>
+        Anything else to note?
+      </Text>
+
+      <Text style={styles.detailsDescription}>
+        Optional details that may be useful
+        when looking back or talking with
+        your healthcare provider.
+      </Text>
+    </View>
+
+    <View style={styles.detailList}>
+      {flowDetailOptions.map((option) => {
+        const isSelected =
+          draftFlowDetails[option.key] ===
+          true;
+
+        return (
+          <Pressable
+            key={option.key}
+            accessibilityRole="checkbox"
+            accessibilityState={{
+              checked: isSelected,
+            }}
+            accessibilityLabel={option.label}
+            onPress={() =>
+              toggleFlowDetail(option.key)
+            }
+            style={({ pressed }) => [
+              styles.detailOption,
+              isSelected &&
+                styles.detailOptionSelected,
+              pressed &&
+                styles.optionPressed,
+            ]}>
+            <View
+              style={[
+                styles.checkbox,
+                isSelected &&
+                  styles.checkboxSelected,
+              ]}>
+              {isSelected && (
+                <Text
+                  style={
+                    styles.checkboxCheck
+                  }>
+                  ✓
+                </Text>
+              )}
+            </View>
+
+            <Text
+              style={[
+                styles.detailLabel,
+                isSelected &&
+                  styles.detailLabelSelected,
+              ]}>
+              {option.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  </View>
+)}
 
       {canStartNewPeriod && (
         <Pressable
@@ -231,7 +381,7 @@ export default function FlowScreen({
             return;
           }
 
-          onSave(
+        onSave(
   draftFlow,
   canStartNewPeriod
     ? draftStartsNewPeriod
@@ -239,6 +389,7 @@ export default function FlowScreen({
   canEndPeriod
     ? draftEndsPeriod
     : false,
+  draftFlowDetails,
 );
         }}
         style={({ pressed }) => [
@@ -264,7 +415,7 @@ screen: {
   scrollArea: {
   flexShrink: 1,
 },
-  
+
   container: {
     gap: Spacing.lg,
   },
@@ -389,4 +540,59 @@ screen: {
     fontSize: 16,
     fontWeight: '800',
   },
+
+detailsSection: {
+  gap: Spacing.md,
+  padding: Spacing.md,
+  backgroundColor: Colors.surfaceLight,
+  borderColor: Colors.border,
+  borderRadius: 14,
+  borderWidth: 1,
+},
+
+detailsHeader: {
+  gap: Spacing.xs,
+},
+
+detailsTitle: {
+  color: Colors.gold,
+  fontSize: 16,
+  fontWeight: '800',
+},
+
+detailsDescription: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
+},
+
+detailList: {
+  gap: Spacing.sm,
+},
+
+detailOption: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: Spacing.md,
+  padding: Spacing.md,
+  backgroundColor: Colors.background,
+  borderColor: Colors.border,
+  borderRadius: 12,
+  borderWidth: 1,
+},
+
+detailOptionSelected: {
+  borderColor: Colors.accent,
+},
+
+detailLabel: {
+  flex: 1,
+  color: Colors.textSecondary,
+  fontSize: 14,
+  fontWeight: '600',
+},
+
+detailLabelSelected: {
+  color: Colors.text,
+},
 });

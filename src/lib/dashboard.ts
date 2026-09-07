@@ -1,4 +1,7 @@
-import type { FlowLevel } from './flow';
+import type {
+  FlowDetails,
+  FlowLevel,
+} from './flow';
 
 import type { SleepLog } from './sleep';
 
@@ -34,6 +37,7 @@ export type DailyEntry = {
   symptomDetails?: SymptomDetailsMap;
   supplements?: string[];
   flow?: FlowLevel;
+  flowDetails?: FlowDetails;
   startsNewPeriod?: boolean;
   endsPeriod?: boolean;
   sleep?: SleepLog;

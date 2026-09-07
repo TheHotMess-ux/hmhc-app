@@ -3,7 +3,11 @@ import { View } from 'react-native';
 
 import QuickLogCard from '@/components/home/QuickLogCard';
 import type { FitnessLog } from '@/lib/fitness';
-import type { FlowLevel } from '@/lib/flow';
+import type {
+  FlowDetails,
+  FlowLevel,
+} from '@/lib/flow';
+
 import type { SleepLog } from '@/lib/sleep';
 
 import type {
@@ -19,6 +23,7 @@ type Props = {
   selectedSymptomDetails?: SymptomDetailsMap;
   selectedSupplements: string[];
   selectedFlow: FlowLevel | null;
+  selectedFlowDetails?: FlowDetails;
   startsNewPeriod: boolean;
   endsPeriod: boolean;
   selectedSleep: SleepLog | null;
@@ -38,10 +43,11 @@ type Props = {
   supplements: string[],
 ) => void | Promise<void>;
 
-  onFlowSave: (
+onFlowSave: (
   flow: FlowLevel,
   startsNewPeriod: boolean,
   endsPeriod: boolean,
+  flowDetails: FlowDetails,
 ) => void | Promise<void>;
 
 onSleepSave: (
@@ -59,6 +65,7 @@ export default function QuickLogHub({
   selectedSymptomDetails = {},
   selectedSupplements,
   selectedFlow,
+  selectedFlowDetails = {},
   selectedSleep,
   startsNewPeriod,
   endsPeriod,
@@ -116,6 +123,9 @@ export default function QuickLogHub({
     selectedSupplements
   }
   selectedFlow={selectedFlow}
+  selectedFlowDetails={
+  selectedFlowDetails
+}
   selectedSleep={selectedSleep}
   selectedFitness={selectedFitness}
   startsNewPeriod={startsNewPeriod}

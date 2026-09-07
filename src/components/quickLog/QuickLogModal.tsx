@@ -6,7 +6,11 @@ import {
   View,
 } from 'react-native';
 
-import type { FlowLevel } from '@/lib/flow';
+import type {
+  FlowDetails,
+  FlowLevel,
+} from '@/lib/flow';
+
 import type { SleepLog } from '@/lib/sleep';
 
 import type { FitnessLog } from '@/lib/fitness';
@@ -38,6 +42,7 @@ type Props = {
   selectedSupplements: string[];
 
   selectedFlow: FlowLevel | null;
+  selectedFlowDetails?: FlowDetails;
   startsNewPeriod: boolean;
   endsPeriod: boolean;
 
@@ -58,10 +63,11 @@ onSupplementsSave: (
   supplements: string[],
 ) => void | Promise<void>;
 
-  onFlowSave: (
+onFlowSave: (
   flow: FlowLevel,
   startsNewPeriod: boolean,
   endsPeriod: boolean,
+  flowDetails: FlowDetails,
 ) => void | Promise<void>;
 
 onSleepSave: (
@@ -83,6 +89,7 @@ export default function QuickLogModal({
   selectedSymptomDetails= {},
   selectedSupplements,
   selectedFlow,
+  selectedFlowDetails = {},
   startsNewPeriod,
   endsPeriod,
   selectedSleep,
@@ -216,21 +223,26 @@ export default function QuickLogModal({
 
 <FlowScreen
   selectedFlow={selectedFlow}
+  selectedFlowDetails={
+  selectedFlowDetails
+}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
   onSave={async (
+  flow,
+  startsNewPeriodValue,
+  endsPeriodValue,
+  flowDetails,
+) => {
+  await onFlowSave(
     flow,
     startsNewPeriodValue,
     endsPeriodValue,
-  ) => {
-    await onFlowSave(
-      flow,
-      startsNewPeriodValue,
-      endsPeriodValue,
-    );
+    flowDetails,
+  );
 
-    onClose();
-  }}
+  onClose();
+}}
 />
 
 )}

@@ -5,6 +5,18 @@ export type FlowLevel =
   | 'Moderate'
   | 'Heavy';
 
+export type FlowDetailKey =
+  | 'flooding'
+  | 'clots'
+  | 'betweenPeriods'
+  | 'afterSex'
+  | 'sleepDisruption'
+  | 'unusuallyLong';
+
+export type FlowDetails = Partial<
+  Record<FlowDetailKey, boolean>
+>;
+
 export interface FlowEntry {
   date: string;
   flow: FlowLevel;

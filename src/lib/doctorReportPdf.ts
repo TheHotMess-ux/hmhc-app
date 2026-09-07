@@ -217,6 +217,23 @@ const reportSubtitle =
           report.flowLevels,
           'No Flow information was logged.',
         )}
+
+        ${
+  report.bleedingDetails.length > 0
+    ? `
+      <div class="subheading">
+        Additional bleeding details
+      </div>
+
+      ${renderCountList(
+        report.bleedingDetails,
+        'No additional details were logged.',
+        'two-column',
+      )}
+    `
+    : ''
+}
+
       </section>
     `
     : '';
