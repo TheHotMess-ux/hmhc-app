@@ -1,5 +1,14 @@
 import type { DailyEntry } from './dashboard';
 
+import { symptomCategories } from './symptoms';
+
+const builtInSymptomLabels = new Set(
+  symptomCategories.flatMap((category) =>
+    category.symptoms.map(
+      (symptom) => symptom.label.toLowerCase(),
+    ),
+  ),
+);
 
 export type ReportCount = {
   label: string;
@@ -104,6 +113,32 @@ export function getDoctorReportSummary(
       (entry) => entry.symptoms,
     );
 
+const countedSymptoms =
+  countValues(symptomValues);
+
+const topSymptoms =
+  countedSymptoms.slice(0, 10);
+
+const customSymptoms =
+  countedSymptoms.filter(
+    (symptom) =>
+      !builtInSymptomLabels.has(
+        symptom.label.toLowerCase(),
+      ),
+  );
+
+const symptomsForReport = [
+  ...topSymptoms,
+  ...customSymptoms.filter(
+    (customSymptom) =>
+      !topSymptoms.some(
+        (topSymptom) =>
+          topSymptom.label.toLowerCase() ===
+          customSymptom.label.toLowerCase(),
+      ),
+  ),
+];
+
   const moodValues = entriesInRange
     .map((entry) => entry.mood)
     .filter(
@@ -168,11 +203,7 @@ export function getDoctorReportSummary(
         entriesInRange.length - 1
       ]?.date ?? null,
 
-    topSymptoms:
-      countValues(symptomValues).slice(
-        0,
-        5,
-      ),
+    topSymptoms: symptomsForReport,
 
     moods: countValues(moodValues),
 

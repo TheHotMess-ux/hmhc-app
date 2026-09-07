@@ -1,15 +1,25 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
+
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
 import { symptomCategories } from '@/lib/symptoms';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
+
+const CUSTOM_SYMPTOMS_KEY = 'hmhcCustomSymptoms';
+
+const builtInSymptomLabels = symptomCategories.flatMap(
+  (category) =>
+    category.symptoms.map((symptom) => symptom.label),
+);
 
 type Props = {
   selectedSymptoms: string[];
@@ -25,9 +35,54 @@ export default function SymptomsScreen({
   const [draftSymptoms, setDraftSymptoms] =
     useState<string[]>(selectedSymptoms);
 
+  const [customSymptoms, setCustomSymptoms] =
+    useState<string[]>([]);
+
+  const [customSymptomDraft, setCustomSymptomDraft] =
+    useState('');
+
+  const [customSymptomError, setCustomSymptomError] =
+    useState<string | null>(null);
+
   useEffect(() => {
     setDraftSymptoms(selectedSymptoms);
   }, [selectedSymptoms]);
+
+  useEffect(() => {
+    async function loadCustomSymptoms() {
+      try {
+        const savedCustomSymptoms =
+          await AsyncStorage.getItem(
+            CUSTOM_SYMPTOMS_KEY,
+          );
+
+        if (!savedCustomSymptoms) {
+          return;
+        }
+
+        const parsedCustomSymptoms =
+          JSON.parse(savedCustomSymptoms);
+
+        if (!Array.isArray(parsedCustomSymptoms)) {
+          return;
+        }
+
+        setCustomSymptoms(
+          parsedCustomSymptoms.filter(
+            (symptom): symptom is string =>
+              typeof symptom === 'string',
+          ),
+        );
+      } catch (error) {
+        console.error(
+          'Unable to load custom symptoms:',
+          error,
+        );
+      }
+    }
+
+    void loadCustomSymptoms();
+  }, []);
 
   function toggleSymptom(label: string) {
     setDraftSymptoms((currentSymptoms) =>
@@ -36,6 +91,117 @@ export default function SymptomsScreen({
             (symptom) => symptom !== label,
           )
         : [...currentSymptoms, label],
+    );
+  }
+
+  async function addCustomSymptom() {
+    const cleanedLabel =
+      customSymptomDraft
+        .trim()
+        .replace(/\s+/g, ' ');
+
+    if (!cleanedLabel) {
+      return;
+    }
+
+    const existingLabel = [
+      ...builtInSymptomLabels,
+      ...customSymptoms,
+    ].find(
+      (label) =>
+        label.toLowerCase() ===
+        cleanedLabel.toLowerCase(),
+    );
+
+    if (existingLabel) {
+      setDraftSymptoms((currentSymptoms) =>
+        currentSymptoms.includes(existingLabel)
+          ? currentSymptoms
+          : [...currentSymptoms, existingLabel],
+      );
+
+      setCustomSymptomDraft('');
+      setCustomSymptomError(
+        'Already on the list—we selected it for you.',
+      );
+
+      return;
+    }
+
+    const updatedCustomSymptoms = [
+      ...customSymptoms,
+      cleanedLabel,
+    ];
+
+    setCustomSymptoms(updatedCustomSymptoms);
+
+    setDraftSymptoms((currentSymptoms) => [
+      ...currentSymptoms,
+      cleanedLabel,
+    ]);
+
+    setCustomSymptomDraft('');
+    setCustomSymptomError(null);
+
+    try {
+      await AsyncStorage.setItem(
+        CUSTOM_SYMPTOMS_KEY,
+        JSON.stringify(updatedCustomSymptoms),
+      );
+    } catch (error) {
+      console.error(
+        'Unable to save custom symptom:',
+        error,
+      );
+
+      setCustomSymptomError(
+        'We could not save that symptom. Please try again.',
+      );
+    }
+  }
+
+  function renderSymptomOption(
+    id: string,
+    label: string,
+    emoji: string,
+  ) {
+    const isSelected =
+      draftSymptoms.includes(label);
+
+    return (
+      <Pressable
+        key={id}
+        accessibilityRole="checkbox"
+        accessibilityState={{
+          checked: isSelected,
+        }}
+        accessibilityLabel={label}
+        onPress={() => toggleSymptom(label)}
+        style={({ pressed }) => [
+          styles.symptomOption,
+          isSelected &&
+            styles.symptomOptionSelected,
+          pressed && styles.optionPressed,
+        ]}>
+        <Text style={styles.emoji}>
+          {emoji}
+        </Text>
+
+        <Text
+          style={[
+            styles.symptomLabel,
+            isSelected &&
+              styles.symptomLabelSelected,
+          ]}>
+          {label}
+        </Text>
+
+        {isSelected && (
+          <Text style={styles.check}>
+            ✓
+          </Text>
+        )}
+      </Pressable>
     );
   }
 
@@ -49,7 +215,86 @@ export default function SymptomsScreen({
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.categoryList}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
+        <View style={styles.customSection}>
+          <Text style={styles.categoryTitle}>
+            ✍️ Add Your Own
+          </Text>
+
+          <Text style={styles.customDescription}>
+            Tracking something that is not listed?
+            Add it here and we’ll remember it.
+          </Text>
+
+          <View style={styles.customInputRow}>
+            <TextInput
+              accessibilityLabel="Custom symptom"
+              autoCapitalize="sentences"
+              maxLength={60}
+              onChangeText={(value) => {
+                setCustomSymptomDraft(value);
+                setCustomSymptomError(null);
+              }}
+              onSubmitEditing={() => {
+                void addCustomSymptom();
+              }}
+              placeholder="Type a symptom"
+              placeholderTextColor={
+                Colors.textSecondary
+              }
+              returnKeyType="done"
+              style={styles.customInput}
+              value={customSymptomDraft}
+            />
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Add custom symptom"
+              disabled={
+                customSymptomDraft.trim().length === 0
+              }
+              onPress={() => {
+                void addCustomSymptom();
+              }}
+              style={({ pressed }) => [
+                styles.addButton,
+                customSymptomDraft.trim().length === 0 &&
+                  styles.addButtonDisabled,
+                pressed && styles.optionPressed,
+              ]}>
+              <Text style={styles.addButtonText}>
+                Add
+              </Text>
+            </Pressable>
+          </View>
+
+          {customSymptomError && (
+            <Text style={styles.customError}>
+              {customSymptomError}
+            </Text>
+          )}
+        </View>
+
+        {customSymptoms.length > 0 && (
+          <View style={styles.category}>
+            <Text style={styles.categoryTitle}>
+              ⭐ Your Symptoms
+            </Text>
+
+            <View style={styles.symptomList}>
+              {customSymptoms.map(
+                (symptom, index) =>
+                  renderSymptomOption(
+                    `custom-${index}-${symptom}`,
+                    symptom,
+                    '✦',
+                  ),
+              )}
+            </View>
+          </View>
+        )}
+
         {symptomCategories.map((category) => (
           <View
             key={category.id}
@@ -59,50 +304,13 @@ export default function SymptomsScreen({
             </Text>
 
             <View style={styles.symptomList}>
-              {category.symptoms.map((symptom) => {
-                const isSelected =
-                  draftSymptoms.includes(symptom.label);
-
-                return (
-                  <Pressable
-                    key={symptom.id}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{
-                      checked: isSelected,
-                    }}
-                    accessibilityLabel={
-                      symptom.label
-                    }
-                    onPress={() =>
-                      toggleSymptom(symptom.label)
-                    }
-                    style={({ pressed }) => [
-                      styles.symptomOption,
-                      isSelected &&
-                        styles.symptomOptionSelected,
-                      pressed && styles.optionPressed,
-                    ]}>
-                    <Text style={styles.emoji}>
-                      {symptom.emoji}
-                    </Text>
-
-                    <Text
-                      style={[
-                        styles.symptomLabel,
-                        isSelected &&
-                          styles.symptomLabelSelected,
-                      ]}>
-                      {symptom.label}
-                    </Text>
-
-                    {isSelected && (
-                      <Text style={styles.check}>
-                        ✓
-                      </Text>
-                    )}
-                  </Pressable>
-                );
-              })}
+              {category.symptoms.map((symptom) =>
+                renderSymptomOption(
+                  symptom.id,
+                  symptom.label,
+                  symptom.emoji,
+                ),
+              )}
             </View>
           </View>
         ))}
@@ -129,10 +337,10 @@ export default function SymptomsScreen({
 
 const styles = StyleSheet.create({
   container: {
-  gap: Spacing.md,
-  flexShrink: 1,
-  minHeight: 0,
-},
+    flexShrink: 1,
+    minHeight: 0,
+    gap: Spacing.md,
+  },
 
   description: {
     color: Colors.textSecondary,
@@ -140,9 +348,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
- scrollArea: {
-  flexShrink: 1,
-},
+  scrollArea: {
+    flexShrink: 1,
+  },
 
   categoryList: {
     gap: Spacing.lg,
@@ -196,8 +404,8 @@ const styles = StyleSheet.create({
   },
 
   symptomLabelSelected: {
-  color: Colors.text,
-},
+    color: Colors.text,
+  },
 
   check: {
     color: Colors.gold,
@@ -205,11 +413,62 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
+  customSection: {
+    gap: Spacing.sm,
+  },
+
+  customDescription: {
+    color: Colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  customInputRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+
+  customInput: {
+    flex: 1,
+    backgroundColor: Colors.surfaceLight,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    borderWidth: 1,
+    color: Colors.text,
+    fontSize: 16,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 12,
+  },
+
+  addButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.gold,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.lg,
+  },
+
+  addButtonDisabled: {
+    opacity: 0.4,
+  },
+
+  addButtonText: {
+    color: Colors.background,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+
+  customError: {
+    color: Colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+
   saveButton: {
+    alignItems: 'center',
     backgroundColor: Colors.gold,
     borderRadius: 12,
     paddingVertical: 14,
-    alignItems: 'center',
   },
 
   saveButtonText: {

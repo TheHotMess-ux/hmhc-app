@@ -47,6 +47,7 @@ function formatDate(
 function renderCountList(
   items: ReportCount[],
   emptyMessage: string,
+  className = '',
 ): string {
   if (items.length === 0) {
 
@@ -58,7 +59,7 @@ function renderCountList(
   }
 
   return `
-    <div class="count-list">
+    <div class="count-list ${className}">
       ${items
         .map(
           (item) => `
@@ -233,9 +234,13 @@ return `
 
     <style>
       @page {
-        size: Letter;
-        margin: 0;
-      }
+  size: Letter;
+  margin: 28px 0 24px;
+}
+
+@page :first {
+  margin-top: 0;
+}
 
       * {
         box-sizing: border-box;
@@ -362,6 +367,17 @@ return `
         flex-direction: column;
         gap: 6px;
       }
+
+      .count-list.two-column {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.count-list.two-column .count-row {
+  flex: 0 0 calc(50% - 6px);
+  min-width: 0;
+}
 
       .count-row {
         display: flex;
@@ -507,14 +523,10 @@ return `
         this reporting period.
       </p>
 
-      ${renderCountList(
-  report.moods.map((mood) => ({
-    ...mood,
-    label: removeMoodEmoji(
-      mood.label,
-    ),
-  })),
-  'No moods were logged.',
+     ${renderCountList(
+  report.topSymptoms,
+  'No symptoms were logged.',
+  'two-column',
 )}
     </section>
 
