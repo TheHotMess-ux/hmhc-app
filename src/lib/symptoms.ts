@@ -6,6 +6,7 @@ export type Symptom = {
 
 export type SymptomDetail = {
   intensity?: number;
+  discussWithDoctor?: boolean;
 };
 
 export type SymptomDetailsMap = Record<

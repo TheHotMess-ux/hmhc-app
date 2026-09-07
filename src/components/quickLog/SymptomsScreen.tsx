@@ -245,6 +245,68 @@ const [
       )}
     </Pressable>
 
+{isSelected && (
+  <Pressable
+    accessibilityRole="checkbox"
+    accessibilityState={{
+      checked:
+        draftSymptomDetails[label]
+          ?.discussWithDoctor === true,
+    }}
+    accessibilityLabel={
+      `Talk to my doctor about ${label}`
+    }
+    onPress={() => {
+      setDraftSymptomDetails(
+        (currentDetails) => {
+          const isFlagged =
+            currentDetails[label]
+              ?.discussWithDoctor === true;
+
+          return {
+            ...currentDetails,
+            [label]: {
+              ...currentDetails[label],
+              discussWithDoctor:
+                !isFlagged,
+            },
+          };
+        },
+      );
+    }}
+    style={({ pressed }) => [
+      styles.doctorFlag,
+      draftSymptomDetails[label]
+        ?.discussWithDoctor === true &&
+        styles.doctorFlagSelected,
+      pressed && styles.optionPressed,
+    ]}>
+    <Text style={styles.doctorFlagIcon}>
+      🚩
+    </Text>
+
+    <Text
+      style={[
+        styles.doctorFlagText,
+        draftSymptomDetails[label]
+          ?.discussWithDoctor === true &&
+          styles.doctorFlagTextSelected,
+      ]}>
+      {draftSymptomDetails[label]
+        ?.discussWithDoctor === true
+        ? 'Added to my doctor list'
+        : 'Talk to my doctor about this'}
+    </Text>
+
+    {draftSymptomDetails[label]
+      ?.discussWithDoctor === true && (
+      <Text style={styles.check}>
+        ✓
+      </Text>
+    )}
+  </Pressable>
+)}
+
     {label === 'Cramps' && isSelected && (
       <View style={styles.detailDrawer}>
         <Text style={styles.detailTitle}>
@@ -677,5 +739,37 @@ intensityMeaning: {
   color: Colors.gold,
   fontSize: 13,
   fontWeight: '700',
+},
+
+doctorFlag: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: Spacing.sm,
+  marginTop: -Spacing.xs,
+  paddingHorizontal: Spacing.md,
+  paddingVertical: Spacing.sm,
+  backgroundColor: Colors.surfaceLight,
+  borderColor: Colors.border,
+  borderRadius: 10,
+  borderWidth: 1,
+},
+
+doctorFlagSelected: {
+  borderColor: Colors.accent,
+},
+
+doctorFlagIcon: {
+  fontSize: 16,
+},
+
+doctorFlagText: {
+  flex: 1,
+  color: Colors.textSecondary,
+  fontSize: 13,
+  fontWeight: '600',
+},
+
+doctorFlagTextSelected: {
+  color: Colors.text,
 },
 });

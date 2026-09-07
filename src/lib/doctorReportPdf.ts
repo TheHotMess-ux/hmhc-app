@@ -515,6 +515,30 @@ return `
       </div>
     </section>
 
+    ${
+  report.doctorDiscussionItems.length > 0
+    ? `
+      <section class="section">
+        <h2>Things I Want to Discuss</h2>
+
+        <p class="section-description">
+          Symptoms the app user specifically
+          flagged for discussion with a
+          healthcare provider. The number shows
+          how many days each concern was flagged
+          during this reporting period.
+        </p>
+
+        ${renderCountList(
+          report.doctorDiscussionItems,
+          'No concerns were flagged.',
+          'two-column',
+        )}
+      </section>
+    `
+    : ''
+}
+
     <section class="section">
       <h2>Most Logged Symptoms</h2>
 

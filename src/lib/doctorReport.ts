@@ -20,8 +20,8 @@ export type DoctorReportSummary = {
   loggedDays: number;
   firstLoggedDate: string | null;
   lastLoggedDate: string | null;
-
   topSymptoms: ReportCount[];
+  doctorDiscussionItems: ReportCount[];
   moods: ReportCount[];
   supplements: ReportCount[];
   flowLevels: ReportCount[];
@@ -143,6 +143,21 @@ const symptomsForReport = [
   ),
 ];
 
+const doctorDiscussionValues =
+  entriesInRange.flatMap((entry) =>
+    Object.entries(
+      entry.symptomDetails ?? {},
+    )
+      .filter(
+        ([, details]) =>
+          details.discussWithDoctor === true,
+      )
+      .map(([label]) => label),
+  );
+
+const doctorDiscussionItems =
+  countValues(doctorDiscussionValues);
+
   const moodValues = entriesInRange
     .map((entry) => entry.mood)
     .filter(
@@ -241,6 +256,7 @@ const highestCrampIntensity =
       ]?.date ?? null,
 
     topSymptoms: symptomsForReport,
+    doctorDiscussionItems,
 
     moods: countValues(moodValues),
 
