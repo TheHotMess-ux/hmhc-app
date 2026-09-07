@@ -6,10 +6,11 @@ import {
 } from 'react';
 
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
 } from 'react-native';
 
 import QuickLogHub from '@/components/quickLog/QuickLogHub';
@@ -29,6 +30,10 @@ import { getFeralForecast as getFeralLevel } from '@/lib/chaosLevel';
 
 import { getCyclePhase as getCyclePhaseData } from '@/lib/cycle';
 import { getFeralForecast } from '../lib/forecast';
+
+import {
+  openBetaFeedbackEmail,
+} from '@/lib/betaFeedback';
 
 import { getGreeting as getSmartGreeting } from '@/lib/greetings';
 
@@ -573,6 +578,37 @@ onFitnessSave={async (fitness) => {
   });
 }}
 />
+<View style={styles.betaFeedbackCard}>
+  <View style={styles.betaFeedbackCopy}>
+    <Text style={styles.betaFeedbackEyebrow}>
+      BETA MODE
+    </Text>
+
+    <Text style={styles.betaFeedbackTitle}>
+      Spot something wonky?
+    </Text>
+
+    <Text style={styles.betaFeedbackDescription}>
+      Tell me what happened so I can make HMHC
+      better.
+    </Text>
+  </View>
+
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel="Send HMHC beta feedback"
+    onPress={() => {
+      void openBetaFeedbackEmail();
+    }}
+    style={({ pressed }) => [
+      styles.betaFeedbackButton,
+      pressed && styles.buttonPressed,
+    ]}>
+    <Text style={styles.betaFeedbackButtonText}>
+      Send Beta Feedback →
+    </Text>
+  </Pressable>
+</View>
 
 <MoreForYouCard
   items={moreForYouItems}
@@ -933,6 +969,53 @@ periodStartDescription: {
 
 saveButtonDisabled: {
   opacity: 0.45,
+},
+
+betaFeedbackCard: {
+  gap: Spacing.md,
+  marginTop: Spacing.lg,
+  padding: Spacing.lg,
+  backgroundColor: Colors.surface,
+  borderColor: Colors.accent,
+  borderRadius: 18,
+  borderWidth: 1,
+},
+
+betaFeedbackCopy: {
+  gap: Spacing.xs,
+},
+
+betaFeedbackEyebrow: {
+  color: Colors.accent,
+  fontSize: 12,
+  fontWeight: '800',
+  letterSpacing: 1.4,
+},
+
+betaFeedbackTitle: {
+  color: Colors.text,
+  fontSize: 18,
+  fontWeight: '800',
+},
+
+betaFeedbackDescription: {
+  color: Colors.textSecondary,
+  fontSize: 14,
+  lineHeight: 20,
+},
+
+betaFeedbackButton: {
+  alignItems: 'center',
+  backgroundColor: Colors.gold,
+  borderRadius: 12,
+  paddingHorizontal: Spacing.md,
+  paddingVertical: 12,
+},
+
+betaFeedbackButtonText: {
+  color: Colors.background,
+  fontSize: 14,
+  fontWeight: '800',
 },
 
 moreForYouText: {
