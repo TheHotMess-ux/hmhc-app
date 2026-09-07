@@ -4,6 +4,15 @@ export type Symptom = {
   emoji: string;
 };
 
+export type SymptomDetail = {
+  intensity?: number;
+};
+
+export type SymptomDetailsMap = Record<
+  string,
+  SymptomDetail
+>;
+
 export type SymptomCategory = {
   id: string;
   title: string;

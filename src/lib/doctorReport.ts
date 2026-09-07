@@ -29,7 +29,11 @@ export type DoctorReportSummary = {
   periodStarts: number;
   bleedingDays: number;
   spottingDays: number;
-
+crampIntensity: {
+  ratedDays: number;
+  average: number | null;
+  highest: number | null;
+};
   sleep: {
     loggedNights: number;
     qualities: ReportCount[];
@@ -172,6 +176,39 @@ const symptomsForReport = [
         > => sleep !== undefined,
       );
 
+const crampIntensityValues =
+  entriesInRange
+    .map(
+      (entry) =>
+        entry.symptomDetails?.Cramps
+          ?.intensity,
+    )
+    .filter(
+      (intensity): intensity is number =>
+        typeof intensity === 'number' &&
+        Number.isFinite(intensity) &&
+        intensity >= 1 &&
+        intensity <= 10,
+    );
+
+const averageCrampIntensity =
+  crampIntensityValues.length > 0
+    ? Math.round(
+        (
+          crampIntensityValues.reduce(
+            (total, intensity) =>
+              total + intensity,
+            0,
+          ) / crampIntensityValues.length
+        ) * 10,
+      ) / 10
+    : null;
+
+const highestCrampIntensity =
+  crampIntensityValues.length > 0
+    ? Math.max(...crampIntensityValues)
+    : null;
+
   const periodStarts =
     entriesInRange.filter(
       (entry) =>
@@ -218,6 +255,12 @@ const symptomsForReport = [
     periodStarts,
     bleedingDays,
     spottingDays,
+
+    crampIntensity: {
+      ratedDays: crampIntensityValues.length,
+      average: averageCrampIntensity,
+      highest: highestCrampIntensity,
+    },
 
     sleep: {
       loggedNights:

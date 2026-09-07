@@ -194,6 +194,11 @@ const forecast =
   const today =
   getLocalDateKey();
 
+  const todaySymptomDetails =
+  journalEntries.find(
+    (entry) => entry.date === today,
+  )?.symptomDetails ?? {};
+
 const dailyEntry = {
   date: today,
   cycleDay:
@@ -436,6 +441,9 @@ return (
 <QuickLogHub
   selectedMood={selectedMood}
   selectedSymptoms={selectedSymptoms}
+  selectedSymptomDetails={
+  todaySymptomDetails
+}
   selectedSupplements={
   selectedSupplements}
   selectedSleep={selectedSleep}
@@ -456,18 +464,22 @@ return (
       mood: value,
     });
   }}
-  onSymptomsSave={async (symptoms) => {
-    setSelectedSymptoms(symptoms);
+ onSymptomsSave={async (
+  symptoms,
+  symptomDetails,
+) => {
+  setSelectedSymptoms(symptoms);
 
-    await AsyncStorage.setItem(
-      'todaysSymptoms',
-      JSON.stringify(symptoms),
-    );
+  await AsyncStorage.setItem(
+    'todaysSymptoms',
+    JSON.stringify(symptoms),
+  );
 
-    await saveTodayToJournal({
-      symptoms,
-    });
-  }}
+  await saveTodayToJournal({
+    symptoms,
+    symptomDetails,
+  });
+}}
 
   onSupplementsSave={async (
   supplements,

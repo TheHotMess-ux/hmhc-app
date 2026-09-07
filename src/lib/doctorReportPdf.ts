@@ -530,6 +530,53 @@ return `
 )}
     </section>
 
+    ${
+  report.crampIntensity.ratedDays > 0
+    ? `
+      <section class="section">
+        <h2>Cramp Intensity</h2>
+
+        <p class="section-description">
+          Self-reported cramp severity during
+          this reporting period.
+        </p>
+
+        <div class="detail-grid">
+          <div class="detail">
+            <strong>
+              ${report.crampIntensity.ratedDays}
+            </strong>
+
+            <span>
+              Days rated
+            </span>
+          </div>
+
+          <div class="detail">
+            <strong>
+              ${report.crampIntensity.average}/10
+            </strong>
+
+            <span>
+              Average intensity
+            </span>
+          </div>
+
+          <div class="detail">
+            <strong>
+              ${report.crampIntensity.highest}/10
+            </strong>
+
+            <span>
+              Highest intensity
+            </span>
+          </div>
+        </div>
+      </section>
+    `
+    : ''
+}
+
     <section class="section">
       <h2>Mood Patterns</h2>
 

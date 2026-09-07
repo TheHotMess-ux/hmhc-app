@@ -11,6 +11,11 @@ import {
 } from 'react-native';
 
 import { symptomCategories } from '@/lib/symptoms';
+
+import type {
+  SymptomDetailsMap,
+} from '@/lib/symptoms';
+
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
@@ -23,17 +28,29 @@ const builtInSymptomLabels = symptomCategories.flatMap(
 
 type Props = {
   selectedSymptoms: string[];
+  selectedSymptomDetails?: SymptomDetailsMap;
+
   onSave: (
     symptoms: string[],
+    symptomDetails: SymptomDetailsMap,
   ) => void | Promise<void>;
 };
 
 export default function SymptomsScreen({
   selectedSymptoms,
+  selectedSymptomDetails = {},
   onSave,
 }: Props) {
+
   const [draftSymptoms, setDraftSymptoms] =
     useState<string[]>(selectedSymptoms);
+
+const [
+  draftSymptomDetails,
+  setDraftSymptomDetails,
+] = useState<SymptomDetailsMap>(
+  selectedSymptomDetails,
+);
 
   const [customSymptoms, setCustomSymptoms] =
     useState<string[]>([]);
@@ -45,8 +62,14 @@ export default function SymptomsScreen({
     useState<string | null>(null);
 
   useEffect(() => {
-    setDraftSymptoms(selectedSymptoms);
-  }, [selectedSymptoms]);
+  setDraftSymptoms(selectedSymptoms);
+  setDraftSymptomDetails(
+    selectedSymptomDetails,
+  );
+}, [
+  selectedSymptoms,
+  selectedSymptomDetails,
+]);
 
   useEffect(() => {
     async function loadCustomSymptoms() {
@@ -84,15 +107,32 @@ export default function SymptomsScreen({
     void loadCustomSymptoms();
   }, []);
 
-  function toggleSymptom(label: string) {
-    setDraftSymptoms((currentSymptoms) =>
-      currentSymptoms.includes(label)
-        ? currentSymptoms.filter(
-            (symptom) => symptom !== label,
-          )
-        : [...currentSymptoms, label],
-    );
-  }
+ function toggleSymptom(label: string) {
+  setDraftSymptoms((currentSymptoms) => {
+    const isRemoving =
+      currentSymptoms.includes(label);
+
+    if (isRemoving) {
+      setDraftSymptomDetails(
+        (currentDetails) => {
+          const updatedDetails = {
+            ...currentDetails,
+          };
+
+          delete updatedDetails[label];
+
+          return updatedDetails;
+        },
+      );
+
+      return currentSymptoms.filter(
+        (symptom) => symptom !== label,
+      );
+    }
+
+    return [...currentSymptoms, label];
+  });
+}
 
   async function addCustomSymptom() {
     const cleanedLabel =
@@ -169,40 +209,133 @@ export default function SymptomsScreen({
       draftSymptoms.includes(label);
 
     return (
-      <Pressable
-        key={id}
-        accessibilityRole="checkbox"
-        accessibilityState={{
-          checked: isSelected,
-        }}
-        accessibilityLabel={label}
-        onPress={() => toggleSymptom(label)}
-        style={({ pressed }) => [
-          styles.symptomOption,
+  <View
+    key={id}
+    style={styles.symptomWrapper}>
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityState={{
+        checked: isSelected,
+      }}
+      accessibilityLabel={label}
+      onPress={() => toggleSymptom(label)}
+      style={({ pressed }) => [
+        styles.symptomOption,
+        isSelected &&
+          styles.symptomOptionSelected,
+        pressed && styles.optionPressed,
+      ]}>
+      <Text style={styles.emoji}>
+        {emoji}
+      </Text>
+
+      <Text
+        style={[
+          styles.symptomLabel,
           isSelected &&
-            styles.symptomOptionSelected,
-          pressed && styles.optionPressed,
+            styles.symptomLabelSelected,
         ]}>
-        <Text style={styles.emoji}>
-          {emoji}
+        {label}
+      </Text>
+
+      {isSelected && (
+        <Text style={styles.check}>
+          ✓
+        </Text>
+      )}
+    </Pressable>
+
+    {label === 'Cramps' && isSelected && (
+      <View style={styles.detailDrawer}>
+        <Text style={styles.detailTitle}>
+          How intense are the cramps?
         </Text>
 
-        <Text
-          style={[
-            styles.symptomLabel,
-            isSelected &&
-              styles.symptomLabelSelected,
-          ]}>
-          {label}
+        <Text style={styles.detailDescription}>
+          Optional—but useful when “cramps”
+          doesn’t fully capture the situation.
         </Text>
 
-        {isSelected && (
-          <Text style={styles.check}>
-            ✓
-          </Text>
-        )}
-      </Pressable>
-    );
+        <View style={styles.intensityGrid}>
+          {Array.from(
+            { length: 10 },
+            (_, index) => index + 1,
+          ).map((intensity) => {
+            const isIntensitySelected =
+              draftSymptomDetails.Cramps
+                ?.intensity === intensity;
+
+            return (
+              <Pressable
+                key={intensity}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  `Cramp intensity ${intensity} out of 10`
+                }
+                accessibilityState={{
+                  selected:
+                    isIntensitySelected,
+                }}
+                onPress={() => {
+                  setDraftSymptomDetails(
+                    (currentDetails) => ({
+                      ...currentDetails,
+                      Cramps: {
+                        ...currentDetails.Cramps,
+                        intensity,
+                      },
+                    }),
+                  );
+                }}
+                style={({ pressed }) => [
+                  styles.intensityButton,
+                  isIntensitySelected &&
+                    styles.intensityButtonSelected,
+                  pressed &&
+                    styles.optionPressed,
+                ]}>
+                <Text
+                  style={[
+                    styles.intensityButtonText,
+                    isIntensitySelected &&
+                      styles.intensityButtonTextSelected,
+                  ]}>
+                  {intensity}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Text style={styles.intensityMeaning}>
+          {(() => {
+            const intensity =
+              draftSymptomDetails.Cramps
+                ?.intensity;
+
+            if (!intensity) {
+              return 'Choose 1–10 if you want to track severity.';
+            }
+
+            if (intensity <= 3) {
+              return 'Noticeable, but manageable';
+            }
+
+            if (intensity <= 6) {
+              return 'Interfering with my day';
+            }
+
+            if (intensity <= 8) {
+              return 'Difficult to function';
+            }
+
+            return 'Unbearable or incapacitating';
+          })()}
+        </Text>
+      </View>
+    )}
+  </View>
+);
   }
 
   return (
@@ -319,7 +452,12 @@ export default function SymptomsScreen({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Save symptoms"
-        onPress={() => onSave(draftSymptoms)}
+        onPress={() =>
+  onSave(
+    draftSymptoms,
+    draftSymptomDetails,
+  )
+}
         style={({ pressed }) => [
           styles.saveButton,
           pressed && styles.optionPressed,
@@ -476,4 +614,68 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
   },
+
+  symptomWrapper: {
+  gap: Spacing.sm,
+},
+
+detailDrawer: {
+  gap: Spacing.sm,
+  marginTop: -Spacing.xs,
+  padding: Spacing.md,
+  backgroundColor: Colors.surfaceLight,
+  borderColor: Colors.gold,
+  borderRadius: 12,
+  borderWidth: 1,
+},
+
+detailTitle: {
+  color: Colors.text,
+  fontSize: 15,
+  fontWeight: '800',
+},
+
+detailDescription: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 19,
+},
+
+intensityGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: Spacing.sm,
+},
+
+intensityButton: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 42,
+  height: 42,
+  backgroundColor: Colors.background,
+  borderColor: Colors.border,
+  borderRadius: 21,
+  borderWidth: 1,
+},
+
+intensityButtonSelected: {
+  backgroundColor: Colors.gold,
+  borderColor: Colors.gold,
+},
+
+intensityButtonText: {
+  color: Colors.text,
+  fontSize: 15,
+  fontWeight: '700',
+},
+
+intensityButtonTextSelected: {
+  color: Colors.background,
+},
+
+intensityMeaning: {
+  color: Colors.gold,
+  fontSize: 13,
+  fontWeight: '700',
+},
 });

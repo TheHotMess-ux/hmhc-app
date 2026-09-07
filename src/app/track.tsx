@@ -1263,6 +1263,9 @@ onClearLog={
         selectedSymptoms={
           selectedEntry?.symptoms ?? []
         }
+        selectedSymptomDetails={
+  selectedEntry?.symptomDetails ?? {}
+}
         selectedSupplements={
           selectedEntry?.supplements ?? []
         }
@@ -1292,12 +1295,14 @@ onClearLog={
         }}
 
         onSymptomsSave={async (
-          symptoms,
-        ) => {
-          await saveSelectedDateToJournal({
-            symptoms,
-          });
-        }}
+  symptoms,
+  symptomDetails,
+) => {
+  await saveSelectedDateToJournal({
+    symptoms,
+    symptomDetails,
+  });
+}}
 
         onSupplementsSave={async (
           supplements,

@@ -11,6 +11,10 @@ import type { SleepLog } from '@/lib/sleep';
 
 import type { FitnessLog } from '@/lib/fitness';
 
+import type {
+  SymptomDetailsMap,
+} from '@/lib/symptoms';
+
 import FitnessScreen from './FitnessScreen';
 
 import { Colors } from '@/theme/colors';
@@ -30,6 +34,7 @@ type Props = {
 
   selectedMood: string | null;
   selectedSymptoms: string[];
+  selectedSymptomDetails?: SymptomDetailsMap;
   selectedSupplements: string[];
 
   selectedFlow: FlowLevel | null;
@@ -45,8 +50,9 @@ type Props = {
   ) => void | Promise<void>;
 
   onSymptomsSave: (
-    symptoms: string[],
-  ) => void | Promise<void>;
+  symptoms: string[],
+  symptomDetails: SymptomDetailsMap,
+) => void | Promise<void>;
 
 onSupplementsSave: (
   supplements: string[],
@@ -74,6 +80,7 @@ export default function QuickLogModal({
   activeLog,
   selectedMood,
   selectedSymptoms,
+  selectedSymptomDetails= {},
   selectedSupplements,
   selectedFlow,
   startsNewPeriod,
@@ -152,14 +159,24 @@ export default function QuickLogModal({
           )}
 
           {activeLog === 'symptoms' && (
-            <SymptomsScreen
-              selectedSymptoms={selectedSymptoms}
-              onSave={async (symptoms) => {
-                await onSymptomsSave(symptoms);
-                onClose();
-              }}
-            />
-          )}
+  <SymptomsScreen
+    selectedSymptoms={selectedSymptoms}
+    selectedSymptomDetails={
+      selectedSymptomDetails
+    }
+    onSave={async (
+      symptoms,
+      symptomDetails,
+    ) => {
+      await onSymptomsSave(
+        symptoms,
+        symptomDetails,
+      );
+
+      onClose();
+    }}
+  />
+)}
 
 {activeLog === 'supplements' && (
   <SupplementsScreen

@@ -4,6 +4,10 @@ import type { SleepLog } from './sleep';
 
 import type { FitnessLog } from '@/lib/fitness';
 
+import type {
+  SymptomDetailsMap,
+} from './symptoms';
+
 type CyclePhase =
   | 'Menstrual'
   | 'Follicular'
@@ -27,6 +31,7 @@ export type DailyEntry = {
   cycleDay: number;
   mood: string | null;
   symptoms: string[];
+  symptomDetails?: SymptomDetailsMap;
   supplements?: string[];
   flow?: FlowLevel;
   startsNewPeriod?: boolean;

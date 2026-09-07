@@ -6,12 +6,17 @@ import type { FitnessLog } from '@/lib/fitness';
 import type { FlowLevel } from '@/lib/flow';
 import type { SleepLog } from '@/lib/sleep';
 
+import type {
+  SymptomDetailsMap,
+} from '@/lib/symptoms';
+
 import QuickLogModal from './QuickLogModal';
 import type { QuickLogType } from './types';
 
 type Props = {
   selectedMood: string | null;
   selectedSymptoms: string[];
+  selectedSymptomDetails?: SymptomDetailsMap;
   selectedSupplements: string[];
   selectedFlow: FlowLevel | null;
   startsNewPeriod: boolean;
@@ -25,8 +30,9 @@ type Props = {
   ) => void | Promise<void>;
 
   onSymptomsSave: (
-    symptoms: string[],
-  ) => void | Promise<void>;
+  symptoms: string[],
+  symptomDetails: SymptomDetailsMap,
+) => void | Promise<void>;
 
   onSupplementsSave: (
   supplements: string[],
@@ -50,6 +56,7 @@ onFitnessSave: (
 export default function QuickLogHub({
   selectedMood,
   selectedSymptoms,
+  selectedSymptomDetails = {},
   selectedSupplements,
   selectedFlow,
   selectedSleep,
@@ -102,6 +109,9 @@ export default function QuickLogHub({
   activeLog={activeQuickLog}
   selectedMood={selectedMood}
   selectedSymptoms={selectedSymptoms}
+   selectedSymptomDetails={
+  selectedSymptomDetails
+}
   selectedSupplements={
     selectedSupplements
   }
