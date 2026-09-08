@@ -115,20 +115,8 @@ const [
   draftFlow !== null &&
   draftFlow !== 'None';
 
-  function selectFlow(flow: FlowLevel) {
+function selectFlow(flow: FlowLevel) {
   setDraftFlow(flow);
-
-function toggleFlowDetail(
-  detailKey: FlowDetailKey,
-) {
-  setDraftFlowDetails(
-    (currentDetails) => ({
-      ...currentDetails,
-      [detailKey]:
-        !currentDetails[detailKey],
-    }),
-  );
-}
 
   if (
     flow === 'None' ||
@@ -139,6 +127,7 @@ function toggleFlowDetail(
 
   if (flow === 'None') {
     setDraftEndsPeriod(false);
+    setDraftFlowDetails({});
   }
 }
 
@@ -389,7 +378,9 @@ function toggleFlowDetail(
   canEndPeriod
     ? draftEndsPeriod
     : false,
-  draftFlowDetails,
+  draftFlow === 'None'
+  ? {}
+  : draftFlowDetails,
 );
         }}
         style={({ pressed }) => [
