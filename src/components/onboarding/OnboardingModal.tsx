@@ -147,10 +147,10 @@ export default function OnboardingModal({
         <KeyboardAvoidingView
           style={styles.keyboardArea}
           behavior={
-            Platform.OS === 'ios'
-              ? 'padding'
-              : undefined
-          }>
+  Platform.OS === 'ios'
+    ? 'padding'
+    : 'height'
+}>
           <ScrollView
             contentContainerStyle={
               styles.content
@@ -193,17 +193,33 @@ export default function OnboardingModal({
               <View style={styles.backPlaceholder} />
             </View>
 
-            {step === 0 && (
-              <View style={styles.step}>
-                <View style={styles.heroIcon}>
-                  <Ionicons
-                    name="heart"
-                    color={Colors.background}
-                    size={38}
-                  />
-                </View>
+           {step === 0 && (
+  <View
+    style={[
+      styles.step,
+      styles.welcomeStep,
+    ]}>
+    <View style={styles.welcomeWordmark}>
+  <Text style={styles.wordmarkLine}>
+    <Text style={styles.wordmarkCream}>
+      Hot{' '}
+    </Text>
 
-                <Text style={styles.eyebrow}>
+    <Text style={styles.wordmarkPink}>
+      Mess
+    </Text>
+  </Text>
+
+  <Text
+    style={[
+      styles.wordmarkLine,
+      styles.wordmarkCream,
+    ]}>
+    Hormone Club
+  </Text>
+</View>
+
+    <Text style={styles.eyebrow}>
                   WELCOME TO HMHC
                 </Text>
 
@@ -551,14 +567,31 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
-  heroIcon: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
-    backgroundColor: Colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  welcomeStep: {
+  justifyContent: 'flex-start',
+  gap: Spacing.md,
+  paddingTop: Spacing.sm,
+},
+
+welcomeWordmark: {
+  alignSelf: 'stretch',
+  alignItems: 'flex-start',
+},
+
+wordmarkLine: {
+  fontFamily: 'serif',
+  fontSize: 30,
+  fontWeight: '700',
+  lineHeight: 31,
+},
+
+wordmarkCream: {
+  color: Colors.cream,
+},
+
+wordmarkPink: {
+  color: Colors.accent,
+},
 
   smallIcon: {
     width: 58,
