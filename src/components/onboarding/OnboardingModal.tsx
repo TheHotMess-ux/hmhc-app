@@ -199,7 +199,11 @@ export default function OnboardingModal({
       styles.step,
       styles.welcomeStep,
     ]}>
-    <View style={styles.welcomeWordmark}>
+   <View style={styles.welcomeWordmark}>
+  <Text style={styles.wordmarkThe}>
+    THE
+  </Text>
+
   <Text style={styles.wordmarkLine}>
     <Text style={styles.wordmarkCream}>
       Hot{' '}
@@ -576,6 +580,15 @@ const styles = StyleSheet.create({
 welcomeWordmark: {
   alignSelf: 'stretch',
   alignItems: 'flex-start',
+},
+
+wordmarkThe: {
+  color: Colors.gold,
+  fontFamily: 'serif',
+  fontSize: 11,
+  fontWeight: '800',
+  letterSpacing: 2,
+  lineHeight: 14,
 },
 
 wordmarkLine: {

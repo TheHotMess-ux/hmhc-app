@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Colors } from '@/theme/colors';
 
 import {
@@ -92,10 +91,17 @@ function getTabIcon(
     };
   }, []);
 
+    useEffect(() => {
+    if (!onboardingHasLoaded) {
+      return;
+    }
+
+    void SplashScreen.hideAsync();
+  }, [onboardingHasLoaded]);
+
   return (
 
     <>
-      <AnimatedSplashOverlay />
 
       <Tabs
   key={appRefreshKey}
