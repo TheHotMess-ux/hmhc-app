@@ -138,10 +138,12 @@ export default function OnboardingModal({
   }
 
   return (
-    <Modal
+      <Modal
       visible={visible}
       animationType="fade"
       presentationStyle="fullScreen"
+      hardwareAccelerated
+      backdropColor={Colors.background}
       onRequestClose={handleBack}>
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
@@ -583,12 +585,12 @@ welcomeWordmark: {
 },
 
 wordmarkThe: {
-  color: Colors.gold,
+  color: Colors.cream,
   fontFamily: 'serif',
-  fontSize: 11,
-  fontWeight: '800',
+  fontSize: 13,
+  fontWeight: '700',
   letterSpacing: 2,
-  lineHeight: 14,
+  lineHeight: 16,
 },
 
 wordmarkLine: {
