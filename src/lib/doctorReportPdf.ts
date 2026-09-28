@@ -447,6 +447,34 @@ return `
         font-style: italic;
       }
 
+        .note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.note-item {
+  padding: 10px 12px;
+  background: #f7f7f7;
+  border-radius: 7px;
+  page-break-inside: avoid;
+}
+
+.note-date {
+  margin-bottom: 4px;
+  color: #a98716;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.note-text {
+  margin: 0;
+  color: #333333;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
       .disclaimer {
         page-break-inside: avoid;
         margin-top: 22px;
@@ -681,6 +709,158 @@ return `
         'No supplements were logged.',
       )}
     </section>
+
+${
+  report.caffeine.loggedDays > 0 ||
+  report.alcohol.loggedDays > 0
+    ? `
+      <section class="section">
+        <h2>Lifestyle Patterns</h2>
+
+        <p class="section-description">
+          Optional lifestyle factors logged during
+          this reporting period.
+        </p>
+
+        ${
+          report.caffeine.loggedDays > 0
+            ? `
+              <div class="summary-card">
+                <h3>Caffeine</h3>
+
+                <p>
+                  Tracked on
+                  <strong>${report.caffeine.loggedDays}</strong>
+                  days. Caffeine was consumed on
+                  <strong>${report.caffeine.daysWithCaffeine}</strong>
+                  days.
+                </p>
+                ${
+  report.caffeine.amounts.length > 0
+    ? `
+      <p>
+        Amounts logged:
+        ${report.caffeine.amounts
+          .map(
+            (item) =>
+              `${escapeHtml(item.label)} (${item.count})`,
+          )
+          .join(', ')}
+      </p>
+    `
+    : ''
+}
+
+${
+  report.caffeine.lastDrinkTimes.length > 0
+    ? `
+      <p>
+        Last drink timing:
+        ${report.caffeine.lastDrinkTimes
+          .map(
+            (item) =>
+              `${escapeHtml(item.label)} (${item.count})`,
+          )
+          .join(', ')}
+      </p>
+    `
+    : ''
+}
+              </div>
+            `
+            : ''
+        }
+
+        ${
+          report.alcohol.loggedDays > 0
+            ? `
+              <div class="summary-card">
+                <h3>Alcohol</h3>
+
+                <p>
+                  Tracked on
+                  <strong>${report.alcohol.loggedDays}</strong>
+                  days. Alcohol was consumed on
+                  <strong>${report.alcohol.daysWithAlcohol}</strong>
+                  days.
+                </p>
+
+                ${
+  report.alcohol.amounts.length > 0
+    ? `
+      <p>
+        Amounts logged:
+        ${report.alcohol.amounts
+          .map(
+            (item) =>
+              `${escapeHtml(item.label)} (${item.count})`,
+          )
+          .join(', ')}
+      </p>
+    `
+    : ''
+}
+
+${
+  report.alcohol.lastDrinkTimes.length > 0
+    ? `
+      <p>
+        Last drink timing:
+        ${report.alcohol.lastDrinkTimes
+          .map(
+            (item) =>
+              `${escapeHtml(item.label)} (${item.count})`,
+          )
+          .join(', ')}
+      </p>
+    `
+    : ''
+}
+              </div>
+            `
+            : ''
+        }
+      </section>
+    `
+    : ''
+}
+
+        ${
+    report.notes.length > 0
+      ? `
+        <section class="section">
+          <h2>Notes for Your Appointment</h2>
+
+          <p class="section-description">
+            Notes recorded by the app user during
+            this reporting period.
+          </p>
+
+          <div class="note-list">
+            ${report.notes
+              .map(
+                (item) => `
+                  <div class="note-item">
+                    <div class="note-date">
+                      ${escapeHtml(
+                        formatDate(item.date),
+                      )}
+                    </div>
+
+                    <p class="note-text">${escapeHtml(
+                      item.note,
+                    )}</p>
+                  </div>
+                `,
+              )
+              .join('')}
+          </div>
+        </section>
+      `
+      : ''
+  }
+
+  <aside class="disclaimer">
 
     <aside class="disclaimer">
       <strong>

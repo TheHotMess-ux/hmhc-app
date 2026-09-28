@@ -5,6 +5,8 @@ import type {
 
 import type { SleepLog } from './sleep';
 
+import type { AlcoholLog } from '@/lib/alcohol';
+import type { CaffeineLog } from '@/lib/caffeine';
 import type { FitnessLog } from '@/lib/fitness';
 
 import type {
@@ -42,6 +44,9 @@ export type DailyEntry = {
   endsPeriod?: boolean;
   sleep?: SleepLog;
   fitness?: FitnessLog;
+  caffeine?: CaffeineLog;
+  alcohol?: AlcoholLog;
+  notes?: string;
 };
 
 const pepTalks = [

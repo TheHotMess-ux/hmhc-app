@@ -209,6 +209,21 @@ const forecast =
     (entry) => entry.date === today,
   )?.flowDetails ?? {};
 
+  const todayNotes =
+  journalEntries.find(
+    (entry) => entry.date === today,
+  )?.notes ?? '';
+
+  const todayCaffeine =
+  journalEntries.find(
+    (entry) => entry.date === today,
+  )?.caffeine ?? null;
+
+  const todayAlcohol =
+  journalEntries.find(
+    (entry) => entry.date === today,
+  )?.alcohol ?? null;
+
 const dailyEntry = {
   date: today,
   cycleDay:
@@ -458,11 +473,20 @@ return (
   selectedSupplements}
   selectedSleep={selectedSleep}
   selectedFitness={selectedFitness}
+  selectedCaffeine={todayCaffeine}
+  selectedAlcohol={todayAlcohol}
+  selectedNotes={todayNotes}
   selectedFlow={selectedFlow}
   selectedFlowDetails={
   todayFlowDetails
 }
   showFlow={showsPeriodLogging}
+  showCaffeine={
+  profile.tracksCaffeine
+}
+showAlcohol={
+  profile.tracksAlcohol
+}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
   onMoodSelect={async (value) => {
@@ -575,6 +599,24 @@ onFitnessSave={async (fitness) => {
 
   await saveTodayToJournal({
     fitness,
+  });
+}}
+
+onCaffeineSave={async (caffeine) => {
+  await saveTodayToJournal({
+    caffeine,
+  });
+}}
+
+onAlcoholSave={async (alcohol) => {
+  await saveTodayToJournal({
+    alcohol,
+  });
+}}
+
+onNotesSave={async (notes) => {
+  await saveTodayToJournal({
+    notes,
   });
 }}
 />

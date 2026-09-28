@@ -34,9 +34,23 @@ import {
   openBetaFeedbackEmail,
 } from '@/lib/betaFeedback';
 
+import {
+  applyDailyReminderSettings,
+  defaultDailyReminderSettings,
+  getDailyReminderSettings
+} from '@/lib/notifications';
+
+import type {
+  DailyReminderSettings,
+} from '@/lib/notifications';
+
+
+
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
+import DailyReminderCard from '@/components/profile/DailyReminderCard';
+import DailyTrackingPreferencesCard from '@/components/profile/DailyTrackingPreferencesCard';
 import PeriodGapTrackingCard from '@/components/profile/PeriodGapTrackingCard';
 import TrackingPreferenceCard from '@/components/profile/TrackingPreferenceCard';
 
@@ -92,6 +106,13 @@ export default function ProfileScreen() {
   const [isSaving, setIsSaving] =
     useState(false);
 
+    const [
+  dailyReminderSettings,
+  setDailyReminderSettings,
+] = useState<DailyReminderSettings>(
+  defaultDailyReminderSettings,
+);
+
   const accessMode =
     getAccessMode();
 
@@ -100,7 +121,14 @@ export default function ProfileScreen() {
       const savedProfile =
         await loadUserProfile();
 
+        const savedReminderSettings =
+  await getDailyReminderSettings();
+
       setProfile(savedProfile);
+
+      setDailyReminderSettings(
+  savedReminderSettings,
+);
       setIsLoading(false);
     }
 
@@ -118,6 +146,42 @@ export default function ProfileScreen() {
       [field]: value,
     }));
   }
+
+  async function handleDailyReminderChange(
+  field:
+    | 'morningEnabled'
+    | 'eveningEnabled',
+  value: boolean,
+) {
+  const previousSettings =
+    dailyReminderSettings;
+
+  const updatedSettings:
+    DailyReminderSettings = {
+      ...dailyReminderSettings,
+      [field]: value,
+    };
+
+  setDailyReminderSettings(
+    updatedSettings,
+  );
+
+  try {
+    await applyDailyReminderSettings(
+      updatedSettings,
+    );
+ 
+  } catch {
+    setDailyReminderSettings(
+      previousSettings,
+    );
+
+    Alert.alert(
+      'Unable to update reminder',
+      'Your reminder setting could not be updated. Please try again.',
+    );
+  }
+}
 
   async function handleTrackingPreferenceChange(
   value: UserProfile['trackingPreference'],
@@ -171,6 +235,33 @@ async function handlePeriodGapChange(
   }
 }
 
+async function handleDailyTrackingChange(
+  field: 'tracksCaffeine' | 'tracksAlcohol',
+  value: boolean,
+) {
+  const previousProfile = profile;
+
+  const updatedProfile: UserProfile = {
+    ...profile,
+    [field]: value,
+  };
+
+  setProfile(updatedProfile);
+
+  try {
+    await saveUserProfile(
+      updatedProfile,
+    );
+  } catch {
+    setProfile(previousProfile);
+
+    Alert.alert(
+      'Unable to save preference',
+      'Your daily tracking preference could not be updated. Please try again.',
+    );
+  }
+}
+
   async function handleSave() {
     Keyboard.dismiss();
 
@@ -208,6 +299,12 @@ async function handlePeriodGapChange(
 
         tracksPeriodGap:
           profile.tracksPeriodGap,
+
+        tracksCaffeine:
+          profile.tracksCaffeine,
+
+        tracksAlcohol:
+          profile.tracksAlcohol,
       };
 
       await saveUserProfile(
@@ -314,6 +411,48 @@ async function handlePeriodGapChange(
     }}
   />
 )}
+
+<DailyTrackingPreferencesCard
+  tracksCaffeine={
+    profile.tracksCaffeine
+  }
+  tracksAlcohol={
+    profile.tracksAlcohol
+  }
+  onCaffeineChange={(value) => {
+    void handleDailyTrackingChange(
+      'tracksCaffeine',
+      value,
+    );
+  }}
+  onAlcoholChange={(value) => {
+    void handleDailyTrackingChange(
+      'tracksAlcohol',
+      value,
+    );
+  }}
+/>
+
+<DailyReminderCard
+  morningEnabled={
+    dailyReminderSettings.morningEnabled
+  }
+  onMorningChange={(value) => {
+    void handleDailyReminderChange(
+      'morningEnabled',
+      value,
+    );
+  }}
+  eveningEnabled={
+    dailyReminderSettings.eveningEnabled
+  }
+  onEveningChange={(value) => {
+    void handleDailyReminderChange(
+      'eveningEnabled',
+      value,
+    );
+  }}
+/>
 
       <View style={styles.formCard}>
         <Text style={styles.cardTitle}>

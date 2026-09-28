@@ -10,6 +10,8 @@ export type UserProfile = {
   dateOfBirth: string;
   trackingPreference: TrackingPreference;
   tracksPeriodGap: boolean;
+  tracksCaffeine: boolean;
+  tracksAlcohol: boolean;
 };
 
 const PROFILE_STORAGE_KEY =
@@ -21,6 +23,8 @@ export const emptyUserProfile: UserProfile = {
   dateOfBirth: '',
   trackingPreference: 'cycle',
   tracksPeriodGap: false,
+  tracksCaffeine: false,
+  tracksAlcohol: false,
 };
 
 export async function loadUserProfile(): Promise<UserProfile> {
@@ -98,6 +102,12 @@ export async function saveUserProfile(
 
   tracksPeriodGap:
     profile.tracksPeriodGap,
+
+  tracksCaffeine:
+    profile.tracksCaffeine,
+    
+  tracksAlcohol:
+    profile.tracksAlcohol,
 };
 
     await AsyncStorage.setItem(

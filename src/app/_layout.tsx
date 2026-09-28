@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors } from '@/theme/colors';
 
@@ -53,6 +54,7 @@ function getTabIcon(
 }
 
   export default function RootLayout() {
+  const insets = useSafeAreaInsets();
   const [
     onboardingIsVisible,
     setOnboardingIsVisible,
@@ -116,15 +118,15 @@ function getTabIcon(
             Colors.textSecondary,
 
           tabBarStyle: {
-            height: 72,
-            paddingTop: 8,
-            paddingBottom: 8,
-            backgroundColor:
-              Colors.surface,
-            borderTopColor:
-              Colors.border,
-            borderTopWidth: 1,
-          },
+  height: 64 + insets.bottom,
+  paddingTop: 8,
+  paddingBottom: Math.max(insets.bottom, 8),
+  backgroundColor:
+    Colors.surface,
+  borderTopColor:
+    Colors.border,
+  borderTopWidth: 1,
+},
 
           tabBarLabelStyle: {
             fontSize: 11,

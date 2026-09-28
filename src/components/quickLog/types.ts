@@ -5,4 +5,7 @@ export type QuickLogType =
   | 'sleep'
   | 'supplements'
   | 'fitness'
+  | 'caffeine'
+  | 'alcohol'
+  | 'notes'
   | null;

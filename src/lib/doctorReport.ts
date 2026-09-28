@@ -15,6 +15,11 @@ export type ReportCount = {
   count: number;
 };
 
+export type ReportNote = {
+  date: string;
+  note: string;
+};
+
 export type DoctorReportSummary = {
   rangeDays: number;
   loggedDays: number;
@@ -26,7 +31,20 @@ export type DoctorReportSummary = {
   supplements: ReportCount[];
   flowLevels: ReportCount[];
   bleedingDetails: ReportCount[];
+  notes: ReportNote[];
+  caffeine: {
+  loggedDays: number;
+  daysWithCaffeine: number;
+  amounts: ReportCount[];
+  lastDrinkTimes: ReportCount[];
+};
 
+alcohol: {
+  loggedDays: number;
+  daysWithAlcohol: number;
+  amounts: ReportCount[];
+  lastDrinkTimes: ReportCount[];
+};
   periodStarts: number;
   bleedingDays: number;
   spottingDays: number;
@@ -173,6 +191,17 @@ const doctorDiscussionItems =
         entry.supplements ?? [],
     );
 
+    const notes = entriesInRange
+  .filter(
+    (entry) =>
+      typeof entry.notes === 'string' &&
+      entry.notes.trim().length > 0,
+  )
+  .map((entry) => ({
+    date: entry.date,
+    note: entry.notes!.trim(),
+  }));
+
   const flowValues = entriesInRange
     .map((entry) => entry.flow)
     .filter(
@@ -294,6 +323,58 @@ const bleedingDetails =
         entry.flow === 'Spotting',
     ).length;
 
+const caffeineEntries = entriesInRange.filter(
+  (entry) => entry.caffeine !== undefined,
+);
+
+const caffeineAmounts = caffeineEntries.map(
+  (entry) => entry.caffeine!.amount,
+);
+
+const caffeineLastDrinkTimes =
+  caffeineEntries
+    .map(
+      (entry) =>
+        entry.caffeine!.lastDrinkTime,
+    )
+    .filter(
+      (time): time is NonNullable<
+        typeof time
+      > => time !== undefined,
+    );
+
+const daysWithCaffeine =
+  caffeineEntries.filter(
+    (entry) =>
+      entry.caffeine!.amount !== 'None',
+  ).length;
+
+  const alcoholEntries = entriesInRange.filter(
+  (entry) => entry.alcohol !== undefined,
+);
+
+const alcoholAmounts = alcoholEntries.map(
+  (entry) => entry.alcohol!.amount,
+);
+
+const alcoholLastDrinkTimes =
+  alcoholEntries
+    .map(
+      (entry) =>
+        entry.alcohol!.lastDrinkTime,
+    )
+    .filter(
+      (time): time is NonNullable<
+        typeof time
+      > => time !== undefined,
+    );
+
+const daysWithAlcohol =
+  alcoholEntries.filter(
+    (entry) =>
+      entry.alcohol!.amount !== 'None',
+  ).length;
+
   return {
     rangeDays,
     loggedDays: entriesInRange.length,
@@ -308,6 +389,28 @@ const bleedingDetails =
 
     topSymptoms: symptomsForReport,
     doctorDiscussionItems,
+    notes,
+    caffeine: {
+  loggedDays: caffeineEntries.length,
+  daysWithCaffeine,
+  amounts: countValues(
+    caffeineAmounts,
+  ),
+  lastDrinkTimes: countValues(
+    caffeineLastDrinkTimes,
+  ),
+},
+
+alcohol: {
+  loggedDays: alcoholEntries.length,
+  daysWithAlcohol,
+  amounts: countValues(
+    alcoholAmounts,
+  ),
+  lastDrinkTimes: countValues(
+    alcoholLastDrinkTimes,
+  ),
+},
 
     moods: countValues(moodValues),
 

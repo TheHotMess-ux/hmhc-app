@@ -1,6 +1,7 @@
 import {
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -15,6 +16,11 @@ import type { SleepLog } from '@/lib/sleep';
 
 import type { FitnessLog } from '@/lib/fitness';
 
+import type { CaffeineLog } from '@/lib/caffeine';
+
+import type { AlcoholLog } from '@/lib/alcohol';
+
+
 import type {
   SymptomDetailsMap,
 } from '@/lib/symptoms';
@@ -24,8 +30,11 @@ import FitnessScreen from './FitnessScreen';
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
+import AlcoholScreen from './AlcoholScreen';
+import CaffeineScreen from './CaffeineScreen';
 import FlowScreen from './FlowScreen';
 import MoodScreen from './MoodScreen';
+import NotesScreen from './NotesScreen';
 import SleepScreen from './SleepScreen';
 import SupplementsScreen from './SupplementsScreen';
 import SymptomsScreen from './SymptomsScreen';
@@ -35,20 +44,23 @@ import type { QuickLogType } from './types';
 type Props = {
   visible: boolean;
   activeLog: QuickLogType;
-
   selectedMood: string | null;
   selectedSymptoms: string[];
   selectedSymptomDetails?: SymptomDetailsMap;
   selectedSupplements: string[];
-
+  selectedNotes: string;
   selectedFlow: FlowLevel | null;
   selectedFlowDetails?: FlowDetails;
   startsNewPeriod: boolean;
   endsPeriod: boolean;
-
   selectedSleep: SleepLog | null;
-
   selectedFitness: FitnessLog | null;
+  selectedCaffeine: CaffeineLog | null;
+  selectedAlcohol: AlcoholLog | null;
+
+onAlcoholSave: (
+  alcohol: AlcoholLog,
+) => void | Promise<void>;
 
   onMoodSelect: (
     mood: string,
@@ -79,6 +91,14 @@ onSleepSave: (
   onFitnessSave: (
   fitness: FitnessLog,
 ) => void | Promise<void>;
+
+onCaffeineSave: (
+  caffeine: CaffeineLog,
+) => void | Promise<void>;
+
+onNotesSave: (
+  notes: string,
+) => void | Promise<void>;
 };
 
 export default function QuickLogModal({
@@ -94,12 +114,18 @@ export default function QuickLogModal({
   endsPeriod,
   selectedSleep,
   selectedFitness,
+  selectedCaffeine,
+  selectedAlcohol,
+  selectedNotes,
   onMoodSelect,
   onSymptomsSave,
   onSupplementsSave,
   onFlowSave,
   onSleepSave,
   onFitnessSave,
+  onCaffeineSave,
+  onAlcoholSave,
+  onNotesSave,
   onClose,
 }: Props) {
 
@@ -122,6 +148,15 @@ export default function QuickLogModal({
 
       case 'fitness':
         return 'How did you move today?';
+
+      case 'caffeine':
+        return 'How much caffeine today?';
+
+      case 'alcohol':
+        return 'Alcohol check-in';
+
+      case 'notes':
+          return 'Anything you want to remember?';
 
       default:
         return '';
@@ -154,6 +189,13 @@ export default function QuickLogModal({
               </Text>
             </Pressable>
           </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={
+              styles.scrollContent
+            }>
+
 
           {activeLog === 'mood' && (
             <MoodScreen
@@ -219,6 +261,36 @@ export default function QuickLogModal({
   />
 )}
 
+{activeLog === 'caffeine' && (
+  <CaffeineScreen
+    selectedCaffeine={selectedCaffeine}
+    onSave={async (caffeine) => {
+      await onCaffeineSave(caffeine);
+      onClose();
+    }}
+  />
+)}
+
+{activeLog === 'alcohol' && (
+  <AlcoholScreen
+    selectedAlcohol={selectedAlcohol}
+    onSave={async (alcohol) => {
+      await onAlcoholSave(alcohol);
+      onClose();
+    }}
+  />
+)}
+
+{activeLog === 'notes' && (
+  <NotesScreen
+    selectedNotes={selectedNotes}
+    onSave={async (notes) => {
+      await onNotesSave(notes);
+      onClose();
+    }}
+  />
+)}
+
 {activeLog === 'flow' && (
 
 <FlowScreen
@@ -248,15 +320,15 @@ export default function QuickLogModal({
 )}
 
           {activeLog !== 'mood' &&
-          activeLog !== 'symptoms' &&
-          activeLog !== 'flow' &&
-          activeLog !== 'supplements' &&
-          activeLog !== 'sleep' &&
-          activeLog !== 'fitness' && (
+activeLog !== 'symptoms' &&
+activeLog !== 'flow' &&
+activeLog !== 'supplements' &&
+activeLog !== 'sleep' &&
+activeLog !== 'fitness' &&
+activeLog !== 'caffeine' &&
+activeLog !== 'alcohol' &&
+activeLog !== 'notes' && (
               <>
-                <Text style={styles.subtitle}>
-                  Screen coming next...
-                </Text>
 
                 <Pressable
                   onPress={onClose}
@@ -270,6 +342,7 @@ export default function QuickLogModal({
                 </Pressable>
               </>
             )}
+                      </ScrollView>
         </View>
       </View>
     </Modal>
@@ -349,4 +422,8 @@ title: {
   buttonPressed: {
     opacity: 0.7,
   },
+
+  scrollContent: {
+  paddingBottom: Spacing.lg,
+},
 });

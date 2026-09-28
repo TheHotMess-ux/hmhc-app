@@ -10,6 +10,9 @@ import type {
 
 import type { SleepLog } from '@/lib/sleep';
 
+import type { AlcoholLog } from '@/lib/alcohol';
+import type { CaffeineLog } from '@/lib/caffeine';
+
 import type {
   SymptomDetailsMap,
 } from '@/lib/symptoms';
@@ -28,7 +31,12 @@ type Props = {
   endsPeriod: boolean;
   selectedSleep: SleepLog | null;
   showFlow: boolean;
+  showCaffeine: boolean;
+  showAlcohol: boolean;
   selectedFitness: FitnessLog | null;
+  selectedCaffeine: CaffeineLog | null;
+  selectedAlcohol: AlcoholLog | null;
+  selectedNotes: string;
 
   onMoodSelect: (
     mood: string,
@@ -57,6 +65,18 @@ onSleepSave: (
 onFitnessSave: (
   fitness: FitnessLog,
 ) => void | Promise<void>;
+
+onCaffeineSave: (
+  caffeine: CaffeineLog,
+) => void | Promise<void>;
+
+onAlcoholSave: (
+  alcohol: AlcoholLog,
+) => void | Promise<void>;
+
+onNotesSave: (
+  notes: string,
+) => void | Promise<void>;
 };
 
 export default function QuickLogHub({
@@ -70,13 +90,21 @@ export default function QuickLogHub({
   startsNewPeriod,
   endsPeriod,
   showFlow,
+  showCaffeine,
+  showAlcohol,
   selectedFitness,
+  selectedCaffeine,
+  selectedAlcohol,
+  selectedNotes,
   onMoodSelect,
   onSymptomsSave,
   onSupplementsSave,
   onFlowSave,
   onSleepSave,
   onFitnessSave,
+  onCaffeineSave,
+  onAlcoholSave,
+  onNotesSave,
 }: Props) {
 
   const [activeQuickLog, setActiveQuickLog] =
@@ -91,7 +119,12 @@ export default function QuickLogHub({
   selectedFlow={selectedFlow}
   selectedSleep={selectedSleep}
   showFlow={showFlow}
+  showCaffeine={showCaffeine}
+  showAlcohol={showAlcohol}
   selectedFitness={selectedFitness}
+  selectedNotes={selectedNotes}
+  selectedCaffeine={selectedCaffeine}
+  selectedAlcohol={selectedAlcohol}
   onMoodPress={() => setActiveQuickLog('mood')}
   onSymptomsPress={() =>
     setActiveQuickLog('symptoms')
@@ -108,6 +141,15 @@ export default function QuickLogHub({
   onFitnessPress={() =>
   setActiveQuickLog('fitness')
 }
+onCaffeinePress={() =>
+  setActiveQuickLog('caffeine')
+}
+onAlcoholPress={() =>
+  setActiveQuickLog('alcohol')
+}
+  onNotesPress={() =>
+    setActiveQuickLog('notes')
+  }
 />
 
       {activeQuickLog !== null && (
@@ -128,6 +170,9 @@ export default function QuickLogHub({
 }
   selectedSleep={selectedSleep}
   selectedFitness={selectedFitness}
+  selectedCaffeine={selectedCaffeine}
+  selectedAlcohol={selectedAlcohol}
+  selectedNotes={selectedNotes}
   startsNewPeriod={startsNewPeriod}
   endsPeriod={endsPeriod}
   onMoodSelect={onMoodSelect}
@@ -138,6 +183,9 @@ export default function QuickLogHub({
   onFlowSave={onFlowSave}
   onSleepSave={onSleepSave}
   onFitnessSave={onFitnessSave}
+  onCaffeineSave={onCaffeineSave}
+  onAlcoholSave={onAlcoholSave}
+  onNotesSave={onNotesSave}
   onClose={() =>
     setActiveQuickLog(null)
   }

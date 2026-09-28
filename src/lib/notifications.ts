@@ -73,6 +73,87 @@ await rememberScheduledPeriodReminder(
 const PERIOD_REMINDER_STORAGE_KEY =
   'hmhcScheduledPeriodReminder';
 
+  const DAILY_REMINDER_STORAGE_KEY =
+  'hmhcDailyReminderSettings';
+
+  const MORNING_REMINDER_ID_KEY =
+  'hmhcMorningReminderId';
+
+const EVENING_REMINDER_ID_KEY =
+  'hmhcEveningReminderId';
+
+export type DailyReminderTime = {
+  hour: number;
+  minute: number;
+};
+
+export type DailyReminderSettings = {
+  morningEnabled: boolean;
+  morningTime: DailyReminderTime;
+
+  eveningEnabled: boolean;
+  eveningTime: DailyReminderTime;
+};
+
+export const defaultDailyReminderSettings:
+  DailyReminderSettings = {
+    morningEnabled: false,
+    morningTime: {
+  hour: 8,
+  minute: 0,
+},
+
+    eveningEnabled: false,
+    eveningTime: {
+      hour: 20,
+      minute: 0,
+    },
+  };
+
+export async function getDailyReminderSettings(): Promise<DailyReminderSettings> {
+  const savedSettings =
+    await AsyncStorage.getItem(
+      DAILY_REMINDER_STORAGE_KEY,
+    );
+
+  if (!savedSettings) {
+    return defaultDailyReminderSettings;
+  }
+
+  try {
+    const parsedSettings =
+      JSON.parse(
+        savedSettings,
+      ) as Partial<DailyReminderSettings>;
+
+    return {
+      ...defaultDailyReminderSettings,
+      ...parsedSettings,
+
+      morningTime: {
+        ...defaultDailyReminderSettings.morningTime,
+        ...parsedSettings.morningTime,
+      },
+
+      eveningTime: {
+        ...defaultDailyReminderSettings.eveningTime,
+        ...parsedSettings.eveningTime,
+      },
+    };
+  } catch {
+    return defaultDailyReminderSettings;
+  }
+}
+
+export async function saveDailyReminderSettings(
+  settings: DailyReminderSettings,
+): Promise<void> {
+  await AsyncStorage.setItem(
+    DAILY_REMINDER_STORAGE_KEY,
+    JSON.stringify(settings),
+  );
+}
+
 export async function requestNotificationPermissions(): Promise<boolean> {
   if (Platform.OS === 'web') {
     return false;
@@ -107,6 +188,16 @@ export async function configureNotificationChannel(): Promise<void> {
       vibrationPattern: [0, 250, 250, 250],
     },
   );
+
+  await Notifications.setNotificationChannelAsync(
+  'daily-check-ins',
+  {
+    name: 'Daily check-ins',
+    importance:
+      Notifications.AndroidImportance.DEFAULT,
+    vibrationPattern: [0, 250, 250, 250],
+  },
+);
 }
 
 type StoredPeriodReminder = {
@@ -191,5 +282,154 @@ export async function rememberScheduledPeriodReminder(
   await AsyncStorage.setItem(
     PERIOD_REMINDER_STORAGE_KEY,
     JSON.stringify(reminder),
+  );
+}
+
+async function cancelDailyReminder(
+  storageKey: string,
+): Promise<void> {
+  const notificationId =
+    await AsyncStorage.getItem(
+      storageKey,
+    );
+
+  if (!notificationId) {
+    return;
+  }
+
+  await Notifications.cancelScheduledNotificationAsync(
+    notificationId,
+  );
+
+  await AsyncStorage.removeItem(
+    storageKey,
+  );
+}
+
+export async function cancelMorningReminder(): Promise<void> {
+  await cancelDailyReminder(
+    MORNING_REMINDER_ID_KEY,
+  );
+}
+
+export async function cancelEveningReminder(): Promise<void> {
+  await cancelDailyReminder(
+    EVENING_REMINDER_ID_KEY,
+  );
+}
+
+export async function scheduleMorningReminder(
+  time: DailyReminderTime,
+): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    return null;
+  }
+
+  await cancelMorningReminder();
+  await configureNotificationChannel();
+
+  const hasPermission =
+    await requestNotificationPermissions();
+
+  if (!hasPermission) {
+    return null;
+  }
+
+  
+
+  const notificationId =
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Morning hormone roll call ☀️',
+        body:
+          'How are we doing in there? Take 30 seconds to check in.',
+      },
+
+      trigger: {
+        type:
+          Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: time.hour,
+        minute: time.minute,
+        channelId:
+          Platform.OS === 'android'
+            ? 'daily-check-ins'
+            : undefined,
+      },
+    });
+
+  await AsyncStorage.setItem(
+    MORNING_REMINDER_ID_KEY,
+    notificationId,
+  );
+
+  return notificationId;
+}
+
+export async function scheduleEveningReminder(
+  time: DailyReminderTime,
+): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    return null;
+  }
+
+  await cancelEveningReminder();
+  await configureNotificationChannel();
+
+  const hasPermission =
+    await requestNotificationPermissions();
+
+  if (!hasPermission) {
+    return null;
+  }
+
+  const notificationId =
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'Evening damage report 🌙',
+        body:
+          'Log today before your brain deletes the evidence.',
+      },
+
+      trigger: {
+        type:
+          Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: time.hour,
+        minute: time.minute,
+        channelId:
+          Platform.OS === 'android'
+            ? 'daily-check-ins'
+            : undefined,
+      },
+    });
+
+  await AsyncStorage.setItem(
+    EVENING_REMINDER_ID_KEY,
+    notificationId,
+  );
+
+  return notificationId;
+}
+
+export async function applyDailyReminderSettings(
+  settings: DailyReminderSettings,
+): Promise<void> {
+  if (settings.morningEnabled) {
+    await scheduleMorningReminder(
+      settings.morningTime,
+    );
+  } else {
+    await cancelMorningReminder();
+  }
+
+  if (settings.eveningEnabled) {
+    await scheduleEveningReminder(
+      settings.eveningTime,
+    );
+  } else {
+    await cancelEveningReminder();
+  }
+
+  await saveDailyReminderSettings(
+    settings,
   );
 }

@@ -21,20 +21,32 @@ import type { SleepLog } from '@/lib/sleep';
 
 import type { FitnessLog } from '@/lib/fitness';
 
+import type { CaffeineLog } from '@/lib/caffeine';
+
+import type { AlcoholLog } from '@/lib/alcohol';
+
 type Props = {
   selectedMood: string | null;
   selectedSymptoms: string[];
   selectedSupplements: string[];
+  selectedCaffeine: CaffeineLog | null;
+  selectedAlcohol: AlcoholLog | null;
   selectedFlow: FlowLevel | null;
   selectedSleep: SleepLog | null;
   selectedFitness: FitnessLog | null;
+  selectedNotes: string;
   showFlow: boolean;
+  showCaffeine: boolean;
+  showAlcohol: boolean;
   onMoodPress: () => void;
   onSymptomsPress: () => void;
   onSupplementsPress: () => void;
   onFlowPress: () => void;
   onSleepPress: () => void;
   onFitnessPress: () => void;
+  onCaffeinePress: () => void;
+  onAlcoholPress: () => void;
+  onNotesPress: () => void;
 };
 
 export default function QuickLogCard({
@@ -44,13 +56,21 @@ export default function QuickLogCard({
   selectedFlow,
   selectedSleep,
   selectedFitness,
+  selectedCaffeine,
+  selectedAlcohol,
+  selectedNotes,
   showFlow,
+  showCaffeine,
+  showAlcohol,
   onMoodPress,
   onSymptomsPress,
   onSupplementsPress,
   onFlowPress,
   onSleepPress,
   onFitnessPress,
+  onCaffeinePress,
+  onAlcoholPress,
+  onNotesPress,
 }: Props) {
 
 const selectedFlowEmoji =
@@ -249,6 +269,97 @@ const selectedSleepEmoji =
     Tap to log
   </Text>
 )}
+</Pressable>
+
+{showCaffeine && (
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel="Log caffeine for today"
+    onPress={onCaffeinePress}
+    style={({ pressed }) => [
+      styles.quickLogButton,
+      selectedCaffeine !== null &&
+        styles.quickLogButtonSelected,
+      pressed && styles.buttonPressed,
+    ]}>
+    <Text style={styles.quickLogEmoji}>
+      ☕
+    </Text>
+
+    <Text style={styles.quickLogLabel}>
+      Caffeine
+    </Text>
+
+    {selectedCaffeine !== null ? (
+      <Text style={styles.quickLogValue}>
+        {selectedCaffeine.amount}
+      </Text>
+    ) : (
+      <Text style={styles.comingSoon}>
+        Tap to log
+      </Text>
+    )}
+  </Pressable>
+)}
+
+{showAlcohol && (
+  <Pressable
+    accessibilityRole="button"
+    accessibilityLabel="Log alcohol for today"
+    onPress={onAlcoholPress}
+    style={({ pressed }) => [
+      styles.quickLogButton,
+      selectedAlcohol !== null &&
+        styles.quickLogButtonSelected,
+      pressed && styles.buttonPressed,
+    ]}>
+    <Text style={styles.quickLogEmoji}>
+      🍷
+    </Text>
+
+    <Text style={styles.quickLogLabel}>
+      Alcohol
+    </Text>
+
+    {selectedAlcohol !== null ? (
+      <Text style={styles.quickLogValue}>
+        {selectedAlcohol.amount}
+      </Text>
+    ) : (
+      <Text style={styles.comingSoon}>
+        Tap to log
+      </Text>
+    )}
+  </Pressable>
+)}
+
+<Pressable
+  accessibilityRole="button"
+  accessibilityLabel="Add notes for today"
+  onPress={onNotesPress}
+  style={({ pressed }) => [
+    styles.quickLogButton,
+    selectedNotes.length > 0 &&
+      styles.quickLogButtonSelected,
+    pressed && styles.buttonPressed,
+  ]}>
+  <Text style={styles.quickLogEmoji}>
+    📝
+  </Text>
+
+  <Text style={styles.quickLogLabel}>
+    Notes
+  </Text>
+
+  {selectedNotes.length > 0 ? (
+    <Text style={styles.quickLogValue}>
+      Note added
+    </Text>
+  ) : (
+    <Text style={styles.comingSoon}>
+      Tap to add
+    </Text>
+  )}
 </Pressable>
 
       </View>

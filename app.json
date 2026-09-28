@@ -8,9 +8,9 @@
     "scheme": "hmhcapp",
     "userInterfaceStyle": "dark",
     "ios": {
-  "icon": "./assets/expo.icon",
-  "bundleIdentifier": "com.thehotmesshormoneclub.hmhc"
-},
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.thehotmesshormoneclub.hmhc"
+    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0F0F10",
@@ -36,7 +36,8 @@
         }
       ],
       "expo-notifications",
-      "expo-sharing"
+      "expo-sharing",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
