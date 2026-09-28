@@ -437,6 +437,26 @@ async function handleDailyTrackingChange(
   morningEnabled={
     dailyReminderSettings.morningEnabled
   }
+
+morningTime={
+  dailyReminderSettings.morningTime
+}
+
+onMorningTimeChange={(time) => {
+  const updatedSettings = {
+    ...dailyReminderSettings,
+    morningTime: time,
+  };
+
+  setDailyReminderSettings(
+    updatedSettings,
+  );
+
+  void applyDailyReminderSettings(
+    updatedSettings,
+  );
+}}
+
   onMorningChange={(value) => {
     void handleDailyReminderChange(
       'morningEnabled',
@@ -446,6 +466,25 @@ async function handleDailyTrackingChange(
   eveningEnabled={
     dailyReminderSettings.eveningEnabled
   }
+  eveningTime={
+  dailyReminderSettings.eveningTime
+}
+
+onEveningTimeChange={(time) => {
+  const updatedSettings = {
+    ...dailyReminderSettings,
+    eveningTime: time,
+  };
+
+  setDailyReminderSettings(
+    updatedSettings,
+  );
+
+  void applyDailyReminderSettings(
+    updatedSettings,
+  );
+}}
+
   onEveningChange={(value) => {
     void handleDailyReminderChange(
       'eveningEnabled',

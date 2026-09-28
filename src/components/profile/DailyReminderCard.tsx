@@ -1,20 +1,52 @@
 import {
-    StyleSheet,
-    Switch,
-    Text,
-    View,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
 } from 'react-native';
+
+import DateTimePicker from '@react-native-community/datetimepicker';
+
+import {
+  useState,
+} from 'react';
 
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
 
 type Props = {
   morningEnabled: boolean;
+
+  morningTime: {
+  hour: number;
+  minute: number;
+};
+
+onMorningTimeChange: (
+  time: {
+    hour: number;
+    minute: number;
+  },
+) => void;
+
   onMorningChange: (
     value: boolean,
   ) => void;
 
    eveningEnabled: boolean;
+   eveningTime: {
+  hour: number;
+  minute: number;
+};
+
+onEveningTimeChange: (
+  time: {
+    hour: number;
+    minute: number;
+  },
+) => void;
+
   onEveningChange: (
     value: boolean,
   ) => void;
@@ -22,10 +54,50 @@ type Props = {
 
 export default function DailyReminderCard({
   morningEnabled,
+  morningTime,
+  onMorningTimeChange,
   onMorningChange,
   eveningEnabled,
+  eveningTime,
   onEveningChange,
-}: Props) {  return (
+  onEveningTimeChange,
+}: Props) {
+  
+  const [
+  showMorningTimePicker,
+  setShowMorningTimePicker,
+] = useState(false);
+
+const [
+  showEveningTimePicker,
+  setShowEveningTimePicker,
+] = useState(false);
+
+const morningTimeLabel =
+  new Date(
+    2000,
+    0,
+    1,
+    morningTime.hour,
+    morningTime.minute,
+  ).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+
+  const eveningTimeLabel =
+  new Date(
+    2000,
+    0,
+    1,
+    eveningTime.hour,
+    eveningTime.minute,
+  ).toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+
+  return (
     <View style={styles.card}>
       <Text style={styles.title}>
         Check-In Reminders
@@ -46,11 +118,50 @@ export default function DailyReminderCard({
     </Text>
   </View>
 
+ <Pressable
+  style={styles.timeButton}
+  onPress={() => {
+    setShowMorningTimePicker(true);
+  }}
+  hitSlop={12}
+>
+  <Text style={styles.timeText}>
+    {morningTimeLabel}
+  </Text>
+</Pressable>
+
   <Switch
     value={morningEnabled}
     onValueChange={onMorningChange}
   />
 </View>
+
+{showMorningTimePicker && (
+  <DateTimePicker
+    value={
+      new Date(
+        2000,
+        0,
+        1,
+        morningTime.hour,
+        morningTime.minute,
+      )
+    }
+    mode="time"
+    onChange={(_, selectedDate) => {
+      setShowMorningTimePicker(false);
+
+      if (!selectedDate) {
+        return;
+      }
+
+      onMorningTimeChange({
+        hour: selectedDate.getHours(),
+        minute: selectedDate.getMinutes(),
+      });
+    }}
+  />
+)}
 
 <View style={styles.reminderRow}>
   <View style={styles.reminderText}>
@@ -64,11 +175,50 @@ export default function DailyReminderCard({
     </Text>
   </View>
 
+  <Pressable
+  style={styles.timeButton}
+  onPress={() => {
+    setShowEveningTimePicker(true);
+  }}
+  hitSlop={12}
+>
+  <Text style={styles.timeText}>
+    {eveningTimeLabel}
+  </Text>
+</Pressable>
+
   <Switch
     value={eveningEnabled}
     onValueChange={onEveningChange}
   />
 </View>
+
+{showEveningTimePicker && (
+  <DateTimePicker
+    value={
+      new Date(
+        2000,
+        0,
+        1,
+        eveningTime.hour,
+        eveningTime.minute,
+      )
+    }
+    mode="time"
+    onChange={(_, selectedDate) => {
+      setShowEveningTimePicker(false);
+
+      if (!selectedDate) {
+        return;
+      }
+
+      onEveningTimeChange({
+        hour: selectedDate.getHours(),
+        minute: selectedDate.getMinutes(),
+      });
+    }}
+  />
+)}
 
     </View>
   );
@@ -119,5 +269,18 @@ reminderSubtitle: {
   color: Colors.textSecondary,
   fontSize: 13,
   lineHeight: 18,
+},
+
+timeButton: {
+  paddingVertical: 8,
+  paddingHorizontal: 10,
+  borderRadius: 10,
+  backgroundColor: Colors.background,
+},
+
+timeText: {
+  color: Colors.accent,
+  fontSize: 15,
+  fontWeight: '700',
 },
 });
