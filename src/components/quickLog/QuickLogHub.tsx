@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import QuickLogCard from '@/components/home/QuickLogCard';
 import type { FitnessLog } from '@/lib/fitness';
+import type { ProteinLog } from '@/lib/protein';
 import type {
   FlowDetails,
   FlowLevel,
@@ -34,6 +35,7 @@ type Props = {
   showCaffeine: boolean;
   showAlcohol: boolean;
   selectedFitness: FitnessLog | null;
+  selectedProtein: ProteinLog | null;
   selectedCaffeine: CaffeineLog | null;
   selectedAlcohol: AlcoholLog | null;
   selectedNotes: string;
@@ -66,6 +68,10 @@ onFitnessSave: (
   fitness: FitnessLog,
 ) => void | Promise<void>;
 
+onProteinSave: (
+  protein: ProteinLog,
+) => void | Promise<void>;
+
 onCaffeineSave: (
   caffeine: CaffeineLog,
 ) => void | Promise<void>;
@@ -93,6 +99,7 @@ export default function QuickLogHub({
   showCaffeine,
   showAlcohol,
   selectedFitness,
+  selectedProtein,
   selectedCaffeine,
   selectedAlcohol,
   selectedNotes,
@@ -102,6 +109,7 @@ export default function QuickLogHub({
   onFlowSave,
   onSleepSave,
   onFitnessSave,
+  onProteinSave,
   onCaffeineSave,
   onAlcoholSave,
   onNotesSave,
@@ -122,6 +130,7 @@ export default function QuickLogHub({
   showCaffeine={showCaffeine}
   showAlcohol={showAlcohol}
   selectedFitness={selectedFitness}
+  selectedProtein={selectedProtein}
   selectedNotes={selectedNotes}
   selectedCaffeine={selectedCaffeine}
   selectedAlcohol={selectedAlcohol}
@@ -140,6 +149,10 @@ export default function QuickLogHub({
   }
   onFitnessPress={() =>
   setActiveQuickLog('fitness')
+}
+
+onProteinPress={() =>
+  setActiveQuickLog('protein')
 }
 onCaffeinePress={() =>
   setActiveQuickLog('caffeine')
@@ -170,6 +183,7 @@ onAlcoholPress={() =>
 }
   selectedSleep={selectedSleep}
   selectedFitness={selectedFitness}
+  selectedProtein={selectedProtein}
   selectedCaffeine={selectedCaffeine}
   selectedAlcohol={selectedAlcohol}
   selectedNotes={selectedNotes}
@@ -183,6 +197,7 @@ onAlcoholPress={() =>
   onFlowSave={onFlowSave}
   onSleepSave={onSleepSave}
   onFitnessSave={onFitnessSave}
+  onProteinSave={onProteinSave}
   onCaffeineSave={onCaffeineSave}
   onAlcoholSave={onAlcoholSave}
   onNotesSave={onNotesSave}

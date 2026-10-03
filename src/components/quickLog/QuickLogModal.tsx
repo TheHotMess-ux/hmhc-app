@@ -15,6 +15,7 @@ import type {
 import type { SleepLog } from '@/lib/sleep';
 
 import type { FitnessLog } from '@/lib/fitness';
+import type { ProteinLog } from '@/lib/protein';
 
 import type { CaffeineLog } from '@/lib/caffeine';
 
@@ -26,6 +27,7 @@ import type {
 } from '@/lib/symptoms';
 
 import FitnessScreen from './FitnessScreen';
+import ProteinScreen from './ProteinScreen';
 
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
@@ -55,6 +57,7 @@ type Props = {
   endsPeriod: boolean;
   selectedSleep: SleepLog | null;
   selectedFitness: FitnessLog | null;
+  selectedProtein: ProteinLog | null;
   selectedCaffeine: CaffeineLog | null;
   selectedAlcohol: AlcoholLog | null;
 
@@ -92,6 +95,10 @@ onSleepSave: (
   fitness: FitnessLog,
 ) => void | Promise<void>;
 
+  onProteinSave: (
+    protein: ProteinLog,
+  ) => void | Promise<void>;
+
 onCaffeineSave: (
   caffeine: CaffeineLog,
 ) => void | Promise<void>;
@@ -114,6 +121,7 @@ export default function QuickLogModal({
   endsPeriod,
   selectedSleep,
   selectedFitness,
+  selectedProtein,
   selectedCaffeine,
   selectedAlcohol,
   selectedNotes,
@@ -123,6 +131,7 @@ export default function QuickLogModal({
   onFlowSave,
   onSleepSave,
   onFitnessSave,
+  onProteinSave,
   onCaffeineSave,
   onAlcoholSave,
   onNotesSave,
@@ -148,6 +157,9 @@ export default function QuickLogModal({
 
       case 'fitness':
         return 'How did you move today?';
+
+      case 'protein':
+        return 'Protein';
 
       case 'caffeine':
         return 'How much caffeine today?';
@@ -192,6 +204,7 @@ export default function QuickLogModal({
 
           <ScrollView
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={
               styles.scrollContent
             }>
@@ -256,6 +269,16 @@ export default function QuickLogModal({
     selectedFitness={selectedFitness}
     onSave={async (fitness) => {
       await onFitnessSave(fitness);
+      onClose();
+    }}
+  />
+)}
+
+{activeLog === 'protein' && (
+  <ProteinScreen
+    selectedProtein={selectedProtein}
+    onSave={async (protein) => {
+      await onProteinSave(protein);
       onClose();
     }}
   />

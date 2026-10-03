@@ -20,6 +20,7 @@ import {
 import type { SleepLog } from '@/lib/sleep';
 
 import type { FitnessLog } from '@/lib/fitness';
+import type { ProteinLog } from '@/lib/protein';
 
 import type { CaffeineLog } from '@/lib/caffeine';
 
@@ -34,6 +35,7 @@ type Props = {
   selectedFlow: FlowLevel | null;
   selectedSleep: SleepLog | null;
   selectedFitness: FitnessLog | null;
+  selectedProtein: ProteinLog | null;
   selectedNotes: string;
   showFlow: boolean;
   showCaffeine: boolean;
@@ -44,6 +46,7 @@ type Props = {
   onFlowPress: () => void;
   onSleepPress: () => void;
   onFitnessPress: () => void;
+  onProteinPress: () => void;
   onCaffeinePress: () => void;
   onAlcoholPress: () => void;
   onNotesPress: () => void;
@@ -56,6 +59,7 @@ export default function QuickLogCard({
   selectedFlow,
   selectedSleep,
   selectedFitness,
+  selectedProtein,
   selectedCaffeine,
   selectedAlcohol,
   selectedNotes,
@@ -68,6 +72,7 @@ export default function QuickLogCard({
   onFlowPress,
   onSleepPress,
   onFitnessPress,
+  onProteinPress,
   onCaffeinePress,
   onAlcoholPress,
   onNotesPress,
@@ -269,6 +274,35 @@ const selectedSleepEmoji =
     Tap to log
   </Text>
 )}
+</Pressable>
+
+<Pressable
+  accessibilityRole="button"
+  accessibilityLabel="Log protein for today"
+  onPress={onProteinPress}
+  style={({ pressed }) => [
+    styles.quickLogButton,
+    selectedProtein !== null &&
+      styles.quickLogButtonSelected,
+    pressed && styles.buttonPressed,
+  ]}>
+  <Text style={styles.quickLogEmoji}>
+    🥩
+  </Text>
+
+  <Text style={styles.quickLogLabel}>
+    Protein
+  </Text>
+
+  {selectedProtein !== null ? (
+    <Text style={styles.quickLogValue}>
+      {selectedProtein.grams} g
+    </Text>
+  ) : (
+    <Text style={styles.comingSoon}>
+      Tap to log
+    </Text>
+  )}
 </Pressable>
 
 {showCaffeine && (

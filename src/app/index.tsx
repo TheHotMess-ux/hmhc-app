@@ -138,6 +138,11 @@ const {
 } = dashboard;
 
 const {
+  selectedProtein,
+  setSelectedProtein,
+} = dashboard;
+
+const {
   journalEntries,
   setJournalEntries,
 } = dashboard;
@@ -473,6 +478,7 @@ return (
   selectedSupplements}
   selectedSleep={selectedSleep}
   selectedFitness={selectedFitness}
+  selectedProtein={selectedProtein}
   selectedCaffeine={todayCaffeine}
   selectedAlcohol={todayAlcohol}
   selectedNotes={todayNotes}
@@ -599,6 +605,19 @@ onFitnessSave={async (fitness) => {
 
   await saveTodayToJournal({
     fitness,
+  });
+}}
+
+onProteinSave={async (protein) => {
+  setSelectedProtein(protein);
+
+  await AsyncStorage.setItem(
+    'todaysProtein',
+    JSON.stringify(protein),
+  );
+
+  await saveTodayToJournal({
+    protein,
   });
 }}
 

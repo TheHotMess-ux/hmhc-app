@@ -10,6 +10,7 @@ import {
 
 import type { DailyEntry } from '@/lib/dashboard';
 import type { FitnessLog } from '@/lib/fitness';
+import type { ProteinLog } from '@/lib/protein';
 import type { FlowLevel } from '@/lib/flow';
 import { loadJournalEntries } from '@/lib/journal';
 import type { SleepLog } from '@/lib/sleep';
@@ -39,6 +40,8 @@ export function useHomeDashboard() {
 
     const [selectedFitness, setSelectedFitness] =
   useState<FitnessLog | null>(null);
+  const [selectedProtein, setSelectedProtein] =
+    useState<ProteinLog | null>(null);
 
   const [journalEntries, setJournalEntries] =
     useState<DailyEntry[]>([]);
@@ -60,6 +63,7 @@ export function useHomeDashboard() {
   savedPeriodEnd,
   savedSleep,
   savedFitness,
+  savedProtein,
   savedJournal,
 ] = await Promise.all([
   AsyncStorage.getItem('todaysMood'),
@@ -69,6 +73,7 @@ export function useHomeDashboard() {
   AsyncStorage.getItem('endsPeriod'),
   AsyncStorage.getItem('todaysSleep'),
   AsyncStorage.getItem('todaysFitness'),
+  AsyncStorage.getItem('todaysProtein'),
   loadJournalEntries(),
 ]);
 
@@ -108,6 +113,12 @@ export function useHomeDashboard() {
     : null,
 );
 
+        setSelectedProtein(
+          savedProtein
+            ? (JSON.parse(savedProtein) as ProteinLog)
+            : null,
+        );
+
         setJournalEntries(savedJournal);
       } catch (error) {
         console.error(
@@ -144,6 +155,9 @@ export function useHomeDashboard() {
 
     selectedFitness,
     setSelectedFitness,
+
+    selectedProtein,
+    setSelectedProtein,
 
     journalEntries,
     setJournalEntries,

@@ -5,6 +5,7 @@ export type QuickLogType =
   | 'sleep'
   | 'supplements'
   | 'fitness'
+  | 'protein'
   | 'caffeine'
   | 'alcohol'
   | 'notes'
