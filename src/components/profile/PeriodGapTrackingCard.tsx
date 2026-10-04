@@ -1,8 +1,8 @@
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { Colors } from '@/theme/colors';
@@ -118,32 +118,31 @@ const styles = StyleSheet.create({
   },
 
   switchTrack: {
-    width: 48,
-    height: 28,
-    backgroundColor: Colors.surfaceLight,
-    borderColor: Colors.border,
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 3,
-    justifyContent: 'center',
-  },
+  width: 48,
+  height: 28,
+  backgroundColor: Colors.background,
+  borderColor: Colors.border,
+  borderRadius: 14,
+  borderWidth: 1,
+  padding: 3,
+  justifyContent: 'center',
+},
 
-  switchTrackSelected: {
-    backgroundColor: Colors.gold,
-    borderColor: Colors.gold,
-  },
+switchTrackSelected: {
+  borderColor: Colors.accent,
+},
 
-  switchThumb: {
-    width: 20,
-    height: 20,
-    backgroundColor: Colors.textSecondary,
-    borderRadius: 10,
-  },
+switchThumb: {
+  width: 20,
+  height: 20,
+  backgroundColor: Colors.textSecondary,
+  borderRadius: 10,
+},
 
-  switchThumbSelected: {
-    alignSelf: 'flex-end',
-    backgroundColor: Colors.background,
-  },
+switchThumbSelected: {
+  alignSelf: 'flex-end',
+  backgroundColor: Colors.accent,
+},
 
   pressed: {
     opacity: 0.7,

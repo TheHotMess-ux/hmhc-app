@@ -14,6 +14,8 @@ import {
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import HMHCSwitch from '@/components/HMHCSwitch';
+
 import {
   useFocusEffect,
 } from 'expo-router';
@@ -36,6 +38,11 @@ import {
 
 import {
   buildDoctorReportHtml,
+  DEFAULT_DOCTOR_REPORT_SECTIONS,
+} from '@/lib/doctorReportPdf';
+
+import type {
+  DoctorReportSections,
 } from '@/lib/doctorReportPdf';
 
 import {
@@ -104,6 +111,34 @@ function CountList({
   );
 }
 
+type ReportSectionToggleProps = {
+  label: string;
+  value: boolean;
+  onChange: (value: boolean) => void;
+};
+
+function ReportSectionToggle({
+  label,
+  value,
+  onChange,
+}: ReportSectionToggleProps) {
+  return (
+    <View style={styles.reportToggleRow}>
+      <Text style={styles.reportToggleLabel}>
+        {label}
+      </Text>
+
+      <HMHCSwitch
+        accessibilityLabel={
+          `Include ${label} in Doctor's Report`
+        }
+        value={value}
+        onValueChange={onChange}
+      />
+    </View>
+  );
+}
+
 function formatDate(
   dateValue: string | null,
 ): string {
@@ -132,6 +167,13 @@ export default function InsightsScreen() {
 
   const [selectedRange, setSelectedRange] =
     useState<ReportRange>(30);
+
+    const [
+    reportSections,
+    setReportSections,
+  ] = useState<DoctorReportSections>(
+    DEFAULT_DOCTOR_REPORT_SECTIONS,
+  );
 
   const [activeView, setActiveView] =
   useState<InsightsView>('patterns');
@@ -248,6 +290,7 @@ const advancedPatterns =
   buildDoctorReportHtml(
     report,
     profile,
+    reportSections,
   );
 
     const { uri } =
@@ -673,6 +716,111 @@ description={
             />
           </View>
 
+          <View style={styles.reportCard}>
+  <Text style={styles.cardEyebrow}>
+    CHOOSE WHAT TO INCLUDE
+  </Text>
+
+  <Text style={styles.cardTitle}>
+    Your report, your call.
+  </Text>
+
+  <Text style={styles.cardDescription}>
+    Choose which information is included in
+    the PDF you generate and share.
+  </Text>
+
+  <ReportSectionToggle
+    label="Symptoms"
+    value={reportSections.symptoms}
+    onChange={(value) =>
+      setReportSections((current) => ({
+        ...current,
+        symptoms: value,
+      }))
+    }
+  />
+
+  <ReportSectionToggle
+    label="Mood"
+    value={reportSections.mood}
+    onChange={(value) =>
+      setReportSections((current) => ({
+        ...current,
+        mood: value,
+      }))
+    }
+  />
+
+  <ReportSectionToggle
+    label="Sleep"
+    value={reportSections.sleep}
+    onChange={(value) =>
+      setReportSections((current) => ({
+        ...current,
+        sleep: value,
+      }))
+    }
+  />
+
+  {showsCycleTracking && (
+    <ReportSectionToggle
+      label="Cycle Data"
+      value={reportSections.cycle}
+      onChange={(value) =>
+        setReportSections((current) => ({
+          ...current,
+          cycle: value,
+        }))
+      }
+    />
+  )}
+
+  <ReportSectionToggle
+    label="Supplements"
+    value={reportSections.supplements}
+    onChange={(value) =>
+      setReportSections((current) => ({
+        ...current,
+        supplements: value,
+      }))
+    }
+  />
+
+  <ReportSectionToggle
+    label="Notes"
+    value={reportSections.notes}
+    onChange={(value) =>
+      setReportSections((current) => ({
+        ...current,
+        notes: value,
+      }))
+    }
+  />
+
+  <ReportSectionToggle
+    label="Caffeine"
+    value={reportSections.caffeine}
+    onChange={(value) =>
+      setReportSections((current) => ({
+        ...current,
+        caffeine: value,
+      }))
+    }
+  />
+
+  <ReportSectionToggle
+    label="Alcohol"
+    value={reportSections.alcohol}
+    onChange={(value) =>
+      setReportSections((current) => ({
+        ...current,
+        alcohol: value,
+      }))
+    }
+  />
+</View>
+
           <View style={styles.disclaimerCard}>
             <Text style={styles.disclaimerTitle}>
               A note before your appointment
@@ -905,6 +1053,23 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: Spacing.md,
   },
+
+  reportToggleRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  backgroundColor: Colors.surfaceLight,
+  borderRadius: 14,
+  padding: Spacing.md,
+  gap: Spacing.md,
+},
+
+reportToggleLabel: {
+  flex: 1,
+  color: Colors.text,
+  fontSize: 14,
+  fontWeight: '700',
+},
 
   cardEmoji: {
     fontSize: 28,

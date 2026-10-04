@@ -1,9 +1,10 @@
 import {
-    StyleSheet,
-    Switch,
-    Text,
-    View,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
+
+import HMHCSwitch from '@/components/HMHCSwitch';
 
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
@@ -47,19 +48,10 @@ export default function DailyTrackingPreferencesCard({
           </Text>
         </View>
 
-        <Switch
+        <HMHCSwitch
   accessibilityLabel="Caffeine tracking"
   value={tracksCaffeine}
   onValueChange={onCaffeineChange}
-  trackColor={{
-    false: Colors.border,
-    true: Colors.gold,
-  }}
-  thumbColor={
-  tracksCaffeine
-    ? '#F5F0E6'
-    : Colors.textSecondary
-}
 />
       </View>
 
@@ -76,19 +68,10 @@ export default function DailyTrackingPreferencesCard({
           </Text>
         </View>
 
-       <Switch
+      <HMHCSwitch
   accessibilityLabel="Alcohol tracking"
   value={tracksAlcohol}
   onValueChange={onAlcoholChange}
-  trackColor={{
-    false: Colors.border,
-    true: Colors.gold,
-  }}
-  thumbColor={
-  tracksAlcohol
-    ? '#F5F0E6'
-    : Colors.textSecondary
-}
 />
       </View>
     </View>

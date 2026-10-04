@@ -1,10 +1,11 @@
 import {
   Pressable,
   StyleSheet,
-  Switch,
   Text,
   View,
 } from 'react-native';
+
+import HMHCSwitch from '@/components/HMHCSwitch';
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -130,10 +131,11 @@ const morningTimeLabel =
   </Text>
 </Pressable>
 
-  <Switch
-    value={morningEnabled}
-    onValueChange={onMorningChange}
-  />
+  <HMHCSwitch
+  accessibilityLabel="Morning check-in reminder"
+  value={morningEnabled}
+  onValueChange={onMorningChange}
+/>
 </View>
 
 {showMorningTimePicker && (
@@ -187,10 +189,11 @@ const morningTimeLabel =
   </Text>
 </Pressable>
 
-  <Switch
-    value={eveningEnabled}
-    onValueChange={onEveningChange}
-  />
+  <HMHCSwitch
+  accessibilityLabel="Evening check-in reminder"
+  value={eveningEnabled}
+  onValueChange={onEveningChange}
+/>
 </View>
 
 {showEveningTimePicker && (

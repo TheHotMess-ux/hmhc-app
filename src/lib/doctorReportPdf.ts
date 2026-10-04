@@ -7,6 +7,28 @@ import type {
   UserProfile,
 } from './profile';
 
+export type DoctorReportSections = {
+  symptoms: boolean;
+  mood: boolean;
+  sleep: boolean;
+  cycle: boolean;
+  supplements: boolean;
+  notes: boolean;
+  caffeine: boolean;
+  alcohol: boolean;
+};
+
+export const DEFAULT_DOCTOR_REPORT_SECTIONS: DoctorReportSections = {
+  symptoms: true,
+  mood: true,
+  sleep: true,
+  cycle: true,
+  supplements: true,
+  notes: true,
+  caffeine: true,
+  alcohol: true,
+};
+
 function escapeHtml(value: string): string {
   const characters: Record<string, string> = {
     '&': '&amp;',
@@ -97,6 +119,8 @@ function removeMoodEmoji(
 export function buildDoctorReportHtml(
   report: DoctorReportSummary,
   profile?: UserProfile,
+  sections: DoctorReportSections =
+    DEFAULT_DOCTOR_REPORT_SECTIONS,
 ): string {
   const generatedOn =
     new Date().toLocaleDateString(
@@ -158,12 +182,11 @@ const showsCycleTracking =
   'wellness';
 
 const reportSubtitle =
-  showsCycleTracking
-    ? 'A summary of self-reported symptoms, mood, sleep, supplements, and bleeding.'
-    : 'A summary of self-reported symptoms, mood, sleep, and supplements.';
+  'A summary of self-reported information selected by the app user.';
 
     const bleedingSummaryCard: string =
-  showsCycleTracking
+  showsCycleTracking &&
+  sections.cycle
     ? `
       <div class="summary-card">
         <span class="summary-number">
@@ -178,7 +201,8 @@ const reportSubtitle =
     : '';
 
     const cycleAndBleedingSection: string =
-  showsCycleTracking
+  showsCycleTracking &&
+  sections.cycle
     ? `
       <section class="section">
         <h2>Cycle &amp; Bleeding</h2>
@@ -549,18 +573,25 @@ return `
 
      ${bleedingSummaryCard}
 
-      <div class="summary-card">
-        <span class="summary-number">
-          ${report.sleep.loggedNights}
-        </span>
+            ${
+        sections.sleep
+          ? `
+            <div class="summary-card">
+              <span class="summary-number">
+                ${report.sleep.loggedNights}
+              </span>
 
-        <span class="summary-label">
-          Sleep logs
-        </span>
-      </div>
+              <span class="summary-label">
+                Sleep logs
+              </span>
+            </div>
+          `
+          : ''
+      }
     </section>
 
     ${
+  sections.symptoms &&
   report.doctorDiscussionItems.length > 0
     ? `
       <section class="section">
@@ -584,22 +615,29 @@ return `
     : ''
 }
 
-    <section class="section">
-      <h2>Most Logged Symptoms</h2>
+        ${
+      sections.symptoms
+        ? `
+          <section class="section">
+            <h2>Most Logged Symptoms</h2>
 
-      <p class="section-description">
-        Symptoms appearing most often during
-        this reporting period.
-      </p>
+            <p class="section-description">
+              Symptoms appearing most often during
+              this reporting period.
+            </p>
 
-     ${renderCountList(
-  report.topSymptoms,
-  'No symptoms were logged.',
-  'two-column',
-)}
-    </section>
+            ${renderCountList(
+              report.topSymptoms,
+              'No symptoms were logged.',
+              'two-column',
+            )}
+          </section>
+        `
+        : ''
+    }
 
     ${
+  sections.symptoms &&
   report.crampIntensity.ratedDays > 0
     ? `
       <section class="section">
@@ -646,15 +684,23 @@ return `
     : ''
 }
 
-    <section class="section">
-      <h2>Mood Patterns</h2>
+        ${
+      sections.mood
+        ? `
+          <section class="section">
+            <h2>Mood Patterns</h2>
 
-      ${renderCountList(
-        report.moods,
-        'No moods were logged.',
-      )}
-    </section>
-
+            ${renderCountList(
+              report.moods,
+              'No moods were logged.',
+            )}
+          </section>
+        `
+        : ''
+    }
+    ${
+      sections.sleep
+        ? `
     <section class="section">
       <h2>Sleep Patterns</h2>
 
@@ -698,21 +744,32 @@ return `
         </div>
       </div>
     </section>
+            `
+        : ''
+    }
 
   ${cycleAndBleedingSection}
 
-    <section class="section">
-      <h2>Supplements Logged</h2>
+        ${
+      sections.supplements
+        ? `
+          <section class="section">
+            <h2>Supplements Logged</h2>
 
-      ${renderCountList(
-        report.supplements,
-        'No supplements were logged.',
-      )}
-    </section>
+            ${renderCountList(
+              report.supplements,
+              'No supplements were logged.',
+            )}
+          </section>
+        `
+        : ''
+    }
 
 ${
-  report.caffeine.loggedDays > 0 ||
-  report.alcohol.loggedDays > 0
+  (sections.caffeine &&
+    report.caffeine.loggedDays > 0) ||
+  (sections.alcohol &&
+    report.alcohol.loggedDays > 0)
     ? `
       <section class="section">
         <h2>Lifestyle Patterns</h2>
@@ -723,8 +780,9 @@ ${
         </p>
 
         ${
-          report.caffeine.loggedDays > 0
-            ? `
+  sections.caffeine &&
+  report.caffeine.loggedDays > 0
+    ? `
               <div class="summary-card">
                 <h3>Caffeine</h3>
 
@@ -772,8 +830,9 @@ ${
         }
 
         ${
-          report.alcohol.loggedDays > 0
-            ? `
+  sections.alcohol &&
+  report.alcohol.loggedDays > 0
+    ? `
               <div class="summary-card">
                 <h3>Alcohol</h3>
 
@@ -826,6 +885,7 @@ ${
 }
 
         ${
+    sections.notes &&
     report.notes.length > 0
       ? `
         <section class="section">
