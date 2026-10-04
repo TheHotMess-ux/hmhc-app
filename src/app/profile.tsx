@@ -37,6 +37,10 @@ import {
 } from '@/lib/betaFeedback';
 
 import {
+  eraseAllData,
+} from '@/lib/eraseAllData';
+
+import {
   applyDailyReminderSettings,
   defaultDailyReminderSettings,
   getDailyReminderSettings
@@ -46,7 +50,9 @@ import type {
   DailyReminderSettings,
 } from '@/lib/notifications';
 
-
+import {
+  requestAppReset,
+} from '@/lib/appReset';
 
 import { Colors } from '@/theme/colors';
 import { Spacing } from '@/theme/spacing';
@@ -107,6 +113,9 @@ export default function ProfileScreen() {
     useState(true);
 
   const [isSaving, setIsSaving] =
+    useState(false);
+
+  const [isErasingData, setIsErasingData] =
     useState(false);
 
     const [
@@ -327,6 +336,54 @@ async function handleDailyTrackingChange(
       );
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  function handleEraseAllData() {
+    Alert.alert(
+      'Erase all HMHC data?',
+      'This permanently removes your journal, cycle and symptom history, profile information, custom items, preferences, goals, and reminder settings stored by HMHC on this device. Scheduled HMHC reminders will also be cancelled.\n\nPreviously exported Doctor\'s Reports are not deleted. If you saved or shared a report, you\'ll need to delete those copies separately.\n\nThis cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Erase Everything',
+          style: 'destructive',
+          onPress: () => {
+            void confirmEraseAllData();
+          },
+        },
+      ],
+    );
+  }
+
+  async function confirmEraseAllData() {
+    try {
+      setIsErasingData(true);
+
+      await eraseAllData();
+
+      setProfile(emptyUserProfile);
+
+      setDailyReminderSettings(
+        defaultDailyReminderSettings,
+      );
+
+      requestAppReset();
+    } catch (error) {
+      console.error(
+        'Unable to erase HMHC data:',
+        error,
+      );
+
+      Alert.alert(
+        'Unable to erase data',
+        'HMHC could not complete the erase. Your data may not have been fully removed. Please try again.',
+      );
+    } finally {
+      setIsErasingData(false);
     }
   }
 
@@ -705,6 +762,50 @@ onEveningTimeChange={(time) => {
           </Text>
         </View>
       </View>
+
+      <View style={styles.eraseDataCard}>
+        <View style={styles.eraseDataHeading}>
+          <Ionicons
+            name="trash-outline"
+            color={Colors.accent}
+            size={24}
+          />
+
+          <View style={styles.eraseDataText}>
+            <Text style={styles.eraseDataTitle}>
+              Erase All Data
+            </Text>
+
+            <Text style={styles.eraseDataDescription}>
+              Permanently remove all data stored by HMHC
+              on this device, including your journal,
+              tracking history, profile, custom items,
+              preferences, goals, and reminder settings.
+            </Text>
+          </View>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Erase all HMHC data"
+          disabled={isErasingData}
+          onPress={handleEraseAllData}
+          style={({ pressed }) => [
+            styles.eraseDataButton,
+            isErasingData &&
+              styles.eraseDataButtonDisabled,
+            pressed &&
+              !isErasingData &&
+              styles.buttonPressed,
+          ]}>
+          <Text style={styles.eraseDataButtonText}>
+            {isErasingData
+              ? 'Erasing…'
+              : 'Erase All Data'}
+          </Text>
+        </Pressable>
+      </View>
+
     </ScrollView>
   );
 }
@@ -935,6 +1036,55 @@ feedbackButton: {
 },
 
 feedbackButtonText: {
+  color: Colors.background,
+  fontSize: 15,
+  fontWeight: '900',
+},
+
+eraseDataCard: {
+  backgroundColor: Colors.surface,
+  borderColor: Colors.accent,
+  borderWidth: 1,
+  borderRadius: 22,
+  padding: Spacing.lg,
+  gap: Spacing.lg,
+},
+
+eraseDataHeading: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  gap: Spacing.md,
+},
+
+eraseDataText: {
+  flex: 1,
+  gap: 5,
+},
+
+eraseDataTitle: {
+  color: Colors.accent,
+  fontSize: 17,
+  fontWeight: '900',
+},
+
+eraseDataDescription: {
+  color: Colors.textSecondary,
+  fontSize: 13,
+  lineHeight: 20,
+},
+
+eraseDataButton: {
+  backgroundColor: Colors.accent,
+  borderRadius: 14,
+  paddingVertical: 15,
+  alignItems: 'center',
+},
+
+eraseDataButtonDisabled: {
+  opacity: 0.55,
+},
+
+eraseDataButtonText: {
   color: Colors.background,
   fontSize: 15,
   fontWeight: '900',

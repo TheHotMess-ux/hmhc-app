@@ -89,3 +89,8 @@ export async function clearDailyQuickLogs(): Promise<void> {
     DAILY_QUICK_LOG_KEYS,
   );
 }
+
+export function resetDailyQuickLogPreparation(): void {
+  preparedDate = null;
+  preparationPromise = null;
+}

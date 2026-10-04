@@ -18,6 +18,10 @@ import {
   hasCompletedOnboarding,
 } from '@/lib/onboarding';
 
+import {
+  subscribeToAppReset,
+} from '@/lib/appReset';
+
 function getTabIcon(
   routeName: string,
   focused: boolean,
@@ -91,6 +95,16 @@ function getTabIcon(
     return () => {
       layoutIsActive = false;
     };
+  }, []);
+
+  useEffect(() => {
+    return subscribeToAppReset(() => {
+      setOnboardingIsVisible(true);
+
+      setAppRefreshKey(
+        (currentKey) => currentKey + 1,
+      );
+    });
   }, []);
 
     useEffect(() => {

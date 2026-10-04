@@ -73,6 +73,9 @@ export default function OnboardingModal({
       return;
     }
 
+    setStep(0);
+    setIsFinishing(false);
+
     let isActive = true;
 
     async function prepareOnboarding() {
