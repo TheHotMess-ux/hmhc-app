@@ -804,8 +804,6 @@ useEffect(() => {
             ))}
           </View>
 
-
-
           <View style={styles.calendarGrid}>
             {calendarDays.map((date, index) => {
               if (!date) {
@@ -1469,7 +1467,7 @@ title: {
   },
 
   dayCell: {
-    width: `${100 / 7}%`,
+    width: `${99 / 7}%`,
     aspectRatio: 1,
   },
 

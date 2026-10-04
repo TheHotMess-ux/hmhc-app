@@ -68,7 +68,7 @@ export default function CalendarDay({
   }
 
   return (
-    <View style={styles.dayCell}>
+  <View style={styles.dayCell}>
 
       <Pressable
         accessibilityRole="button"
@@ -176,7 +176,7 @@ isEstimatedOvulationDate &&
 
 const styles = StyleSheet.create({
   dayCell: {
-  width: `${100 / 7}%`,
+  width: `${99 / 7}%`,
   height: 58,
   padding: 3,
 },
