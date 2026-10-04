@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors } from '@/theme/colors';
 
 export default function LibraryScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
      <Text style={styles.eyebrow}>
 HMHC RESOURCE VAULT
 </Text>
@@ -15,7 +16,7 @@ Library
   Guides, recipes, nervous-system tools, sleep support,
   and The Hot Flash will live here.
 </Text>
-    </View>
+    </SafeAreaView>
   );
 }
 

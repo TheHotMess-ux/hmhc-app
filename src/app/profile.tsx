@@ -16,6 +16,8 @@ import {
   View,
 } from 'react-native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import {
   getAccessMode,
 } from '@/lib/access';
@@ -95,6 +97,7 @@ function isValidDateOfBirth(
 }
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const [profile, setProfile] =
     useState<UserProfile>(
       emptyUserProfile,
@@ -343,10 +346,14 @@ async function handleDailyTrackingChange(
 
   return (
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={
-        styles.content
-      }
+  style={styles.screen}
+  contentContainerStyle={[
+    styles.content,
+    {
+      paddingTop:
+        insets.top + Spacing.lg,
+    },
+  ]}
       keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
         <Text style={styles.eyebrow}>

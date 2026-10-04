@@ -12,6 +12,8 @@ import {
   View,
 } from 'react-native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import {
   useFocusEffect,
 } from 'expo-router';
@@ -124,7 +126,8 @@ function formatDate(
 }
 
 export default function InsightsScreen() {
-  const [journalEntries, setJournalEntries] =
+  const insets = useSafeAreaInsets();
+    const [journalEntries, setJournalEntries] =
     useState<DailyEntry[]>([]);
 
   const [selectedRange, setSelectedRange] =
@@ -286,11 +289,15 @@ const advancedPatterns =
 }
 
   return (
-  <ScrollView
-    style={styles.screen}
-    contentContainerStyle={
-      styles.content
-    }>
+ <ScrollView
+  style={styles.screen}
+  contentContainerStyle={[
+    styles.content,
+    {
+      paddingTop:
+        insets.top + Spacing.lg,
+    },
+  ]}>
     <View style={styles.header}>
 
   <Text style={styles.eyebrow}>

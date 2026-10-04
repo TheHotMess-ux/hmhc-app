@@ -72,6 +72,10 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+
+
 const moodOptions = [
   { emoji: '🔥', label: 'Feral' },
   { emoji: '✨', label: 'Thriving' },
@@ -95,6 +99,8 @@ const symptomOptions = [
 ];
 
 export default function HomeScreen() {
+const insets = useSafeAreaInsets();
+
 const dashboard = useHomeDashboard();
 
 const {
@@ -422,9 +428,15 @@ const moreForYouItems = [
 
 return (
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-    >
+  style={styles.screen}
+  contentContainerStyle={[
+    styles.content,
+    {
+      paddingTop:
+        insets.top + Spacing.lg,
+    },
+  ]}
+>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>
           THE HOT MESS HORMONE CLUB
