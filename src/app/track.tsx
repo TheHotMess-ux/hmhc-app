@@ -1276,8 +1276,20 @@ onClearLog={
         selectedSleep={
           selectedEntry?.sleep ?? null
         }
-             selectedFitness={
+        selectedFitness={
           selectedEntry?.fitness ?? null
+        }
+        selectedProtein={
+          selectedEntry?.protein ?? null
+        }
+        selectedCaffeine={
+          selectedEntry?.caffeine ?? null
+        }
+        selectedAlcohol={
+          selectedEntry?.alcohol ?? null
+        }
+        selectedNotes={
+          selectedEntry?.notes ?? ''
         }
         selectedFlow={
           selectedEntry?.flow ?? null
@@ -1294,6 +1306,13 @@ onClearLog={
           false
         }
         showFlow={showsPeriodLogging}
+
+        showCaffeine={
+          profile.tracksCaffeine
+        }
+        showAlcohol={
+          profile.tracksAlcohol
+        }
 
         onMoodSelect={async (mood) => {
           await saveSelectedDateToJournal({
@@ -1330,6 +1349,30 @@ onClearLog={
     fitness,
   });
 }}
+
+        onProteinSave={async (protein) => {
+          await saveSelectedDateToJournal({
+            protein,
+          });
+        }}
+
+        onCaffeineSave={async (caffeine) => {
+          await saveSelectedDateToJournal({
+            caffeine,
+          });
+        }}
+
+        onAlcoholSave={async (alcohol) => {
+          await saveSelectedDateToJournal({
+            alcohol,
+          });
+        }}
+
+        onNotesSave={async (notes) => {
+          await saveSelectedDateToJournal({
+            notes,
+          });
+        }}
 
 onFlowSave={async (
   flow,
