@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { initializeRevenueCat } from '@/lib/revenueCat';
 import { Colors } from '@/theme/colors';
 
 import {
@@ -59,6 +60,9 @@ function getTabIcon(
 
   export default function RootLayout() {
   const insets = useSafeAreaInsets();
+    useEffect(() => {
+    initializeRevenueCat();
+  }, []);
   const [
     onboardingIsVisible,
     setOnboardingIsVisible,
